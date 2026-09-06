@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Agent skills for Contracko contract management",
-    "version": "0.6.1"
+    "version": "0.7.0"
   },
   "plugins": [
     {

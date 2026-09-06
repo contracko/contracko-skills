@@ -52,8 +52,8 @@ Tools are filtered out of the tool list entirely, so a missing scope looks exact
 |---|---|
 | any valid credential | `auth_validate` only |
 | `parser:compute` | the 6 parser tools |
-| `contract:read` | contract, type, party and comment reads, plus document search, document read and download URLs |
-| `contract:write` | create, update (including bulk), import, ingest, extra documents, comments, and read |
+| `contract:read` | contract, type, party, comment and event reads, plus document search, document read and download URLs |
+| `contract:write` | create, update (including bulk), import, ingest, extra documents, comments, events, reminders, and read |
 
 **The consent screen belongs to the user.** They open it, they tick the boxes, they approve. Hand them the link and wait, and keep browser automation away from a sign-in and consent flow even where you have it: the point of the screen is that a human granted the access.
 
@@ -67,7 +67,7 @@ Run `auth_validate` first, every session. It returns the workspace and the grant
 
 Connecting is done when the workspace is the one the user meant **and** the granted scopes cover what they asked for. Where the user wants contract work and only `auth_validate` and parser tools exist, the credential is the problem: say so and point at the key's scopes or a fresh consent.
 
-A key or OAuth grant does not pick up new MCP actions on its own. If search, document read, download URLs or contract updates are missing while `contract:read` or `contract:write` is granted, the credential is on an older capability generation: a workspace admin confirms **Enable new MCP actions** on the key, or the user re-consents OAuth.
+A key or OAuth grant on Phases 1–4 does not pick up later MCP actions on its own. If search, document read, download URLs, contract updates, events or reminders are missing while `contract:read` or `contract:write` is granted, the credential is on an older capability generation: a workspace admin confirms **Enable new MCP actions** on the key, or the user re-consents OAuth. Existing Phase 5 credentials already include events and reminders.
 
 ## Route the work
 
@@ -103,7 +103,7 @@ Four rules the schema does not carry, each worth one failed call:
 
 A duplicate type or party name returns a 409 whose message omits the name, so list before you create.
 
-**Nothing can be deleted over MCP, by design.** Destructive operations are kept out of an agent's hands, so a wrong type stands until someone opens the app. Put a new type in front of the user before creating it, and prefer updating an existing one over adding a near-duplicate.
+**Contracts, types and parties cannot be deleted over MCP, by design.** A wrong type stands until someone opens the app. Put a new type in front of the user before creating it, and prefer updating an existing one over adding a near-duplicate. Custom events and linked reminders *can* be deleted; that is a confirm-before-write, not an app handoff.
 
 A field earns its place by answering a question someone asks: renewal owner, cost centre, licence seats, risk tier. Two traps. A field that restates something Contracko models natively (end date, notice period, counterparty, annual value) splits the same fact in two, and the native one is what the renewal logic reads. A free-text field where a `select` would do cannot be counted, so anything with a known set of answers gets `config.options`. Types available: `text`, `number`, `currency`, `percentage`, `date`, `boolean`, `select`, `multi_select`. Use `currency` and `percentage` where they fit rather than a bare `number`, since the unit is then part of the field instead of a convention someone has to remember.
 
@@ -119,13 +119,13 @@ Contracts carry a `folderId` you can read and cannot set. Creating folders and m
 
 When someone asks for contracts organised they mean two things: the type and fields (yours), and the folder tree (theirs). Do your half, then write a tree they can click — typically by owned entity, then type, then vendor — naming which contracts you would put where. Do not claim to have filed them.
 
-### Reminders — app step
+### Reminders
 
-Reminders hang off an event on a contract. Neither events nor reminders have a tool yet. Answer *today* from the dates; [contracko-review](../contracko-review/SKILL.md) owns that calendar. The alert that should fire in eight months is set on the contract in the app.
+Reminders hang off an event on a contract. [contracko-review](../contracko-review/SKILL.md) owns listing dates and creating the alert. Renewal reminders target the contract `end` system event; do not invent a custom event for an ordinary renewal.
 
 ### Recurring registers
 
-"Track our SaaS subscriptions", and equally leases, permits, certificates, insurance policies, warranties and domains, are one shape: a contract type per category, `select` fields for anything countable, the renewal date left in Contracko's native `endDate` and notice fields rather than a custom one, and the reminder set in the app. The register is then a page-through and filter, which [contracko-review](../contracko-review/SKILL.md) covers.
+"Track our SaaS subscriptions", and equally leases, permits, certificates, insurance policies, warranties and domains, are one shape: a contract type per category, `select` fields for anything countable, the renewal date left in Contracko's native `endDate` and notice fields rather than a custom one, and a reminder on the `end` (or `notice`) system event. The register is then a page-through and filter, which [contracko-review](../contracko-review/SKILL.md) covers.
 
 ## Workflows run past the end of the tool list
 

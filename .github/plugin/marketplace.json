@@ -8,7 +8,7 @@
     {
       "name": "contracko-skills",
       "description": "Connect an agent to the Contracko MCP server, import contracts, and answer renewal, risk and vendor questions.",
-      "version": "0.6.1",
+      "version": "0.7.0",
       "source": "./",
       "keywords": [
         "contracko",

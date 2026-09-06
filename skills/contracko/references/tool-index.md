@@ -2,7 +2,7 @@
 
 What each tool is for, and what it costs to get wrong. Parameters, types and limits are in the tool schemas already loaded in your context; this file carries only what those schemas cannot say.
 
-Verified against the Phase 5 catalog in the product app (30 tools when every parser and contract scope is granted). Older credentials stay frozen until a workspace admin confirms new MCP actions.
+Verified against the Phase 5 catalog in the product app (37 tools when every parser and contract scope is granted). That count includes seven event and reminder tools that existing Phase 5 credentials already have. Credentials on Phases 1–4 stay frozen until a workspace admin confirms new MCP actions.
 
 User jobs (bring in, calendar, compare, audit, file, report) live in [workflows.md](workflows.md). This file is tools, not jobs.
 
@@ -57,6 +57,20 @@ So: read your tool list, work with what is in it, and treat everything below tha
 
 [contracko-import](../../contracko-import/SKILL.md) covers the two paths and the rules that are not in the schema.
 
+## Events and reminders
+
+A reminder hangs off an event. List first. Mutations need `contract:write`, an idempotency key, and (for update or delete) `expectedUpdatedAt` from the latest list. [contracko-review](../../contracko-review/SKILL.md) owns the calendar.
+
+| Tool | Scope | What it is for |
+|---|---|---|
+| `clm_list_contract_events` | `contract:read` | Dated custom events and supported system events (`notice`, `end`, `open_ended_review`) with their reminder schedules. |
+| `clm_create_contract_events` | `contract:write` | Custom events, optionally with nested reminders. You do not create system events. |
+| `clm_update_contract_events` | `contract:write` | Custom events. Sending `reminders` replaces that event's reminder set. Relist first. |
+| `clm_delete_contract_events` | `contract:write` | Custom events and every reminder linked to them. |
+| `clm_create_event_reminders` | `contract:write` | Linked reminders on a custom event or a supported system event. Renewal alerts target `end`. |
+| `clm_update_event_reminders` | `contract:write` | Timing, recipient, or message of an existing reminder. |
+| `clm_delete_event_reminders` | `contract:write` | The reminder only. The event stays. |
+
 ## Parser
 
 Extracts structured data from documents without filing them as managed contracts. Spends credits, where the contract tools do not.
@@ -80,7 +94,6 @@ The skills in this bundle describe complete workflows, because that is how the w
 
 | The workflow step | Where it is today | The nearest thing over MCP |
 |---|---|---|
-| reminders and notifications before a renewal or notice date | app | Answer the deadline question now from `noticeDate`, `endDate` and `isInNoticePeriod`. Contracko's model is event-first, so a reminder hangs off an event. |
 | folders, filing, moving contracts into a structure | app | A contract carries a `folderId` you can read, and nothing that sets one. |
 | drafting from a template or questionnaire, changing a contract's status | app | The write tools file documents that already exist. |
 | sending for signature, chasing a signer, signature status | app | Nothing. File the executed copy once it comes back. |

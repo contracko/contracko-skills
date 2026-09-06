@@ -20,11 +20,11 @@ Read this when the request is a job. Then open only the skill that owns the mech
 
 **They say:** notice dates, end dates, renewals, annual review, reminders, notifications.
 
-**Now (Phase 5):** answer *today* from `noticeDate`, `endDate`, `isInNoticePeriod`, `autoRenewing`, and (for annual review) `startDate` or a review custom field. [contracko-review](../../contracko-review/SKILL.md) owns the calendar.
+**Now (Phase 5):** answer *today* from `noticeDate`, `endDate`, `isInNoticePeriod`, `autoRenewing`. List events and linked reminders with `clm_list_contract_events`. Create or change alerts with the event and reminder tools. Renewal reminders target the contract `end` system event. [contracko-review](../../contracko-review/SKILL.md) owns the calendar.
 
-**Not on MCP yet:** events, reminders, notifications that fire later. Those stay in the app.
+**Not on MCP yet:** nothing on this job once those seven tools are on your list. If they are missing, the credential is below Phase 5.
 
-**Done when:** the user has the urgent bucket, the dates that drive it, and (if they wanted an alert) the app step named.
+**Done when:** the user has the urgent bucket, the dates that drive it, and (if they wanted an alert) the reminder actually created.
 
 ## 3. Compare these
 

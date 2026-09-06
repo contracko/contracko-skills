@@ -1,11 +1,11 @@
 ---
 name: contracko-review
-description: Reviews Contracko contracts. Use for notice dates, end dates, annual review, risk audits, comparing proposals or redlines, or portfolio priorities and gaps.
+description: Reviews Contracko contracts. Use for notice dates, end dates, annual review, reminders, risk audits, comparing proposals or redlines, or portfolio priorities and gaps.
 ---
 
 # Answering contract questions from Contracko
 
-Requires `contract:read`. Everything here is read-only. Where the read tools are missing from your tool list, the credential is narrower than the user thinks: see [contracko](../contracko/SKILL.md), which also covers connecting and reading Contracko's errors.
+Requires `contract:read`. Compare, audit and report stay read-only. Setting reminders needs `contract:write`. Where the tools are missing from your tool list, the credential is narrower than the user thinks: see [contracko](../contracko/SKILL.md), which also covers connecting and reading Contracko's errors.
 
 Jobs this skill owns: calendar, compare, audit, report. Playbooks for those jobs: [workflows](../contracko/references/workflows.md).
 
@@ -60,13 +60,27 @@ From a full page-through:
 
 Sort by `noticeDate`, not `endDate`. The deadline that costs money is the notice one, typically months earlier.
 
-**Annual review** is not a native MCP event. Look in `customFieldValues` for a review date the workspace already tracks. If none, use the anniversary of `startDate` this year. Say which rule you used. Do not invent a reminder tool to store the result.
-
 **Get today's date from the environment before comparing anything to it.** Every answer here is date arithmetic against now, and a remembered date is quietly wrong in a way the output never reveals.
 
-Reminders and notifications that should fire later are app steps. Events and reminders are not on the Phase 5 tool list. Answer *now*, then point at the contract in the app for the alert. [contracko](../contracko/SKILL.md) names that handoff; do not repeat the folder rules here.
-
 Where the contract is not in the workspace at all, import it first: [contracko-import](../contracko-import/SKILL.md).
+
+## Events and reminders
+
+A reminder hangs off an event. List first: `clm_list_contract_events`.
+
+**System events** (`notice`, `end`, `open_ended_review`) already exist. You do not create them. Renewal alerts target `end`. Attach a reminder with `clm_create_event_reminders`, `anchorType: "system"`, and that `systemType`.
+
+**Custom events** (a review meeting, an option window, an insurance expiry) are created with `clm_create_contract_events`: `title`, `date` as `YYYY-MM-DD`, optional recurrence (`recurrenceInterval` and `recurrenceUnit` together), optional nested `reminders` (max 25 per event). Batches are max 100 events or reminders, each item independent.
+
+**Annual review.** On an open-ended contract, use the `open_ended_review` system event. Otherwise create a custom event, or fall back to a review custom field / the anniversary of `startDate`. Say which rule you used.
+
+A reminder needs `offsetValue`, `offsetUnit` (`days` | `weeks` | `months` | `quarters` | `years`), `offsetDirection` (`before` | `on` | `after`), and `recipient` (`{ "type": "contract_owner" }` or `{ "type": "user", "userId" }`). `on` requires `offsetValue: 0`. Optional `message`.
+
+Mutations need `idempotencyKey` (8–128 characters). Update and delete need `expectedUpdatedAt` as a UTC timestamp ending in `Z`. Changing reminders on a custom event advances that event's version: relist before you replace its reminder set. Deleting an event deletes its reminders; deleting a reminder leaves the event.
+
+If these seven tools are missing while `contract:read` or `contract:write` is granted, the credential is below Phase 5: a workspace admin confirms **Enable new MCP actions**, or the user re-consents OAuth. Do not invent a different tool name.
+
+Confirm with the user before a bulk write.
 
 ## Compare proposals and versions
 
