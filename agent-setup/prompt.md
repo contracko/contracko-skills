@@ -115,7 +115,8 @@ Print this to the user, then stop:
   │  Workspace:  <workspace name>               │
   │  Access:     <granted scopes>               │
   │                                             │
-  │  Try: "what renews in the next 90 days?"    │
+  │  Try: "import the PDFs in this folder"      │
+  │        "what needs notice in 90 days?"      │
   └─────────────────────────────────────────────┘
 ```
 
@@ -127,7 +128,7 @@ Say this once, in the same message, where the agent running this session is not 
 
 ## What you have now
 
-Four skills: `contracko` connects and routes, `contracko-import` adds contracts, `contracko-review` answers questions about them (including document search and cited reads when those tools are on the list), `contracko-create` takes a new agreement from questionnaire to filing. Read `contracko` first; it holds the tool index and the list of things this connection deliberately cannot do.
+Four skills. `contracko` connects, organises types/fields, and routes. `contracko-import` finds files (disk, Drive, SharePoint, Box) and files them. `contracko-review` owns calendar, compare, audit and portfolio. `contracko-create` takes a new agreement from questionnaire to filing. Read `contracko` first, then [workflows.md](https://github.com/contracko/contracko-skills/blob/main/skills/contracko/references/workflows.md) for what is Phase 5 vs still in the app.
 
 Your knowledge of Contracko's API, limits and pricing may be out of date. Prefer retrieval over recall: the product's machine-readable documentation is at `https://contracko.com/llms.txt`, and where it disagrees with anything remembered, the documentation wins.
 

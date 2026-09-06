@@ -1,9 +1,22 @@
 ---
 name: contracko-import
-description: Adds contracts to Contracko over MCP. Use to import, upload, migrate or bulk-load documents, file a signed PDF, or fix an import that failed, stalled or returned a conflict on retry.
+description: Imports contracts into Contracko from disk, Google Drive, SharePoint, Box or a URL. Use to onboard, migrate, bulk-upload, or file a signed PDF.
 ---
 
 # Importing contracts into Contracko
+
+Onboarding is this skill plus types in [contracko](../contracko/SKILL.md). Find and file here. Shape types after extraction, not before.
+
+## Find the files first
+
+Contracko MCP does not browse disks or cloud drives. Use the file, Google Drive, SharePoint, Box or OneDrive tools *you already have*. If you have none, ask the user to share the folder, attach files, or paste a signed download link.
+
+1. Ask where the contracts live. Typical: a laptop folder, Google Drive, SharePoint, Box, email exports.
+2. List candidates. Keep PDFs and DOCX (and the other ingest types). Skip obvious noise (photos of whiteboards, duplicate `final-final-v3`).
+3. Group related files before filing: an MSA with its SOWs, a signed copy next to an unsigned draft. Say the grouping out loud. Nothing in Contracko detects it for you.
+4. Confirm workspace, count and names before a bulk send. A single file they just handed you needs no ceremony.
+
+Do not publish a confidential file to a public URL so `remote` import works. A signed or authenticated link from their own store is the remote path.
 
 ## Getting the bytes there
 
@@ -62,7 +75,7 @@ Worth telling the user, because it changes what they should do first. On a plain
 - governing law, jurisdiction, liability summary, notice instructions
 - a full analysis with obligations and risks, through `clm_get_contract_analysis`
 
-So for a first-time user with a folder of contracts: import first, configure after. Hand-built contract types are work the extraction was going to do, and then has to reconcile against.
+So for a first-time user with a folder of contracts: import first, configure after. Hand-built contract types are work the extraction was going to do, and then has to reconcile against. After the batch lands, list types and make them comprehensive — [contracko](../contracko/SKILL.md) owns that half.
 
 New contracts land as `entityStatus: "pending-review"`. Say so. A human is expected to confirm the extraction, and nothing about a successful import marks the data as verified.
 

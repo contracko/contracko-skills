@@ -1,13 +1,13 @@
 ---
 name: contracko
-description: Connects an agent to Contracko contract management over MCP, and sets up the workspace: scopes, contract types, custom fields, counterparties, folders, reminders. Use whenever Contracko comes up.
+description: Connects Contracko over MCP and organises the workspace: types, fields, counterparties, folders. Use for onboarding, filing, or whenever Contracko comes up.
 ---
 
 # Contracko
 
 Contracko is contract management: a repository of contracts with extracted dates, values, parties and AI analysis on top. Its MCP server lets an agent read and write that workspace directly.
 
-This skill connects the server, structures the workspace, and routes everything else. Three siblings own the deep flows: [contracko-import](../contracko-import/SKILL.md) for getting documents in, [contracko-review](../contracko-review/SKILL.md) for getting answers out, [contracko-create](../contracko-create/SKILL.md) for agreements that do not exist yet.
+This skill connects the server, structures the workspace, and routes everything else. Jobs (bring in, calendar, compare, audit, file, report) are in [references/workflows.md](references/workflows.md). Three siblings own the mechanics: [contracko-import](../contracko-import/SKILL.md), [contracko-review](../contracko-review/SKILL.md), [contracko-create](../contracko-create/SKILL.md).
 
 The characteristic failure of this surface is **silence**. Scopes hide tools rather than refusing them, unknown keys are dropped rather than rejected, and broken configuration returns 200. Every rule below exists because something failed quietly. When a Contracko call surprises you, suspect a silent success before you suspect a bug.
 
@@ -71,19 +71,24 @@ A key or OAuth grant does not pick up new MCP actions on its own. If search, doc
 
 ## Route the work
 
+Job playbooks, including what is Phase 5 vs still in the app: [references/workflows.md](references/workflows.md).
+
 | The user wants | Go to |
 |---|---|
-| add, upload, bulk import, migrate contracts | [contracko-import](../contracko-import/SKILL.md) |
-| renewals, notice deadlines, risk, liability, vendor exposure, what a contract says | [contracko-review](../contracko-review/SKILL.md) |
-| a new contract drafted, filled in, signed, and filed | [contracko-create](../contracko-create/SKILL.md) |
-| contract types, custom fields, counterparties, folders, reminders, onboarding a workspace | below |
-| pull data out of documents without filing them as contracts | the parser tools, see [references/tool-index.md](references/tool-index.md) |
+| import, onboard, migrate, files on disk / Drive / SharePoint / Box | [contracko-import](../contracko-import/SKILL.md), then types below |
+| notice dates, end dates, annual review, reminders | [contracko-review](../contracko-review/SKILL.md) |
+| compare proposals, A/B, redline versions | [contracko-review](../contracko-review/SKILL.md) |
+| risk, liability, audit | [contracko-review](../contracko-review/SKILL.md) |
+| folders, contract types, custom fields, organise | below |
+| portfolio, priorities, gaps, vendor spend | [contracko-review](../contracko-review/SKILL.md) |
+| a new agreement drafted, signed, filed | [contracko-create](../contracko-create/SKILL.md) |
+| extract without filing as a contract | parser tools in [references/tool-index.md](references/tool-index.md) |
 
 ## Organising the workspace
 
 What a contract *is* here, what you record about it, who it is with, where it lives, and what warns you before a date passes.
 
-**Import first.** Extraction creates contract types, custom fields and counterparties from the documents themselves, so configuring an empty workspace by hand is work the import was going to do, and then has to reconcile against. Read what it built with `clm_list_contract_types` and `clm_list_parties`, then shape it. Where the user insists on configuring first, say that once and then do it their way.
+**Import first.** Extraction creates contract types, custom fields and counterparties from the documents themselves, so configuring an empty workspace by hand is work the import was going to do, and then has to reconcile against. Read what it built with `clm_list_contract_types` and `clm_list_parties`, then make the types *comprehensive*: every question they actually ask should have a field, as a `select` where the answers are a known set. Put the proposed field list in front of them before writing. Where they insist on configuring first, say that once and then do it their way.
 
 ### Contract types and custom fields
 
@@ -108,11 +113,15 @@ A field earns its place by answering a question someone asks: renewal owner, cos
 
 `isOwned` marks your own legal entity rather than the other side; get it wrong and every "who are we contracting with" answer inverts. `name` is what people call them, `legalName` is what the contract says, and matching a contract to a vendor later depends on keeping both. `clm_update_party` is partial, so omitted fields keep their values. Import creates parties on its own, so check for an existing record before adding one: merging duplicates is app work.
 
-### Folders and reminders — app steps
+### Folders — app to move, MCP to prepare
 
-Contracts carry a `folderId` you can read and cannot set, so filing is done in the app. Metadata you *can* correct over MCP: `clm_update_contract` (one record) and `clm_bulk_update_contracts` (up to 100). Both need the exact `updatedAt` from the latest read as `expectedUpdatedAt`. When someone asks for their contracts organised they usually mean two things: the metadata, which is yours to get right and is what makes any structure findable, and the folder tree, which is theirs. Do your half and describe the structure you would file into.
+Contracts carry a `folderId` you can read and cannot set. Creating folders and moving contracts is app work; it is not on the Phase 5 tool list. Metadata you *can* correct over MCP: `clm_update_contract` (one record) and `clm_bulk_update_contracts` (up to 100). Both need the exact `updatedAt` from the latest read as `expectedUpdatedAt`.
 
-Reminders are event-first in Contracko's model, hanging off an event on a contract rather than standing alone, and neither has a tool yet. Answer the question underneath the request now, from `noticeDate`, `endDate`, `isInNoticePeriod` and `autoRenewing`, then hand off the alert itself: it is set on the contract in the app, and it is the only thing that reaches the user in eight months when nobody is asking. See [contracko-review](../contracko-review/SKILL.md) for reading the dates well.
+When someone asks for contracts organised they mean two things: the type and fields (yours), and the folder tree (theirs). Do your half, then write a tree they can click — typically by owned entity, then type, then vendor — naming which contracts you would put where. Do not claim to have filed them.
+
+### Reminders — app step
+
+Reminders hang off an event on a contract. Neither events nor reminders have a tool yet. Answer *today* from the dates; [contracko-review](../contracko-review/SKILL.md) owns that calendar. The alert that should fire in eight months is set on the contract in the app.
 
 ### Recurring registers
 

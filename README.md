@@ -1,77 +1,105 @@
-# Contracko Skills
+# Contracko skills
 
-Agent skills for [Contracko](https://contracko.com) contract management over MCP.
+These skills teach an AI assistant to work in your [Contracko](https://contracko.com) workspace: bring contracts in, keep dates and types in order, and answer questions from the records.
 
-Contracko exposes an MCP server, and a connected agent can already read and write a workspace with it. What it cannot do on its own is know which of the 30 tools answers a given question, which scope silently hid half of them, or which of the schema's optional fields is required in practice. These skills carry that.
+The assistant talks to Contracko over MCP. Some steps still happen in the Contracko app. The skills say which is which, so the assistant does not invent a button that is not there.
 
-## Install
+## Before you start
 
-Hand your agent one line and let it do the rest:
+Connecting Contracko to an AI product sends contract data to that product's AI provider. Contracko cannot control what that provider does with it. Turn off model training in the provider's settings before working with real contracts.
+
+## What you can ask
+
+### 1. Bring contracts in
+
+Ask: "Import the PDFs in this folder." "Onboard us from Google Drive / SharePoint / Box."
+
+**Now.** The assistant finds files with whatever disk or cloud access it already has (Contracko does not browse Drive or SharePoint itself), confirms the set with you, and imports them so Contracko extracts dates, parties, types and analysis.
+
+**In the app.** You confirm extractions that land as pending review. Putting contracts into folders is still a click in Contracko.
+
+### 2. What is coming up
+
+Ask: "What needs notice in the next 90 days?" "Which contracts end this quarter?" "What is due for annual review?"
+
+**Now.** The assistant reads notice dates, end dates and renewal flags and gives you the list today.
+
+**In the app.** Reminders and notifications that should fire on their own, when nobody is asking.
+
+### 3. Compare these
+
+Ask: "Compare these two vendor proposals." "What changed between this draft and the last redline?"
+
+**Now.** The assistant puts both sides next to each other from the records, the AI analysis, and quoted clauses.
+
+**In the app.** Playbook / clause-library scoring against your house positions. There is no automatic redline-diff button over this connection.
+
+### 4. Audit for risk
+
+Ask: "Where is liability uncapped?" "What are the material risks in this MSA?"
+
+**Now.** The assistant uses Contracko's analysis plus the sentence in the document that supports it.
+
+**In the app.** Measuring a contract against a playbook you maintain in Contracko.
+
+### 5. File and type them
+
+Ask: "Set up proper contract types." "How should we folder these?"
+
+**Now.** The assistant shapes contract types and custom fields, and corrects metadata (type, dates, parties, value). It can *read* which folder a contract is in. It cannot move it.
+
+**In the app.** Creating the folder tree and dragging contracts into it.
+
+### 6. Priorities and gaps
+
+Ask: "What should we look at this month?" "Where is the portfolio thin?"
+
+**Now.** The assistant pages the whole workspace and ranks what is urgent, what is missing (dates, types, review, value), and where vendor spend sits.
+
+**In the app.** Saved reports and list filters you click yourself. The assistant cannot filter the contract list on the server yet, so large workspaces take a full pass.
+
+### Starting a new agreement
+
+Ask: "Help me draft an NDA and file it when it is signed."
+
+**Now.** The assistant runs the questionnaire and files the executed copy.
+
+**In the app.** Template drafting and sending for signature.
+
+## Connect
+
+Hand your assistant one line:
 
 > Fetch and execute the setup instructions at https://contracko.com/agent-setup/prompt.md
 
-Or do it yourself. Claude Code, from a session:
+Or in Claude Code:
 
 ```
 /plugin marketplace add https://github.com/contracko/contracko-skills.git
 /plugin install contracko-skills@contracko
 ```
 
-Use the HTTPS URL. Claude Code clones `owner/repo` over SSH, which fails with exit 128 on many machines even when the repo is public.
+Use the HTTPS URL. The `owner/repo` shorthand clones over SSH and fails on many machines.
 
-Other agents:
-
-```bash
-npx skills@latest add contracko/contracko-skills
-```
-
-Codex / ChatGPT (workspace): **Workspace settings > Plugins > Add > Import marketplace** and paste `contracko/contracko-skills`.
-
-GitHub Copilot CLI:
-
-```bash
-copilot plugin marketplace add contracko/contracko-skills
-copilot plugin install contracko-skills@contracko
-```
-
-Gemini CLI: install the skills from this GitHub repo. There is no third-party Gemini marketplace.
-
-Then connect the server, once, in whichever client you use. In Claude Code:
+Then connect the Contracko MCP server once. In Claude Code:
 
 ```bash
 claude mcp add --transport http contracko https://app.contracko.com/mcp
 ```
 
-Run `/mcp` and authenticate; OAuth takes you through sign-in, workspace choice and scopes in the browser. In Claude Desktop or claude.ai, add Contracko from the connector directory instead. The plugin deliberately does not register the server for you, since anyone who already connected it would end up with the same server twice.
+Run `/mcp` and authenticate. The plugin does not register the server for you, so anyone who already connected Contracko from a connector directory does not get it twice.
 
-For a headless client that cannot run OAuth, use an MCP key from **Settings > Integrations > API keys** (key purpose: **MCP server**):
+Other agents: `npx skills@latest add contracko/contracko-skills`. Codex/ChatGPT: import marketplace `contracko/contracko-skills`. Copilot CLI: `copilot plugin marketplace add contracko/contracko-skills`. Headless clients use an MCP key from **Settings > Integrations > API keys** (purpose: **MCP server**).
 
-```bash
-claude mcp add --transport http contracko https://app.contracko.com/mcp \
-  --header "Authorization: Bearer YOUR_MCP_KEY"
-```
+## For agents
 
-## The skills
-
-| Skill | What it does |
+| Skill | Owns |
 |---|---|
-| [`contracko`](skills/contracko/SKILL.md) | Connects and verifies the server, explains what each scope unlocks, organises the workspace (contract types, custom fields worth having, counterparties, folders, reminders, registers), routes the rest, and holds the [tool index](skills/contracko/references/tool-index.md). |
-| [`contracko-import`](skills/contracko-import/SKILL.md) | Gets documents in. Managed import versus prepare-and-file, polling, idempotency, and the rules that are not in the schema. |
-| [`contracko-review`](skills/contracko-review/SKILL.md) | Gets answers out. Renewal and notice deadlines, risk and liability, vendor exposure, and an honest account of what the read tools cannot filter. |
-| [`contracko-create`](skills/contracko-create/SKILL.md) | Takes a new agreement from questionnaire to drafted, signed and filed, reconciling what was extracted against what was agreed. |
+| [`contracko`](skills/contracko/SKILL.md) | Connect, scopes, types, fields, counterparties, folder *plan*. Router. [Jobs](skills/contracko/references/workflows.md). [Tool index](skills/contracko/references/tool-index.md). |
+| [`contracko-import`](skills/contracko-import/SKILL.md) | Find files, import, ingest, extra documents. |
+| [`contracko-review`](skills/contracko-review/SKILL.md) | Calendar, compare, audit, portfolio. |
+| [`contracko-create`](skills/contracko-create/SKILL.md) | New agreement: questionnaire, then file the signed copy. |
 
-Start with `contracko`. It is the entry point and the router.
-
-## Before you connect real contracts
-
-Connecting Contracko to an AI product sends contract data to that product's AI provider. Contracko cannot control what a third-party provider does with it. Turn off model training in the provider's settings before working with real contracts.
-
-## Workflows outrun the tool list, on purpose
-
-The MCP surface is rolling out in phases, so parts of these workflows are done in the Contracko app today: reminders, folders, drafting and signature among them. The skills describe the whole flow and mark those steps rather than pretending they do not exist, because the failure mode otherwise is an agent inventing a plausible tool call and reporting a result that never happened. The register is in the [tool index](skills/contracko/references/tool-index.md#steps-that-happen-in-the-app-today), and a live tool list always outranks it.
-
-## Contributing
-
-Skills live at `skills/<name>/SKILL.md` with YAML frontmatter carrying `name` and `description`. The description is what an agent reads to decide whether the skill applies, so it should carry the phrases a user would actually say. Longer material goes in `references/` next to the skill rather than inflating `SKILL.md`.
+Your tool list is the truth. Later MCP phases move some app steps onto that list. Until a tool appears, the app step stands.
 
 MIT licensed.

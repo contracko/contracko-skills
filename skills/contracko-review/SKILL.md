@@ -1,17 +1,17 @@
 ---
 name: contracko-review
-description: Answers questions about contracts stored in Contracko. Use for renewals, notice deadlines, expiry, risk, liability, vendor spend and exposure, or what a specific contract actually says.
+description: Reviews Contracko contracts. Use for notice dates, end dates, annual review, risk audits, comparing proposals or redlines, or portfolio priorities and gaps.
 ---
 
 # Answering contract questions from Contracko
 
 Requires `contract:read`. Everything here is read-only. Where the read tools are missing from your tool list, the credential is narrower than the user thinks: see [contracko](../contracko/SKILL.md), which also covers connecting and reading Contracko's errors.
 
-## The two shapes of question
+Jobs this skill owns: calendar, compare, audit, report. Playbooks for those jobs: [workflows](../contracko/references/workflows.md).
 
-**About one contract.** Find it, then `clm_get_contract` for the facts and `clm_get_contract_analysis` for the judgement. For wording, quotes, or "does it actually say X", do not stop at the analysis: search or read the document. Answer from both the record and the text.
+**About one contract.** Find it, then `clm_get_contract` for the facts and `clm_get_contract_analysis` for the judgement. For wording, quotes, or "does it actually say X", do not stop at the analysis: search or read the document.
 
-**About the portfolio.** Renewals, vendor exposure, gaps. Document search does not replace this. Metadata filters still do not exist, so the work is paging honestly. Read the next section first.
+**About the portfolio.** Calendar, audit, report. Document search does not replace this. Metadata filters still do not exist, so the work is paging honestly.
 
 ## Ground the answer in the document
 
@@ -48,9 +48,9 @@ Two rules:
 
 `updatedSince` keeps something in sync. It finds nothing, and it will not help with a renewal question.
 
-## The renewal question
+## Calendar: notice, end, annual review
 
-The most common one, and what these fields exist for. From a full page-through:
+From a full page-through:
 
 - `isInNoticePeriod: true` means the window to give notice is open now. The urgent bucket.
 - `noticeDate` is the deadline to give notice.
@@ -60,13 +60,27 @@ The most common one, and what these fields exist for. From a full page-through:
 
 Sort by `noticeDate`, not `endDate`. The deadline that costs money is the notice one, typically months earlier.
 
+**Annual review** is not a native MCP event. Look in `customFieldValues` for a review date the workspace already tracks. If none, use the anniversary of `startDate` this year. Say which rule you used. Do not invent a reminder tool to store the result.
+
 **Get today's date from the environment before comparing anything to it.** Every answer here is date arithmetic against now, and a remembered date is quietly wrong in a way the output never reveals.
 
-Contracko's reminder engine does exactly this job and is not on the MCP surface. Where the user's real need is "tell me before this happens" rather than "tell me now", answer the question, then point them at reminders in the web app for the alert that fires on its own. [contracko](../contracko/SKILL.md) covers the workspace side of that.
+Reminders and notifications that should fire later are app steps. Events and reminders are not on the Phase 5 tool list. Answer *now*, then point at the contract in the app for the alert. [contracko](../contracko/SKILL.md) names that handoff; do not repeat the folder rules here.
 
-Where the contract the user is asking about is not in the workspace at all, it needs importing before any of this works: [contracko-import](../contracko-import/SKILL.md).
+Where the contract is not in the workspace at all, import it first: [contracko-import](../contracko-import/SKILL.md).
 
-## Risk and liability
+## Compare proposals and versions
+
+There is no playbook tool and no redline-diff tool. Comparison is a table you assemble.
+
+**Two contracts already in Contracko.** Get both records and both analyses. Search each for the contested terms (price, term, notice, liability, termination, data, IP). Table: term | A | B | who is better off, with an `evidenceQuote` on anything that decides the deal.
+
+**Two files not in Contracko.** Import them (or run the parser if the user does not want them filed), then compare. A vendor A/B belongs as two contracts, not one.
+
+**Redline vs previous draft.** If the user says these are versions of one agreement, keep them as documents on *one* contract (`clm_add_contract_documents` is a write: send them to [contracko-import](../contracko-import/SKILL.md) if they are not attached yet). Read both texts. Analysis is per document, not a diff — you still have to line the clauses up.
+
+Playbook / house-position scoring is app work. Say so and still deliver the A/B table from the documents you have.
+
+## Audit: risk and liability
 
 `clm_get_contract_analysis` returns, when available:
 
@@ -83,11 +97,25 @@ For liability specifically, the contract record carries `liabilitySummary`, `lia
 
 Contracts are stored in their source language and the analysis follows it, so a Dutch contract returns a Dutch liability summary. Translate for the user, and keep the original wherever you quote it as evidence.
 
-## Vendor and spend questions
+## Report: priorities, gaps, vendors
 
-There is no server-side join between a party and its contracts. `clm_list_parties` gives the counterparty records; each contract's `parties[]` and `partiesSummary` name who is on it. To answer "what do we have with vendor X", page the contracts and match.
+Page to the end, then bucket. Suggested order, drop empty buckets:
 
-**Check `financialValueCurrency` before adding anything up.** Values are per contract and the currency varies, so a total across mixed currencies is a made-up number. Sum per currency, or convert with a rate you state. Then say how many contracts you counted, so the user can sanity-check the total.
+1. Notice window open (`isInNoticePeriod`)
+2. Notice in the next 90 days
+3. Ending soon without auto-renew
+4. Auto-renew already committed (past `noticeDate`)
+5. `entityStatus: "pending-review"`
+6. Missing `noticeDate` or `endDate` (and not `isOpenEnded`)
+7. Missing `financialAnnualValue`
+8. `folderId` empty — name it as a filing gap; moving is app work
+9. Analysis `risks` null — not "no risk"
+
+Rank inside a bucket by `noticeDate`, then value. Say how many contracts you paged.
+
+There is no server-side join between a party and its contracts. `clm_list_parties` gives counterparties; each contract's `parties[]` and `partiesSummary` name who is on it. "What do we have with vendor X" is a page-through and match.
+
+**Check `financialValueCurrency` before adding anything up.** Values are per contract and the currency varies, so a total across mixed currencies is a made-up number. Sum per currency, or convert with a rate you state.
 
 ## Trust boundaries
 

@@ -4,6 +4,8 @@ What each tool is for, and what it costs to get wrong. Parameters, types and lim
 
 Verified against the Phase 5 catalog in the product app (30 tools when every parser and contract scope is granted). Older credentials stay frozen until a workspace admin confirms new MCP actions.
 
+User jobs (bring in, calendar, compare, audit, file, report) live in [workflows.md](workflows.md). This file is tools, not jobs.
+
 ## Your tool list is the truth
 
 Contracko decides which tools a credential may see and omits the rest. Absence is normal, not an error, and never a reason to guess at a call.
