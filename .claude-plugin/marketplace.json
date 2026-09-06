@@ -1,0 +1,25 @@
+{
+  "name": "contracko",
+  "owner": {
+    "name": "Contracko",
+    "url": "https://contracko.com"
+  },
+  "metadata": {
+    "description": "Agent skills for Contracko contract management",
+    "version": "0.6.0"
+  },
+  "plugins": [
+    {
+      "name": "contracko-skills",
+      "source": "./",
+      "description": "Connect an agent to the Contracko MCP server, import contracts, and answer renewal, risk and vendor questions.",
+      "category": "productivity",
+      "keywords": [
+        "contracko",
+        "contract-management",
+        "clm",
+        "mcp"
+      ]
+    }
+  ]
+}

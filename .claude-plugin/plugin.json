@@ -1,0 +1,26 @@
+{
+  "name": "contracko-skills",
+  "version": "0.6.0",
+  "description": "Agent skills for Contracko contract management over MCP: connect and verify the server, organise the workspace, import contracts, create and file new agreements, and answer renewal, risk and vendor questions.",
+  "author": {
+    "name": "Contracko",
+    "url": "https://contracko.com"
+  },
+  "homepage": "https://contracko.com/docs/llm-agent-access",
+  "repository": "https://github.com/contracko/contracko-skills",
+  "license": "MIT",
+  "keywords": [
+    "contracko",
+    "contract-management",
+    "clm",
+    "mcp",
+    "legal",
+    "procurement"
+  ],
+  "skills": [
+    "./skills/contracko",
+    "./skills/contracko-import",
+    "./skills/contracko-review",
+    "./skills/contracko-create"
+  ]
+}
