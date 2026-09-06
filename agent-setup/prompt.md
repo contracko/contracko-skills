@@ -121,7 +121,7 @@ Tell them what to tick before they go, because the defaults are narrower than mo
 | Read contract management data | they want any question answered about their contracts |
 | Create or update contract management data | they want to add or change contracts, and it is unticked by default |
 
-Where the user is running a headless or non-interactive session, OAuth cannot complete: report that as the blocker and stop, rather than improvising a workaround. An MCP API key from Settings > Integrations covers that case, with the **MCP server** purpose selected at creation.
+OAuth still uses a browser when the agent itself is in a terminal. If no browser can open, say so and stop. Do not invent a workaround, and do not ask them to paste a key into the chat.
 
 ## Step 3: verify
 

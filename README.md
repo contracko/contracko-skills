@@ -6,7 +6,9 @@
 
 **No account yet?** Start a [7-day free trial](https://contracko.com) (no credit card). You can also create the trial account on the OAuth screen the first time you connect the server.
 
-Contract data goes to the AI provider running the session. Turn off model training there before using real contracts.
+Contracko does not train models on your contracts. Analysis inside the product runs under commercial API terms, with Zero Data Retention where we have it, and we work to get ZDR with every AI subprocessor. See [Security](https://contracko.com/features/security).
+
+Connecting this plugin is different: when Claude, ChatGPT, Codex, or another assistant calls Contracko, contract text is sent to *that* product. Contracko cannot control what they do with it. Turn off model training in that product before using real contracts.
 
 ## Install
 
@@ -16,7 +18,7 @@ Two pieces. **Skills** (this repo) are markdown playbooks. The **MCP server** is
 https://app.contracko.com/mcp
 ```
 
-Auth is OAuth in the browser (default). Headless or CI uses an MCP API key from Contracko **Settings > Integrations > API keys** (purpose **MCP server**) as `Authorization: Bearer <key>`. This plugin does **not** add the server for you. If Contracko is already connected, do not add it again.
+Auth is OAuth. Terminal agents open a browser the same way desktop apps do. This plugin does **not** add the server for you. If Contracko is already connected, do not add it again.
 
 <details>
 <summary><strong>Claude Code</strong></summary>
