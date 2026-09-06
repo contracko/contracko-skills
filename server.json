@@ -1,0 +1,18 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "com.contracko/contracko",
+  "title": "Contracko",
+  "description": "Import, review and track renewals on your business contracts from your AI assistant.",
+  "version": "0.7.0",
+  "websiteUrl": "https://contracko.com",
+  "repository": {
+    "url": "https://github.com/contracko/contracko-skills",
+    "source": "github"
+  },
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://app.contracko.com/mcp"
+    }
+  ]
+}
