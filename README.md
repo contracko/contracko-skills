@@ -13,9 +13,11 @@ Hand your agent one line and let it do the rest:
 Or do it yourself. Claude Code, from a session:
 
 ```
-/plugin marketplace add contracko/contracko-skills
-/plugin install contracko-skills
+/plugin marketplace add https://github.com/contracko/contracko-skills.git
+/plugin install contracko-skills@contracko
 ```
+
+Use the HTTPS URL. Claude Code clones `owner/repo` over SSH, which fails with exit 128 on many machines even when the repo is public.
 
 Other agents:
 

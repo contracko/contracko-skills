@@ -15,9 +15,11 @@ Pick the branch matching the client you are running in.
 ### Claude Code
 
 ```bash
-claude plugin marketplace add contracko/contracko-skills
+claude plugin marketplace add https://github.com/contracko/contracko-skills.git
 claude plugin install contracko-skills@contracko
 ```
+
+Use the HTTPS git URL. The `owner/repo` shorthand clones over SSH and fails with exit 128 on many machines.
 
 Then register the server, unless `claude mcp list` already shows a Contracko entry. Many users have connected it from a connector directory first, and a second entry gives them every tool twice:
 
