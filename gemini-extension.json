@@ -1,0 +1,12 @@
+{
+  "name": "contracko",
+  "version": "0.7.0",
+  "description": "Contract management for your agent via Contracko: import contracts, review terms, track renewals, and manage your workspace over MCP.",
+  "mcpServers": {
+    "contracko": {
+      "httpUrl": "https://app.contracko.com/mcp",
+      "authProviderType": "dynamic_discovery"
+    }
+  },
+  "contextFileName": "GEMINI.md"
+}
