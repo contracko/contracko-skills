@@ -199,17 +199,17 @@ Step-by-step recipes: [agent-setup/prompt.md](agent-setup/prompt.md).
 
 ## Usage
 
-Once connected, talk to the assistant the way you would a colleague.
+Once connected, talk to the assistant the way you would a colleague. These are the jobs people actually run:
 
 | Try asking | What it does |
 |---|---|
-| Import the PDFs in this folder | Finds the files, checks with you, and brings them into Contracko |
-| What needs notice in the next 90 days? | Lists contracts coming up for notice, end, or renewal |
-| Compare these two vendor proposals | Puts both side by side, with the clauses that matter |
-| Where is liability uncapped? | Finds the risk language and quotes the contract |
-| Set up proper contract types | Helps you define types, fields, and counterparties |
-| What should we look at this month? | Ranks what is urgent and what is missing |
-| Help me draft an NDA and file it when signed | Walks through the questions, then files the signed copy |
+| We are onboarding. Pull every PDF from this folder, and from our Drive / SharePoint / Box contracts library, into Contracko. | Finds the files (on disk or in cloud storage you already have connected), checks the set with you, imports them, and lets Contracko extract dates, parties, and types. |
+| I do not want silent renewals. What needs notice, ends, or auto-renews in the next quarter? Set reminders for all of it. | Lists the dates that matter today. Reminders that should fire later you still set in the Contracko app. |
+| Compare Acme's MSA to Beta's. Who has the better liability cap, termination, and data-processing terms? | Puts both records side by side, with quoted clauses, so you can choose. |
+| Audit our vendor contracts for uncapped liability, one-sided indemnities, and missing notice periods. | Walks the portfolio, flags the risk language, and quotes the sentence behind each finding. |
+| Our filing is a mess. Set up MSA, NDA, SOW, and DPA with the fields we actually use, and tell me how we should folder these. | Shapes types, fields, and counterparties. You still create folders and move contracts in the Contracko app. |
+| What should we look at this month? What is urgent, and what are we missing? | Ranks the workspace by urgency and gaps, with a count of how much it looked at. |
+| Walk me through a new NDA, send it for signature, and file the signed PDF when it comes back. | Runs the questionnaire, then files the executed copy. Drafting and signing still happen in Contracko. |
 
 ## Skills
 
