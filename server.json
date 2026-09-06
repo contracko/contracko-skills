@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "com.contracko/contracko",
   "title": "Contracko",
-  "description": "Contract management for AI agents: import contracts, review terms, track renewal deadlines, and manage a contract workspace with extracted dates, values and parties.",
+  "description": "Import, review and track renewals on your business contracts from your AI assistant.",
   "version": "0.7.0",
   "websiteUrl": "https://contracko.com",
   "repository": {
