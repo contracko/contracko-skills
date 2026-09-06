@@ -14,47 +14,73 @@ Connecting this plugin is different: when Claude, ChatGPT, Codex, or another ass
 
 ## Install
 
-Two pieces. **Skills** (this repo) are markdown playbooks. The **MCP server** is a remote HTTPS service — Streamable HTTP, not a local stdio process.
+You connect your assistant to Contracko in two steps:
+
+1. **Add the skills** (this repo) so it knows how to help with contracts.
+2. **Add the connection** so it can reach your workspace. Paste this address when asked:
 
 ```
 https://app.contracko.com/mcp
 ```
 
-Auth is OAuth. Terminal agents open a browser the same way desktop apps do. This plugin does **not** add the server for you. If Contracko is already connected, do not add it again.
+A browser window will open. Sign in to Contracko (or start the free trial there). Adding the skills does not connect the workspace on its own. If Contracko is already listed in that assistant, skip step 2.
+
+When you sign in, tick **Read** so it can answer questions. Tick **Write** only if it should add or change contracts. Leave **Write** off unless you want that.
+
+Open the section for the product you use.
 
 <details>
-<summary><strong>Claude Code</strong></summary>
+<summary><strong>Claude</strong> (claude.ai or Claude Desktop)</summary>
 
-```
-/plugin marketplace add https://github.com/contracko/contracko-skills.git
-/plugin install contracko-skills@contracko
-```
+1. Download the skill files from [Releases](https://github.com/contracko/contracko-skills/releases/latest) and add them in Claude.
+2. Go to **Settings → Connectors → Add custom connector**.
+3. Paste `https://app.contracko.com/mcp`.
+4. Sign in in the browser that opens.
 
-Use the HTTPS git URL, not `owner/repo` (SSH clone fails). Then:
-
-```bash
-claude mcp add --transport http contracko https://app.contracko.com/mcp
-```
-
-In the session, `/mcp` and complete OAuth.
-
-</details>
-
-<details>
-<summary><strong>Claude.ai / Claude Desktop</strong></summary>
-
-Upload skill zips from [Releases](https://github.com/contracko/contracko-skills/releases/latest).
-
-**Settings > Connectors > Add custom connector** → `https://app.contracko.com/mcp`. Sign in in the browser. Do not also run `claude mcp add` if the connector is already there.
+If Contracko already appears under Connectors, do not add it a second time.
 
 </details>
 
 <details>
 <summary><strong>ChatGPT</strong></summary>
 
-Skills: workspace **Settings > Plugins > Import marketplace** → `contracko/contracko-skills`.
+1. In the workspace, go to **Settings → Plugins → Import marketplace** and enter `contracko/contracko-skills`.
+2. Turn on **Developer mode**.
+3. Go to **Settings → Apps → Create** and paste `https://app.contracko.com/mcp`.
+4. Sign in in the browser that opens.
 
-MCP cannot be configured from a file. Enable Developer mode, then **Settings > Apps > Create** and paste `https://app.contracko.com/mcp`.
+ChatGPT has no settings file for this. Use the screens above.
+
+</details>
+
+<details>
+<summary><strong>Grok</strong> (grok.com)</summary>
+
+1. Open [grok.com/connectors](https://grok.com/connectors).
+2. Add `https://app.contracko.com/mcp`.
+3. Sign in in the browser that opens.
+
+For Grok in the terminal, see **Any other assistant** below.
+
+</details>
+
+<details>
+<summary><strong>Claude Code</strong></summary>
+
+In Claude Code, run:
+
+```
+/plugin marketplace add https://github.com/contracko/contracko-skills.git
+/plugin install contracko-skills@contracko
+```
+
+Paste that full GitHub address (not a short `owner/repo` name). Then connect:
+
+```bash
+claude mcp add --transport http contracko https://app.contracko.com/mcp
+```
+
+Type `/mcp` in the session and sign in in the browser.
 
 </details>
 
@@ -67,37 +93,7 @@ codex mcp add contracko --url https://app.contracko.com/mcp
 codex mcp login contracko
 ```
 
-</details>
-
-<details>
-<summary><strong>Gemini CLI</strong></summary>
-
-```bash
-npx skills@latest add contracko/contracko-skills
-```
-
-`~/.gemini/settings.json`:
-
-```json
-{ "mcpServers": { "contracko": { "httpUrl": "https://app.contracko.com/mcp" } } }
-```
-
-</details>
-
-<details>
-<summary><strong>GitHub Copilot</strong> (VS Code / Copilot CLI)</summary>
-
-```bash
-npx skills@latest add contracko/contracko-skills
-```
-
-or `copilot plugin marketplace add contracko/contracko-skills`.
-
-`.vscode/mcp.json`:
-
-```json
-{ "servers": { "contracko": { "type": "http", "url": "https://app.contracko.com/mcp" } } }
-```
+Sign in in the browser that opens.
 
 </details>
 
@@ -108,11 +104,47 @@ or `copilot plugin marketplace add contracko/contracko-skills`.
 npx skills@latest add contracko/contracko-skills
 ```
 
-`.cursor/mcp.json`:
+Then add this to `.cursor/mcp.json` in your project (create the file if it is not there):
 
 ```json
 { "mcpServers": { "contracko": { "url": "https://app.contracko.com/mcp" } } }
 ```
+
+Restart Cursor if it does not pick up the connection, then sign in in the browser.
+
+</details>
+
+<details>
+<summary><strong>GitHub Copilot</strong> (VS Code)</summary>
+
+```bash
+npx skills@latest add contracko/contracko-skills
+```
+
+Then add this to `.vscode/mcp.json` in your project:
+
+```json
+{ "servers": { "contracko": { "type": "http", "url": "https://app.contracko.com/mcp" } } }
+```
+
+Sign in in the browser that opens.
+
+</details>
+
+<details>
+<summary><strong>Gemini CLI</strong></summary>
+
+```bash
+npx skills@latest add contracko/contracko-skills
+```
+
+Then add this to `~/.gemini/settings.json`:
+
+```json
+{ "mcpServers": { "contracko": { "httpUrl": "https://app.contracko.com/mcp" } } }
+```
+
+Sign in in the browser that opens.
 
 </details>
 
@@ -126,6 +158,8 @@ openclaw mcp configure contracko --auth oauth
 openclaw mcp login contracko
 ```
 
+Sign in in the browser that opens.
+
 </details>
 
 <details>
@@ -135,7 +169,7 @@ openclaw mcp login contracko
 npx skills@latest add contracko/contracko-skills
 ```
 
-`~/.hermes/config.yaml`:
+Then add this to `~/.hermes/config.yaml`:
 
 ```yaml
 mcp_servers:
@@ -144,52 +178,24 @@ mcp_servers:
     auth: oauth
 ```
 
-Then `hermes mcp login contracko`.
+Run `hermes mcp login contracko` and sign in in the browser.
 
 </details>
 
 <details>
-<summary><strong>Grok</strong></summary>
+<summary><strong>Any other assistant</strong></summary>
 
-On [grok.com/connectors](https://grok.com/connectors), add `https://app.contracko.com/mcp` (public HTTPS).
-
-CLI:
-
-```bash
-npx skills@latest add contracko/contracko-skills
-grok mcp add --transport http contracko https://app.contracko.com/mcp
-```
-
-</details>
-
-<details>
-<summary><strong>Any other agent</strong></summary>
-
-Ask it:
+Paste this into the assistant and let it follow the file:
 
 ```
 Fetch and execute https://contracko.com/agent-setup/prompt.md
 ```
 
-That file picks the client. If you are wiring MCP yourself, the server is Streamable HTTP over HTTPS:
+If you are adding the connection yourself, the address is still `https://app.contracko.com/mcp`. Sign in in a browser. Do not add Contracko twice if it is already connected.
 
-```
-https://app.contracko.com/mcp
-```
-
-Typical config shape:
-
-```json
-{ "mcpServers": { "contracko": { "url": "https://app.contracko.com/mcp" } } }
-```
-
-Some clients want `httpUrl`, `serverUrl`, or `"type": "http"` / `"streamableHttp"` instead of `url`. OAuth must happen in a browser; do not automate the consent screen.
-
-Full recipes: [agent-setup/prompt.md](agent-setup/prompt.md).
+Step-by-step recipes: [agent-setup/prompt.md](agent-setup/prompt.md).
 
 </details>
-
-On the consent screen, tick **read** for questions, **write** to add or change contracts (write is off by default), and **parser** only if you want extraction without filing.
 
 ## Usage
 
