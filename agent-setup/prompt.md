@@ -80,7 +80,32 @@ url = "https://app.contracko.com/mcp"
 { "mcpServers": { "contracko": { "type": "streamableHttp", "url": "https://app.contracko.com/mcp" } } }
 ```
 
-**ChatGPT** cannot be configured from a file. The user adds Contracko themselves under Settings > Connectors, or Developer mode where the workspace requires it. Tell them that and stop.
+**ChatGPT** cannot be configured from a file. Enable Developer mode, then **Settings > Apps > Create** and paste `https://app.contracko.com/mcp`. Tell them that and stop.
+
+**Claude.ai / Claude Desktop** — **Settings > Connectors > Add custom connector**, same URL. Do not also `claude mcp add` if they already added the connector.
+
+**GitHub Copilot CLI** — skills: `copilot plugin marketplace add contracko/contracko-skills`. MCP in `.vscode/mcp.json`: `{ "servers": { "contracko": { "type": "http", "url": "https://app.contracko.com/mcp" } } }`.
+
+**OpenClaw:**
+
+```bash
+openclaw mcp set contracko '{"url":"https://app.contracko.com/mcp","transport":"streamable-http"}'
+openclaw mcp configure contracko --auth oauth
+openclaw mcp login contracko
+```
+
+**Hermes** — `~/.hermes/config.yaml`:
+
+```yaml
+mcp_servers:
+  contracko:
+    url: "https://app.contracko.com/mcp"
+    auth: oauth
+```
+
+Then `hermes mcp login contracko`.
+
+**Grok (grok.com)** — user adds the endpoint at [grok.com/connectors](https://grok.com/connectors). **Grok CLI:** `grok mcp add --transport http contracko https://app.contracko.com/mcp`.
 
 ## Step 2: authenticate
 

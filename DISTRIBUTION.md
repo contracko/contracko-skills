@@ -70,7 +70,7 @@ None of this is in this repo, and all of it gates the good distribution paths.
 
 An MCP tool that points at this repo so a model can fetch its own instructions. Raised and rejected: MCP tools carry their own context and must be standalone interpretable. Skills may reference the server; the server does not reference the skills.
 
-That principle has a consequence worth holding Contracko to. The CLM write tools ship with no parameter descriptions (CTD-4242) and errors that name no constraint (CTD-4241). A tool cannot stand alone and say nothing about itself, and the same gap fails the directory's tool-description bar.
+That principle has a consequence worth holding Contracko to. Some write tools still ship thin parameter descriptions, and some errors name no constraint. A tool cannot stand alone and say nothing about itself, and the same gap fails the directory's tool-description bar.
 
 ## Cross-client landscape, September 2026
 
