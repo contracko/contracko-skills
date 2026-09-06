@@ -224,7 +224,8 @@ Four playbooks. You do not have to pick one; asking in plain language is enough.
 
 ## Get help
 
-- **How Contracko works** (contracts, billing, your workspace) — [docs](https://contracko.com/docs) or [contact us](https://contracko.com/contact)
-- **Something wrong with installing these skills** — [open a GitHub issue](https://github.com/contracko/contracko-skills/issues)
+Want guidance on Contracko? Read the [docs](https://contracko.com/docs) or [contact us](https://contracko.com/contact). That covers the product, your workspace, and anything else you want to talk through.
+
+Have a question about these skills, a suggestion, or an improvement? [Open a GitHub issue](https://github.com/contracko/contracko-skills/issues).
 
 MIT licensed.
