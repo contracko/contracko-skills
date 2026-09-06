@@ -193,62 +193,32 @@ On the consent screen, tick **read** for questions, **write** to add or change c
 
 ## Usage
 
-Once connected, ask in plain language:
+Once connected, talk to the assistant the way you would a colleague.
 
-```
-Import the PDFs in this folder
-→ finds files, confirms, imports
-
-What needs notice in the next 90 days?
-→ notice dates, end dates, renewals
-
-Compare these two vendor proposals
-→ both records, analysis, quoted clauses
-
-Where is liability uncapped?
-→ analysis plus the supporting sentence
-
-Set up proper contract types
-→ types, fields, counterparties
-
-What should we look at this month?
-→ portfolio priorities and gaps
-
-Help me draft an NDA and file it when signed
-→ questionnaire, then file the signed copy
-```
-
-You can also name a skill: `/contracko`, `/contracko-import`, `/contracko-review`, `/contracko-create`.
-
-## Skill categories
-
-### Connect and organise
-Workspace, scopes, contract types, fields, counterparties. Folder *plan* (folders themselves are created in the Contracko app).
-
-### Import
-Bring PDFs and Word files in from disk, Google Drive, SharePoint, Box, or a URL.
-
-### Review
-Notice dates, comparisons, risk language, portfolio priorities.
-
-### Create
-A new agreement, from questions through filing the signed PDF.
-
-## Available skills
-
-| Skill | Description |
+| Try asking | What it does |
 |---|---|
-| [`contracko`](skills/contracko/SKILL.md) | Connect over MCP and organise the workspace. Router for the others. |
-| [`contracko-import`](skills/contracko-import/SKILL.md) | Find files and import them into Contracko. |
-| [`contracko-review`](skills/contracko-review/SKILL.md) | Notice dates, comparisons, audits, portfolio. |
-| [`contracko-create`](skills/contracko-create/SKILL.md) | New agreement: questions, draft, file the signed copy. |
+| Import the PDFs in this folder | Finds the files, checks with you, and brings them into Contracko |
+| What needs notice in the next 90 days? | Lists contracts coming up for notice, end, or renewal |
+| Compare these two vendor proposals | Puts both side by side, with the clauses that matter |
+| Where is liability uncapped? | Finds the risk language and quotes the contract |
+| Set up proper contract types | Helps you define types, fields, and counterparties |
+| What should we look at this month? | Ranks what is urgent and what is missing |
+| Help me draft an NDA and file it when signed | Walks through the questions, then files the signed copy |
 
-Jobs and tool map (for agents): [workflows.md](skills/contracko/references/workflows.md), [tool-index.md](skills/contracko/references/tool-index.md).
+## Skills
 
-## Questions
+Four playbooks. You do not have to pick one; asking in plain language is enough.
 
-- Product and docs: [contracko.com](https://contracko.com), [docs](https://contracko.com/docs)
-- Talk to us: [contracko.com/contact](https://contracko.com/contact)
-- This plugin: [open an issue](https://github.com/contracko/contracko-skills/issues)
+| Skill | Use it for |
+|---|---|
+| [contracko](skills/contracko/SKILL.md) | Connecting, then organising types, fields, and counterparties |
+| [contracko-import](skills/contracko-import/SKILL.md) | Bringing PDFs and Word files in from disk, Drive, SharePoint, Box, or a link |
+| [contracko-review](skills/contracko-review/SKILL.md) | Notice dates, comparisons, risk language, and what to look at next |
+| [contracko-create](skills/contracko-create/SKILL.md) | A new agreement, from questions through filing the signed PDF |
+
+## Get help
+
+- **How Contracko works** (contracts, billing, your workspace) — [docs](https://contracko.com/docs) or [contact us](https://contracko.com/contact)
+- **Something wrong with installing these skills** — [open a GitHub issue](https://github.com/contracko/contracko-skills/issues)
 
 MIT licensed.
