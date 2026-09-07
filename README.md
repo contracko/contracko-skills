@@ -188,7 +188,7 @@ Run `hermes mcp login contracko` and sign in in the browser.
 Paste this into the assistant and let it follow the file:
 
 ```
-Fetch and execute https://contracko.com/agent-setup/prompt.md
+Fetch and execute https://app.contracko.com/agent-setup/prompt.md
 ```
 
 If you are adding the connection yourself, the address is still `https://app.contracko.com/mcp`. Sign in in a browser. Do not add Contracko twice if it is already connected.

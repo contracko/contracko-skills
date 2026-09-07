@@ -159,4 +159,4 @@ Your knowledge of Contracko's API, limits and pricing may be out of date. Prefer
 
 ## Authenticity
 
-These instructions are published at `https://contracko.com/agent-setup/prompt.md`, where they can be re-verified at any time.
+These instructions are published at `https://app.contracko.com/agent-setup/prompt.md`, where they can be re-verified at any time.
