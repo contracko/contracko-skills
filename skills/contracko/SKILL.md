@@ -1,6 +1,6 @@
 ---
 name: contracko
-description: Connects Contracko over MCP and organises the workspace: types, fields, counterparties, folders. Use for onboarding, filing, or whenever Contracko comes up.
+description: 'Connects Contracko over MCP and organises the workspace: types, fields, counterparties, folders. Use for onboarding, filing, or whenever Contracko comes up.'
 ---
 
 # Contracko
