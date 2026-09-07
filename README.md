@@ -115,6 +115,23 @@ Restart Cursor if it does not pick up the connection, then sign in in the browse
 </details>
 
 <details>
+<summary><strong>Cline</strong></summary>
+
+```bash
+npx skills@latest add contracko/contracko-skills
+```
+
+Then open the Cline panel, go to the **Configure** tab, and add this to the MCP settings JSON (the CLI reads `~/.cline/mcp.json`):
+
+```json
+{ "mcpServers": { "contracko": { "type": "streamableHttp", "url": "https://app.contracko.com/mcp" } } }
+```
+
+Sign in in the browser that opens. Set `"type": "streamableHttp"`, because leaving it out falls back to the older SSE transport.
+
+</details>
+
+<details>
 <summary><strong>GitHub Copilot</strong> (VS Code)</summary>
 
 ```bash
