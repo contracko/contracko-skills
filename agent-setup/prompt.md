@@ -157,4 +157,4 @@ For contract search, folder filing, document uploads, and other workflows, follo
 
 ## Authenticity
 
-These instructions are published at `https://app.contracko.com/agent-setup/prompt.md`, where they can be re-verified at any time.
+The current official setup guide is published at `https://contracko.com/mcp/install/prompt.md`. Follow that guide for up-to-date client setup instructions.
