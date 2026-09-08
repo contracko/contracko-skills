@@ -100,7 +100,7 @@ Removing `version` does not fix this. It makes the cache pin permanent, since th
 So during development, either bump `version` and reinstall, or run `claude --plugin-dir .` for a session that reads the working tree live. Verify with:
 
 ```bash
-diff -rq skills ~/.claude/plugins/cache/contracko/contracko-skills/<version>/skills
+diff -rq skills ~/.claude/plugins/cache/contracko/contracko/<version>/skills
 ```
 
 Silence means the install matches. This is worth checking before any test run, because a stale install fails in the most confusing way available: the skills are there, they trigger, and they are the wrong ones.

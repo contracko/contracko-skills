@@ -10,7 +10,7 @@
   },
   "plugins": [
     {
-      "name": "contracko-skills",
+      "name": "contracko",
       "source": "./",
       "description": "Connect an agent to the Contracko MCP server, import contracts, and answer renewal, risk and vendor questions.",
       "category": "productivity",
