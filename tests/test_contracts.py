@@ -29,6 +29,38 @@ class ContractDocumentationTests(unittest.TestCase):
         result = self.check(examples)
         self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_folder_filing_and_access_examples(self):
+        contract = "b563cddb-121f-4f7b-9c43-687a524ccbe2"
+        examples = self.call({"folderId": contract, "query": "Acme"})
+        examples += self.call({"parentFolderId": None, "limit": 50}, "clm_list_folders")
+        examples += self.call({"name": "Suppliers", "parentFolderId": None}, "clm_create_folder")
+        examples += self.call({"id": contract, "folderId": None}, "clm_move_contract")
+        examples += self.call({"id": contract}, "clm_get_contract_access")
+        examples += self.call({"id": contract}, "clm_get_folder")
+        examples += self.call({"id": contract}, "clm_get_folder_access")
+        examples += self.call({"id": contract, "name": "Vendors"}, "clm_rename_folder")
+        examples += self.call({"id": contract, "parentFolderId": None}, "clm_move_folder")
+        result = self.check(examples)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_rejects_invalid_folder_arguments(self):
+        contract = "b563cddb-121f-4f7b-9c43-687a524ccbe2"
+        for tool, args in (
+            ("clm_list_contracts", {"folderId": None}),
+            ("clm_list_folders", {"cursor": "invented"}),
+            ("clm_list_folders", {"parentFolderId": "hidden-folder"}),
+            ("clm_move_contract", {"id": contract}),
+            ("clm_move_contract", {"id": contract, "folderId": 123}),
+            ("clm_get_folder_access", {"id": contract, "permission": "admin"}),
+        ):
+            with self.subTest(tool=tool, args=args):
+                self.assertNotEqual(self.check(self.call(args, tool)).returncode, 0)
+
+    def test_rejects_obsolete_folder_claims(self):
+        for claim in ("folderId` you can read and cannot set", "Creating folders and moving contracts is app work"):
+            with self.subTest(claim=claim):
+                self.assertNotEqual(self.check(self.call({}) + claim).returncode, 0)
+
     def test_rejects_invented_argument_and_tool(self):
         for text in (self.call({"minimumAnnualValue": 25000}), self.call({}) + "Use `clm_magic_search`."):
             with self.subTest(text=text):

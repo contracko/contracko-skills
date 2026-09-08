@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check tool names and flat list-call examples against a pinned released catalog slice."""
+"""Check tool names and flat list/filing examples against a pinned released catalog slice."""
 import argparse
 import datetime
 import json
@@ -14,7 +14,11 @@ CATALOG = ROOT / "tests/fixtures/mcp-contract.json"
 
 def refresh(source, revision):
     catalog = json.loads(Path(source).read_text())
-    selected = {"clm_list_contracts", "clm_list_parties"}
+    selected = {
+        "clm_list_contracts", "clm_list_parties", "clm_list_folders", "clm_get_folder",
+        "clm_create_folder", "clm_rename_folder", "clm_move_folder", "clm_move_contract",
+        "clm_get_folder_access", "clm_get_contract_access",
+    }
     snapshot = {
         "source": "Contracko released MCP catalog",
         "revision": revision,
@@ -27,6 +31,47 @@ def refresh(source, revision):
     }
     CATALOG.parent.mkdir(parents=True, exist_ok=True)
     CATALOG.write_text(json.dumps(snapshot, indent=2) + "\n")
+
+
+def validate_value(key, value, rule):
+    if "anyOf" in rule:
+        for alternative in rule["anyOf"]:
+            try:
+                validate_value(key, value, alternative)
+                return
+            except (ValueError, TypeError):
+                pass
+        raise ValueError(f"Invalid {key}")
+    kind = rule.get("type")
+    if kind == "null":
+        if value is not None:
+            raise ValueError(f"{key} must be null")
+        return
+    if kind not in ("string", "integer", "number"):
+        raise ValueError(f"Unsupported example schema for {key}: {kind}")
+    if kind == "string" and not isinstance(value, str):
+        raise ValueError(f"{key} must be a string")
+    if kind in ("integer", "number") and (isinstance(value, bool) or not isinstance(value, (int, float))):
+        raise ValueError(f"{key} must be numeric")
+    if kind == "integer" and int(value) != value:
+        raise ValueError(f"{key} must be an integer")
+    if isinstance(value, str):
+        if len(value) < rule.get("minLength", 0) or len(value) > rule.get("maxLength", float("inf")):
+            raise ValueError(f"Invalid length for {key}")
+        if "pattern" in rule and not re.search(rule["pattern"], value):
+            raise ValueError(f"Invalid pattern for {key}")
+    if "enum" in rule and value not in rule["enum"]:
+        raise ValueError(f"Invalid {key}")
+    if "minimum" in rule and value < rule["minimum"]:
+        raise ValueError(f"{key} below minimum")
+    if "maximum" in rule and value > rule["maximum"]:
+        raise ValueError(f"{key} above maximum")
+    if rule.get("format") == "uuid":
+        uuid.UUID(value)
+    if rule.get("format") == "date":
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+            raise ValueError(f"Invalid date {key}")
+        datetime.date.fromisoformat(value)
 
 
 def validate_call(name, args, tools):
@@ -42,31 +87,7 @@ def validate_call(name, args, tools):
     for key, value in args.items():
         if key not in properties:
             raise ValueError(f"Unknown argument {name}.{key}")
-        rule = properties[key]
-        kind = rule.get("type")
-        if kind == "string" and not isinstance(value, str):
-            raise ValueError(f"{key} must be a string")
-        if kind in ("integer", "number") and (isinstance(value, bool) or not isinstance(value, (int, float))):
-            raise ValueError(f"{key} must be numeric")
-        if kind == "integer" and int(value) != value:
-            raise ValueError(f"{key} must be an integer")
-        if isinstance(value, str):
-            if len(value) < rule.get("minLength", 0) or len(value) > rule.get("maxLength", float("inf")):
-                raise ValueError(f"Invalid length for {key}")
-            if "pattern" in rule and not re.search(rule["pattern"], value):
-                raise ValueError(f"Invalid pattern for {key}")
-        if "enum" in rule and value not in rule["enum"]:
-            raise ValueError(f"Invalid {key}")
-        if "minimum" in rule and value < rule["minimum"]:
-            raise ValueError(f"{key} below minimum")
-        if "maximum" in rule and value > rule["maximum"]:
-            raise ValueError(f"{key} above maximum")
-        if rule.get("format") == "uuid":
-            uuid.UUID(value)
-        if rule.get("format") == "date" or key in {"endDateFrom", "endDateTo", "noticeDateFrom", "noticeDateTo"}:
-            if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
-                raise ValueError(f"Invalid date {key}")
-            datetime.date.fromisoformat(value)
+        validate_value(key, value, properties[key])
     for prefix in ("endDate", "noticeDate"):
         lower, upper = args.get(prefix + "From"), args.get(prefix + "To")
         if lower and upper and lower > upper:
@@ -77,7 +98,9 @@ def check(root):
     tools = {tool["name"]: tool for tool in json.loads(CATALOG.read_text())["tools"]}
     failures = []
     examples = 0
-    for path in sorted((root / "skills").rglob("*.md")):
+    paths = list((root / "skills").rglob("*.md"))
+    paths += [path for path in (root / "README.md", root / "agent-setup/prompt.md") if path.exists()]
+    for path in sorted(paths):
         text = path.read_text()
         for name in set(re.findall(r"\b(?:clm_|parser_)[a-z_]+\b|\bauth_validate\b", text)):
             if name not in tools:
@@ -88,14 +111,19 @@ def check(root):
                 validate_call(name, json.loads(body), tools)
             except (ValueError, TypeError) as error:
                 failures.append(f"{path.relative_to(root)}: {error}")
-        for stale in ("Metadata filters still do not exist", "Listing does not filter", "No server-side list filters", "the outcome is that nothing was written"):
+        for stale in (
+            "Metadata filters still do not exist", "Listing does not filter", "No server-side list filters",
+            "the outcome is that nothing was written", "folderId` you can read and cannot set",
+            "Creating folders and moving contracts is app work", "folderId` is readable, not settable",
+            "You still create folders and move contracts in the Contracko app",
+        ):
             if stale in text:
                 failures.append(f"{path.relative_to(root)}: obsolete guidance: {stale}")
     if not examples:
         failures.append("No checked MCP call examples found")
     for failure in failures:
         print(failure, file=sys.stderr)
-    print(f"Checked {len(tools)} tool names and {examples} list-call examples")
+    print(f"Checked {len(tools)} tool names and {examples} list/filing examples")
     return bool(failures)
 
 
