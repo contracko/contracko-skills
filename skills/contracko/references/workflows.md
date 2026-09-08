@@ -20,7 +20,7 @@ Read this when the request is a job. Then open only the skill that owns the mech
 
 **They say:** notice dates, end dates, renewals, annual review, reminders, notifications.
 
-**Now (Phase 5):** answer *today* from `noticeDate`, `endDate`, `isInNoticePeriod`, `autoRenewing`. List events and linked reminders with `clm_list_contract_events`. Create or change alerts with the event and reminder tools. Renewal reminders target the contract `end` system event. [contracko-review](../../contracko-review/SKILL.md) owns the calendar.
+**Now (Phase 5):** get today's date from the environment, then answer from `noticeDate`, `endDate`, `isInNoticePeriod`, `autoRenewing`. The inclusive `YYYY-MM-DD` end and notice filters are additive improvements to the Phase 1 list tool, not a Phase 5 requirement. Use them to find dated candidates, then page to `nextCursor: null`. An end-date window finds renewal candidates, while `autoRenewing` is the actual status. Do not claim a contract is already committed without notice-date evidence. List events and linked reminders with `clm_list_contract_events`. Create or change alerts with the event and reminder tools. Renewal reminders target the contract `end` system event. [contracko-review](../../contracko-review/SKILL.md) owns the calendar.
 
 **Not on MCP yet:** nothing on this job once those seven tools are on your list. If they are missing, the credential is below Phase 5.
 
@@ -60,11 +60,11 @@ Read this when the request is a job. Then open only the skill that owns the mech
 
 **They say:** report, portfolio, what matters this quarter, what are we missing.
 
-**Now (Phase 5):** page the workspace and bucket it. No server-side list filters. [contracko-review](../../contracko-review/SKILL.md) owns reporting.
+**Now (Phase 5):** start with supported `clm_list_contracts` filters: `status`, `categoryId`, `counterpartyId`, literal `query`, and inclusive end or notice date windows. These filters are additive improvements to the Phase 1 list tool, not a Phase 5 requirement. Filters combine with AND. Page each filtered result to `nextCursor: null` before bucketing. For unsupported value, currency, null-presence, or custom-field gaps, first narrow with supported criteria and page that entire result before applying the local filter. Full-workspace audits page every contract. Do not use a date window to audit missing dates. [contracko-review](../../contracko-review/SKILL.md) owns reporting.
 
-**Not on MCP yet:** metadata filters on `clm_list_contracts`; a dedicated export tool.
+**Not on MCP yet:** a dedicated export tool.
 
-**Done when:** the user has a ranked list, the gaps named, and a count of how many contracts the list was built from.
+**Done when:** the user has a ranked list, the gaps named, and a count of every contract in the result set used.
 
 ## Starting a new agreement
 

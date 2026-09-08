@@ -228,4 +228,9 @@ Want guidance on Contracko? Read the [docs](https://contracko.com/docs) or [cont
 
 Have a question about these skills, a suggestion, or an improvement? [Open a GitHub issue](https://github.com/contracko/contracko-skills/issues).
 
+## Contributing
+
+Before publishing skill changes, run `python3 -m unittest discover -s tests -v`.
+See [validation and catalog refresh](tests/README.md) and the [workflow regression cases](tests/workflow-cases.md).
+
 MIT licensed.
