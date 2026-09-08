@@ -1,0 +1,20 @@
+{
+  "name": "contracko-skills",
+  "version": "0.7.1",
+  "description": "Contracko contract management skills and MCP connection: import and organize contracts, review risks, compare vendors, and track renewal and notice dates.",
+  "author": {
+    "name": "Contracko",
+    "email": "support@contracko.com"
+  },
+  "homepage": "https://contracko.com/mcp/contract-management",
+  "repository": "https://github.com/contracko/contracko-skills",
+  "license": "MIT",
+  "keywords": ["contracko", "contract-management", "mcp", "legal", "procurement"],
+  "skills": [
+    "./skills/contracko",
+    "./skills/contracko-import",
+    "./skills/contracko-review",
+    "./skills/contracko-create"
+  ],
+  "mcpServers": "./mcp.json"
+}
