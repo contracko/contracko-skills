@@ -19,28 +19,55 @@ for s in skills/*/; do
 done
 
 # --- merged chat build -------------------------------------------------------
-# The router becomes SKILL.md; the siblings become reference files beside it,
-# so every handoff resolves inside one upload.
+# The router becomes SKILL.md; its references and sibling skills become local
+# files so every handoff resolves inside one upload.
 work=$(mktemp -d)/contracko
-mkdir -p "$work/references"
-cp skills/contracko/SKILL.md "$work/SKILL.md"
-cp skills/contracko/references/tool-index.md "$work/references/"
-for s in import review create; do
-  # strip frontmatter: a reference file is prose, not a skill
-  awk 'BEGIN{n=0} /^---$/{n++; next} n>=2' "skills/contracko-$s/SKILL.md" > "$work/references/$s.md"
-done
+python3 - "$(pwd)" "$work" <<'PY'
+import os
+import re
+import sys
+from pathlib import Path
+from urllib.parse import urlsplit, urlunsplit
 
-# rewrite cross-skill paths to the merged layout. The router sits one level
-# above its references, so the two get different rules.
-sed -i '' -e 's|\.\./contracko-\([a-z]*\)/SKILL\.md|references/\1.md|g' "$work/SKILL.md"
-for f in "$work"/references/*.md; do
-  sed -i '' \
-    -e 's|\.\./contracko/SKILL\.md|../SKILL.md|g' \
-    -e 's|\.\./contracko-\([a-z]*\)/SKILL\.md|\1.md|g' \
-    -e 's|\.\./\.\./contracko-\([a-z]*\)/SKILL\.md|\1.md|g' \
-    -e 's|(\.\./\([a-z-]*\)\.md)|(\1.md)|g' \
-    -e 's|(\.\./SKILL\.md)|(../SKILL.md)|g' "$f"
-done
+source = Path(sys.argv[1])
+work = Path(sys.argv[2])
+router = source / "skills" / "contracko"
+merged = {router / "SKILL.md": work / "SKILL.md"}
+
+# Preserve the full router reference tree, including references added later.
+for path in (router / "references").rglob("*"):
+    if path.is_file():
+        merged[path] = work / "references" / path.relative_to(router / "references")
+
+for name in ("import", "review", "create"):
+    merged[source / "skills" / f"contracko-{name}" / "SKILL.md"] = work / "references" / f"{name}.md"
+
+for original, destination in merged.items():
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    text = original.read_text()
+    if original.parent.name.startswith("contracko-"):
+        # A sibling is prose in the merged skill, not a nested skill.
+        parts = text.split("---", 2)
+        text = parts[2].lstrip("\n") if len(parts) == 3 and text.startswith("---") else text
+    destination.write_text(text)
+
+link = re.compile(r"(]\()([^)\s]+)([^)]*\))")
+
+def rewrite(match, original, destination):
+    target, suffix = match.group(2), match.group(3)
+    parsed = urlsplit(target)
+    if parsed.scheme or parsed.netloc or not parsed.path:
+        return match.group(0)
+    resolved = Path(os.path.normpath(original.parent / parsed.path))
+    merged_target = merged.get(resolved)
+    if merged_target is None:
+        return match.group(0)
+    relative = os.path.relpath(merged_target, destination.parent).replace(os.sep, "/")
+    return match.group(1) + urlunsplit(("", "", relative, parsed.query, parsed.fragment)) + suffix
+
+for original, destination in merged.items():
+    destination.write_text(link.sub(lambda match: rewrite(match, original, destination), destination.read_text()))
+PY
 
 # one description has to carry every job, and claude.ai caps it at 200 chars
 python3 - "$work/SKILL.md" <<'PY'

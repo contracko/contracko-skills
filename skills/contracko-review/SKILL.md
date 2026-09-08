@@ -11,7 +11,7 @@ Jobs this skill owns: calendar, compare, audit, report. Playbooks for those jobs
 
 **About one contract.** Find it, then `clm_get_contract` for the facts and `clm_get_contract_analysis` for the judgement. For wording, quotes, or "does it actually say X", do not stop at the analysis: search or read the document.
 
-**About the portfolio.** Calendar, audit, report. Document search does not replace this. Metadata filters still do not exist, so the work is paging honestly.
+**About the portfolio.** Calendar, audit, report. Document search does not replace this. Start with the narrowest supported `clm_list_contracts` filters, then page that filtered result honestly.
 
 ## Ground the answer in the document
 
@@ -33,28 +33,27 @@ Quote the `evidenceQuote` (or the cited section) when the user is deciding somet
 
 Never paste a download URL into the chat if you can avoid it. Fetch, then summarise. The URL expires in 15 minutes.
 
-## Portfolio questions and the paging problem
+## Portfolio questions: filter first, then page
 
-`clm_list_contracts` takes `limit`, `cursor` and `updatedSince`. There is no filter by status, type, counterparty, value or date. `clm_search_contract_documents` searches document text, not those fields.
+`clm_list_contracts` supports `status`, `categoryId`, `counterpartyId`, `query`, `endDateFrom`, `endDateTo`, `noticeDateFrom`, and `noticeDateTo`. These filters combine with AND. `query` is a literal, trimmed, case-insensitive substring of the title, assigned Party B effective display name, or live legal name. It is not semantic search. `clm_search_contract_documents` searches document text, not these fields.
 
-So every portfolio question means paging the whole workspace and filtering yourself. The payload is rich enough to do that well, carrying per contract:
+Use the narrowest supported server criteria first. Then follow `nextCursor` until it is `null`, repeating the same normalized filters and `updatedSince` if used. `limit` may change between calls. Cursors are opaque: never edit one. If any filter changes, restart without a cursor.
 
-`title`, `status`, `categoryId`, `startDate`, `endDate`, `autoRenewing`, `renewalPeriod*`, `noticePeriod*`, `noticeDate`, `isInNoticePeriod`, `isOpenEnded`, `financialAnnualValue`, `financialValueCurrency`, `liabilitySummary`, `governingLaw`, `jurisdiction`, `partiesSummary`, `customFieldValues`, `entityStatus`.
+For an unsupported value, currency, null-presence, or custom-field filter, first narrow with supported server criteria, then page that entire result before applying the local condition. For a full-workspace audit, page everything. Do not use a date window to find missing dates, because null dates are excluded from that window.
 
-Two rules:
+`updatedSince` can combine with business filters. An `updatedSince`-only legacy sync remains unbound, and it is not an end-date filter or renewal window.
 
-1. **Page to the end.** Follow the cursor until it stops. An answer built from the first page looks exactly like a complete one, and the user has no way to tell.
-2. **Where the set is too large to page, say so before answering**, and offer the narrower question you can answer properly.
+The contract payload carries `title`, `status`, `categoryId`, `startDate`, `endDate`, `autoRenewing`, `renewalPeriod*`, `noticePeriod*`, `noticeDate`, `isInNoticePeriod`, `isOpenEnded`, `financialAnnualValue`, `financialValueCurrency`, `liabilitySummary`, `governingLaw`, `jurisdiction`, `partiesSummary`, `customFieldValues`, and `entityStatus`.
 
-`updatedSince` keeps something in sync. It finds nothing, and it will not help with a renewal question.
+Where the filtered set is still too large to page, say so before answering and offer a narrower supported question.
 
 ## Calendar: notice, end, annual review
 
-From a full page-through:
+For a date window, use the inclusive `YYYY-MM-DD` `endDateFrom` and `endDateTo` or `noticeDateFrom` and `noticeDateTo` filters, then page the result. For contracts ending OR needing notice, run both queries separately and deduplicate by contract id. Combining both windows in one call requires both to match and would miss contracts.
 
 - `isInNoticePeriod: true` means the window to give notice is open now. The urgent bucket.
 - `noticeDate` is the deadline to give notice.
-- `autoRenewing: true` past its `noticeDate` means the contract has already committed to another term.
+- An end-date window finds renewal candidates. `autoRenewing: true` is the actual renewal status. Do not call a contract definitively already committed without notice-date evidence.
 - `endDate` with `autoRenewing: false` is a plain expiry.
 - `isOpenEnded: true` has no end date by design, so read it as intentional rather than as missing data.
 
@@ -113,12 +112,12 @@ Contracts are stored in their source language and the analysis follows it, so a 
 
 ## Report: priorities, gaps, vendors
 
-Page to the end, then bucket. Suggested order, drop empty buckets:
+Use `noticeDate` or `endDate` windows for dated buckets, and `status`, `categoryId`, `counterpartyId`, or literal `query` where they narrow the question. Page each resulting set to the end, then bucket. For missing-field, value, currency, or custom-field gaps, page the relevant complete set before filtering locally. Suggested order, drop empty buckets:
 
 1. Notice window open (`isInNoticePeriod`)
 2. Notice in the next 90 days
 3. Ending soon without auto-renew
-4. Auto-renew already committed (past `noticeDate`)
+4. Auto-renew with notice-date evidence that it is already committed
 5. `entityStatus: "pending-review"`
 6. Missing `noticeDate` or `endDate` (and not `isOpenEnded`)
 7. Missing `financialAnnualValue`
@@ -127,7 +126,7 @@ Page to the end, then bucket. Suggested order, drop empty buckets:
 
 Rank inside a bucket by `noticeDate`, then value. Say how many contracts you paged.
 
-There is no server-side join between a party and its contracts. `clm_list_parties` gives counterparties; each contract's `parties[]` and `partiesSummary` name who is on it. "What do we have with vendor X" is a page-through and match.
+For "What do we have with vendor X", first resolve the vendor with `clm_list_parties` using `query` and, when known, `type`. Confirm the user's selection if the results are ambiguous, then use that party's id as `counterpartyId` in `clm_list_contracts` and page that result.
 
 **Check `financialValueCurrency` before adding anything up.** Values are per contract and the currency varies, so a total across mixed currencies is a made-up number. Sum per currency, or convert with a rate you state.
 

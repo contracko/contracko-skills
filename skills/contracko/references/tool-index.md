@@ -2,7 +2,7 @@
 
 What each tool is for, and what it costs to get wrong. Parameters, types and limits are in the tool schemas already loaded in your context; this file carries only what those schemas cannot say.
 
-Verified against the Phase 5 catalog in the product app (37 tools when every parser and contract scope is granted). That count includes seven event and reminder tools that existing Phase 5 credentials already have. Credentials on Phases 1–4 stay frozen until a workspace admin confirms new MCP actions.
+Verified against the Phase 5 catalog in the product app (37 tools when every parser and contract scope is granted). That count includes seven event and reminder tools that existing Phase 5 credentials already have. New tools are gated by capability phase. Improvements to an existing tool, including filters and output schemas, apply to that tool without a Phase 5 upgrade.
 
 User jobs (bring in, calendar, compare, audit, file, report) live in [workflows.md](workflows.md). This file is tools, not jobs.
 
@@ -24,7 +24,7 @@ So: read your tool list, work with what is in it, and treat everything below tha
 
 | Tool | Scope | What it is for |
 |---|---|---|
-| `clm_list_contracts` | `contract:read` | The whole portfolio, paged. Rich per-contract payload, and no way to filter it: see below. |
+| `clm_list_contracts` | `contract:read` | Paged contracts. Filter first with supported metadata criteria, then page to `nextCursor: null`: see below. |
 | `clm_get_contract` | `contract:read` | One contract in full, with its documents, parties, dates, notice window, liability and custom field values. |
 | `clm_get_contract_analysis` | `contract:read` | AI overview, risks with severity and evidence quotes, obligations, key terms. Judgement, not the document itself. |
 | `clm_search_contract_documents` | `contract:read` | Cited passages from indexed document text. Prefer this for "what does this say". `hybrid` is the default; `exact` is the only stably paginated mode. Semantic and hybrid results are `partial`. |
@@ -33,10 +33,52 @@ So: read your tool list, work with what is in it, and treat everything below tha
 | `clm_list_contract_comments` | `contract:read` | Comments on one contract. |
 | `clm_list_contract_types` | `contract:read` | Types with their full field definitions. |
 | `clm_get_contract_type` | `contract:read` | One type. |
-| `clm_list_parties` | `contract:read` | Every counterparty. |
+| `clm_list_parties` | `contract:read` | Resolve a vendor by `query` and `type` before filtering contracts by its returned id. |
 | `clm_get_party` | `contract:read` | Contact and address detail for one party. |
 
-**Listing does not filter.** `clm_list_contracts` pages, and offers no filter, sort or metadata search. Document-text search is a different tool: `clm_search_contract_documents` finds clauses, not "renews in 90 days". Portfolio questions still mean paging the workspace and filtering locally. Page to the end, or say you did not. [contracko-review](../../contracko-review/SKILL.md) covers doing this well.
+## Filter contracts first, then page
+
+`clm_list_contracts` supports `status`, `categoryId`, `counterpartyId`, `query`, `endDateFrom`, `endDateTo`, `noticeDateFrom`, and `noticeDateTo`. Filters combine with AND. `query` is a literal, trimmed, case-insensitive substring over the title, assigned Party B effective display name, or live legal name. It is not semantic search.
+
+Use the narrowest supported criteria. Page until `nextCursor` is `null`, repeating the same normalized filters and `updatedSince` when it is used. `limit` can change. Treat cursors as opaque and never edit them. Change any filter, then restart with no cursor. `updatedSince` can combine with business filters. An `updatedSince`-only legacy sync remains unbound, and it is not an end-date filter or renewal window.
+
+Date windows are inclusive `YYYY-MM-DD` values. For unsupported value, currency, null-presence, or custom-field filtering, narrow by supported criteria and page the complete result before applying the local filter. A full-workspace audit pages every contract. Do not use a date window to audit missing dates, because null dates are excluded.
+
+Resolve a vendor through `clm_list_parties` with `query` and `type`. If more than one party matches, confirm the selection. Then call contracts with the selected `counterpartyId`.
+
+Illustrative examples only. Use the actual date for a real question.
+
+```json mcp:clm_list_contracts
+{
+  "endDateFrom": "2026-04-01",
+  "endDateTo": "2026-06-30",
+  "status": "active",
+  "limit": 50
+}
+```
+
+```json mcp:clm_list_contracts
+{
+  "noticeDateFrom": "2026-04-01",
+  "noticeDateTo": "2026-04-30",
+  "limit": 50
+}
+```
+
+```json mcp:clm_list_parties
+{
+  "query": "Acme",
+  "type": "company"
+}
+```
+
+After the party lookup returns the vendor's actual id, use that id as `counterpartyId`. This illustrative UUID stands for the id returned by that lookup:
+
+```json mcp:clm_list_contracts
+{ "counterpartyId": "11111111-1111-4111-8111-111111111111", "limit": 50 }
+```
+
+Document-text search is a different tool: `clm_search_contract_documents` finds clauses, not "renews in 90 days". [contracko-review](../../contracko-review/SKILL.md) covers applying these rules to calendar, audit, and report jobs.
 
 ## Writing contracts
 
@@ -100,7 +142,7 @@ The skills in this bundle describe complete workflows, because that is how the w
 | playbook and clause-library comparison, deviation reports | app | `clm_get_contract_analysis` judges a contract on its own terms rather than against a playbook. |
 | knowledge base and business-context enrichment | app | Nothing yet. |
 | handing an uploaded file to the import pipeline | not yet | `clm_create_upload_url` returns a reference only `clm_ingest_contract` accepts, and `clm_import_contracts` cannot take it. So a local file is either base64 through your context with Contracko extracting, or uploaded machine-to-machine with you extracting. [contracko-import](../../contracko-import/SKILL.md) has the decision. |
-| filtering the contract list server-side | not yet | Page and filter locally. Document text search exists; metadata filters do not. |
+| filtering by value, currency, null presence, or custom fields | local after a complete filtered page-through | First narrow with supported server criteria, then page that complete result before applying the local condition. |
 | attaching an existing party to an existing contract | not yet | Import and ingest attach parties as they file a contract. |
 | deleting or archiving anything | app, by design | Destructive operations are deliberately kept out of an agent's hands. Cleanup is a web app job, so get creates right the first time rather than waiting for a tool that is not coming. |
 

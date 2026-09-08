@@ -1,0 +1,251 @@
+{
+  "source": "Contracko released MCP catalog",
+  "revision": "b043d143787f716af8a45e37b166f794f1bbafcb",
+  "tools": [
+    {
+      "name": "auth_validate",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "clm_add_contract_comment",
+      "introducedInCapabilityPolicyVersion": 3
+    },
+    {
+      "name": "clm_add_contract_documents",
+      "introducedInCapabilityPolicyVersion": 3
+    },
+    {
+      "name": "clm_bulk_update_contracts",
+      "introducedInCapabilityPolicyVersion": 4
+    },
+    {
+      "name": "clm_create_contract_events",
+      "introducedInCapabilityPolicyVersion": 5
+    },
+    {
+      "name": "clm_create_contract_type",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "clm_create_event_reminders",
+      "introducedInCapabilityPolicyVersion": 5
+    },
+    {
+      "name": "clm_create_party",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "clm_create_upload_url",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "clm_delete_contract_events",
+      "introducedInCapabilityPolicyVersion": 5
+    },
+    {
+      "name": "clm_delete_event_reminders",
+      "introducedInCapabilityPolicyVersion": 5
+    },
+    {
+      "name": "clm_get_contract",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "clm_get_contract_analysis",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "clm_get_contract_document_download_url",
+      "introducedInCapabilityPolicyVersion": 4
+    },
+    {
+      "name": "clm_get_contract_type",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "clm_get_import_status",
+      "introducedInCapabilityPolicyVersion": 2
+    },
+    {
+      "name": "clm_get_party",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "clm_import_contracts",
+      "introducedInCapabilityPolicyVersion": 2
+    },
+    {
+      "name": "clm_ingest_contract",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "clm_list_contract_comments",
+      "introducedInCapabilityPolicyVersion": 3
+    },
+    {
+      "name": "clm_list_contract_events",
+      "introducedInCapabilityPolicyVersion": 5
+    },
+    {
+      "name": "clm_list_contract_types",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "clm_list_contracts",
+      "introducedInCapabilityPolicyVersion": 1,
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "categoryId": {
+            "description": "Return only contracts with this contract type.",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "counterpartyId": {
+            "description": "Return only contracts assigned to this party as party_b.",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "cursor": {
+            "description": "Continuation reference from the previous page. Reuse it with the same filters.",
+            "type": "string"
+          },
+          "endDateFrom": {
+            "description": "Return contracts with a non-null end date on or after this inclusive YYYY-MM-DD date.",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "type": "string"
+          },
+          "endDateTo": {
+            "description": "Return contracts with a non-null end date on or before this inclusive YYYY-MM-DD date.",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "type": "string"
+          },
+          "limit": {
+            "default": 50,
+            "description": "Page size (max 100).",
+            "maximum": 100,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "noticeDateFrom": {
+            "description": "Return contracts with a computed non-null notice date on or after this inclusive YYYY-MM-DD date.",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "type": "string"
+          },
+          "noticeDateTo": {
+            "description": "Return contracts with a computed non-null notice date on or before this inclusive YYYY-MM-DD date.",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "type": "string"
+          },
+          "query": {
+            "description": "Literal case-insensitive substring in the contract title or assigned party_b display or legal name.",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "status": {
+            "description": "Return only this contract status.",
+            "enum": [
+              "active",
+              "notice-given",
+              "terminated",
+              "expired"
+            ],
+            "type": "string"
+          },
+          "updatedSince": {
+            "description": "Return contracts updated at or after this ISO-8601 timestamp.",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "clm_list_parties",
+      "introducedInCapabilityPolicyVersion": 1,
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "query": {
+            "description": "Literal case-insensitive substring in a party display or legal name.",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": {
+            "description": "Return only this party type.",
+            "enum": [
+              "individual",
+              "company",
+              "non-profit",
+              "government"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "clm_read_contract_document",
+      "introducedInCapabilityPolicyVersion": 5
+    },
+    {
+      "name": "clm_search_contract_documents",
+      "introducedInCapabilityPolicyVersion": 5
+    },
+    {
+      "name": "clm_update_contract",
+      "introducedInCapabilityPolicyVersion": 4
+    },
+    {
+      "name": "clm_update_contract_events",
+      "introducedInCapabilityPolicyVersion": 5
+    },
+    {
+      "name": "clm_update_contract_type",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "clm_update_event_reminders",
+      "introducedInCapabilityPolicyVersion": 5
+    },
+    {
+      "name": "clm_update_party",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "parser_create_job",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "parser_create_upload_url",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "parser_get_credits",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "parser_get_job",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "parser_list_jobs",
+      "introducedInCapabilityPolicyVersion": 1
+    },
+    {
+      "name": "parser_preflight",
+      "introducedInCapabilityPolicyVersion": 1
+    }
+  ]
+}
