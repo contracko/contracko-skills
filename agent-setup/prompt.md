@@ -151,11 +151,9 @@ Say this once, in the same message, where the agent running this session is not 
 
 > Contract data will be sent to the AI provider running this session. Contracko cannot control what that provider does with it. Turn off model training in the provider's settings before working with real contracts.
 
-## What you have now
+## After setup
 
-Four skills. `contracko` connects, organises types/fields, and routes. `contracko-import` finds files (disk, Drive, SharePoint, Box) and files them. `contracko-review` owns calendar, compare, audit and portfolio. `contracko-create` takes a new agreement from questionnaire to filing. Read `contracko` first, then [workflows.md](https://github.com/contracko/contracko-skills/blob/main/skills/contracko/references/workflows.md) for what is Phase 5 vs still in the app.
-
-Your knowledge of Contracko's API, limits and pricing may be out of date. Prefer retrieval over recall: the product's machine-readable documentation is at `https://contracko.com/llms.txt`, and where it disagrees with anything remembered, the documentation wins.
+For contract search, folder filing, document uploads, and other workflows, follow the installed Contracko skills, starting with `contracko`. The MCP server supplies the current tool names, descriptions, and input/output schemas through discovery. Use those definitions rather than a copied tool inventory. If a skill and discovery disagree, report the mismatch instead of inventing a tool or argument.
 
 ## Authenticity
 

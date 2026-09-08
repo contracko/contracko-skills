@@ -1,71 +1,59 @@
 # Jobs
 
-User jobs, not tools. Mechanics live in the skill named on each job. The live tool list outranks this file. The app-vs-MCP register is in [tool-index.md](tool-index.md); do not copy it here.
+Use live tool discovery first. These are user jobs, not a substitute for discovered schemas. Mechanics live in the named skill.
 
-Later MCP phases will move some app steps onto the tool list. Until a tool appears, the app step stands. Never invent a name for a tool you cannot see.
+## Bring contracts in
 
-Read this when the request is a job. Then open only the skill that owns the mechanics.
+**They say:** import these, onboard us, migrate the archive, look on disk, Google Drive, SharePoint, or Box.
 
-## 1. Bring contracts in
+Find the files with the available file or cloud tools, confirm the set, then import them. Contracko extracts types and parties. Review the extracted configuration before adding more. [contracko-import](../../contracko-import/SKILL.md) owns import; [SKILL.md](../SKILL.md) owns types, fields, parties, and folders.
 
-**They say:** import these, onboard us, migrate the archive, look on disk / Google Drive / SharePoint / Box.
+If the user also wants filing, inspect visible folders, confirm the proposed destination and any batch, then create, rename, move, or file through the discovered folder tools. Do not infer a folder from a missing or unavailable filing state.
 
-**Now (Phase 5):** find files with the agent's own disk or cloud tools (Contracko MCP does not browse those stores). Confirm the set. Import so Contracko extracts types, parties and analysis. Then shape types. [contracko-import](../../contracko-import/SKILL.md) owns finding and filing. [SKILL.md](../SKILL.md) owns types, fields and the folder *proposal*.
+**Done when:** the documents are contracts in the intended workspace, types cover the user's questions, and each requested filing change has been read back.
 
-**Not on MCP yet:** browsing Drive/SharePoint/Box as a Contracko tool; handing an already-uploaded file into managed import; creating folders or moving contracts into them.
-
-**Done when:** documents are contracts in the workspace the user meant, types cover the questions they ask, pending-review is named, and the folder tree they still click is written down.
-
-## 2. What is coming up
+## What is coming up
 
 **They say:** notice dates, end dates, renewals, annual review, reminders, notifications.
 
-**Now (Phase 5):** get today's date from the environment, then answer from `noticeDate`, `endDate`, `isInNoticePeriod`, `autoRenewing`. The inclusive `YYYY-MM-DD` end and notice filters are additive improvements to the Phase 1 list tool, not a Phase 5 requirement. Use them to find dated candidates, then page to `nextCursor: null`. An end-date window finds renewal candidates, while `autoRenewing` is the actual status. Do not claim a contract is already committed without notice-date evidence. List events and linked reminders with `clm_list_contract_events`. Create or change alerts with the event and reminder tools. Renewal reminders target the contract `end` system event. [contracko-review](../../contracko-review/SKILL.md) owns the calendar.
+Get today's date from the environment. Use inclusive end-date or notice-date filters for dated candidates and complete every returned page. `autoRenewing` identifies a renewal; a date window alone does not. For contracts ending OR needing notice, run separate complete queries and deduplicate by contract ID. Use existing system events for renewal or notice reminders. [contracko-review](../../contracko-review/SKILL.md) owns the calendar.
 
-**Not on MCP yet:** nothing on this job once those seven tools are on your list. If they are missing, the credential is below Phase 5.
+**Done when:** the user has the urgent bucket, its dates, and any requested reminder confirmed as created.
 
-**Done when:** the user has the urgent bucket, the dates that drive it, and (if they wanted an alert) the reminder actually created.
+## Compare these
 
-## 3. Compare these
+**They say:** two proposals, vendor A versus B, or a redline versus a previous draft.
 
-**They say:** two proposals, vendor A vs B, this redline vs the last draft.
+Get both records, analyses, and cited document text for disputed terms. Compare metadata and quotes in a table. Add related versions to the existing contract when the user identifies them as versions of one agreement. [contracko-review](../../contracko-review/SKILL.md) owns comparison.
 
-**Now (Phase 5):** both sides as records (import first if needed), then table differences from metadata, analysis and cited text. Related versions can live as documents on one contract. [contracko-review](../../contracko-review/SKILL.md) owns comparison.
+**Done when:** the user can choose with supporting quotes.
 
-**Not on MCP yet:** playbook / clause-library scoring, a redline-diff tool, knowledge-base enrichment.
+## Audit for risk
 
-**Done when:** the user can choose, with quotes.
+**They say:** risks, liability, caps, indemnity, or what could hurt us.
 
-## 4. Audit for risk
+Complete the relevant portfolio page set before opening hot contracts. Use `clm_get_contract_analysis`, contract liability fields, and cited clauses. A null analysis field does not prove no risk. [contracko-review](../../contracko-review/SKILL.md) owns audit.
 
-**They say:** risks, liability, caps, indemnity, what could hurt us.
+**Done when:** every material finding has a quote, a severity, and a clear extraction-review status.
 
-**Now (Phase 5):** `clm_get_contract_analysis` plus liability fields and quoted clauses. Portfolio audits page first, then open the hot contracts. [contracko-review](../../contracko-review/SKILL.md) owns audit.
+## File and type contracts
 
-**Not on MCP yet:** scoring against a house playbook.
+**They say:** organise, folders, contract types, custom fields, or filing.
 
-**Done when:** each material finding has a quote, a severity, and whether extraction has been reviewed.
+Import before designing a new workspace. Use types and custom fields for the questions the user asks, then propose and confirm any changes. List visible folders with `clm_list_folders`, inspect a chosen destination, confirm the destination and bulk changes, then use the discovered folder and contract move tools. `folderId: null` unfiles only when the user asks. Access reads are informational; access changes and folder deletion are in the app.
 
-## 5. File and type them
+To find unfiled contracts, complete the relevant contract pages and inspect `filing.kind`. Do not send `folderId: null` as a list filter. `unavailable` does not identify an unfiled contract or a hidden folder.
 
-**They say:** organise, folders, the right contract type, custom fields.
+**Done when:** types and fields match the user's model, each requested filing change is verified, and any access work is clearly handed to the app.
 
-**Now (Phase 5):** create and update types and fields; `clm_update_contract` / `clm_bulk_update_contracts` for metadata (type, dates, value, parties). Read `folderId`. Describe the tree. [SKILL.md](../SKILL.md) owns this.
+## Priorities and gaps
 
-**Not on MCP yet:** creating folders, moving contracts, sharing / access. `folderId` is readable, not settable.
+**They say:** report, portfolio, what matters this quarter, or what are we missing.
 
-**Done when:** types and fields match how the user thinks, contracts point at those types, and they have a folder plan they can click.
+Start with the narrowest supported `clm_list_contracts` filters. Filters combine with AND. Complete each filtered page set. For OR windows, use complete separate queries and deduplicate. For value, currency, missing fields, custom-field gaps, or unfiled audits, evaluate the complete narrowed result locally. Separate monetary totals by currency. [contracko-review](../../contracko-review/SKILL.md) owns reporting.
 
-## 6. Priorities and gaps
+**Done when:** the user has ranked results, named gaps, and the count of the completed result set.
 
-**They say:** report, portfolio, what matters this quarter, what are we missing.
+## Start a new agreement
 
-**Now (Phase 5):** start with supported `clm_list_contracts` filters: `status`, `categoryId`, `counterpartyId`, literal `query`, and inclusive end or notice date windows. These filters are additive improvements to the Phase 1 list tool, not a Phase 5 requirement. Filters combine with AND. Page each filtered result to `nextCursor: null` before bucketing. For unsupported value, currency, null-presence, or custom-field gaps, first narrow with supported criteria and page that entire result before applying the local filter. Full-workspace audits page every contract. Do not use a date window to audit missing dates. [contracko-review](../../contracko-review/SKILL.md) owns reporting.
-
-**Not on MCP yet:** a dedicated export tool.
-
-**Done when:** the user has a ranked list, the gaps named, and a count of every contract in the result set used.
-
-## Starting a new agreement
-
-[contracko-create](../../contracko-create/SKILL.md). Questionnaire and filing are yours. Draft and signature are app steps.
+[contracko-create](../../contracko-create/SKILL.md) owns the questionnaire and filing the executed copy. Drafting and signature stay in the app.

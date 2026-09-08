@@ -6,19 +6,19 @@ Run from the repository root (Python 3.10+ and `zip`; no Python dependencies):
 python3 -m unittest discover -s tests -v
 ```
 
-The checks verify tool names across skill Markdown, annotated list-call examples, selected obsolete
-claims, and links inside the merged chat ZIP. Example arguments are checked against the flat list
-input schemas, including types, enums, bounds, string patterns, and date windows. This is a targeted
-documentation check, not a general JSON Schema validator or a live MCP integration test.
+The checks verify tool names across skill Markdown, annotated MCP examples, selected obsolete
+claims, and links inside the merged chat ZIP. Example arguments are checked against the pinned input
+schemas, including types, enums, bounds, string patterns, nullable branches, and date windows. This
+is a targeted documentation check, not a general JSON Schema validator or a live MCP integration test.
 
-Mark executable list examples with `json mcp:clm_list_contracts` or `json mcp:clm_list_parties` on the
-opening code fence. Values must be syntactically valid examples, not placeholders. Explain nearby
-that real IDs come from discovery and dates come from the user's requested window.
+Mark executable examples with `json mcp:<tool-name>` on the opening code fence. Values must be
+syntactically valid examples, not placeholders. Explain nearby that real IDs come from discovery and
+dates come from the user's requested window.
 
 ## Refresh the release baseline
 
-`fixtures/mcp-contract.json` contains the 37 released tool names and capability versions, plus input
-schemas for the two list tools. Its revision pins the reviewed app release. It contains no user data.
+`fixtures/mcp-contract.json` contains released tool names, capability versions, and the input schemas
+needed to validate the documented examples. Its revision pins the reviewed app release. It contains no user data.
 When an app release changes MCP, export `docs/mcp-tool-catalog.json` from that exact release commit
 in an authorized app checkout, then run:
 

@@ -5,7 +5,7 @@ description: Takes a new contract from questionnaire to drafted, signed and file
 
 # Creating a contract and getting it signed
 
-The forward half of the lifecycle: nothing exists yet, and the job is to end with a signed agreement filed in Contracko.
+The forward half of the lifecycle: nothing exists yet, and the job is to end with a signed agreement added to Contracko.
 
 Most of this flow is app work today. The tail of it, filing the executed copy, is a tool call, and it is the step that decides whether the contract is findable in a year. Run the whole flow with the user rather than stopping at the first step you cannot execute.
 
@@ -25,7 +25,7 @@ Where the user asks for words rather than mechanics, drafting a clause, a summar
 2. **Write the answers down somewhere that outlives this conversation.** The handoff, and it is not optional.
 3. **Draft it** from a template — app step.
 4. **Route it for signature** — app step.
-5. **File the executed copy** — [contracko-import](../contracko-import/SKILL.md), and this one is yours.
+5. **Add the executed copy** — [contracko-import](../contracko-import/SKILL.md), and this one is yours.
 6. **Set the reminder** that will matter in a year — [contracko-review](../contracko-review/SKILL.md).
 
 Steps 3 and 4 have no tool yet, so name the step, say it happens in Contracko, and keep moving. The parts either side are real work you can do well.
@@ -95,7 +95,7 @@ Where the user asks "where is that contract", check first whether it is already 
 
 This is the step that gets skipped, and the one that makes the previous three worth anything.
 
-Once the signed PDF exists, import it: `clm_import_contracts`, which extracts dates, parties and terms and files it as a managed contract. [contracko-import](../contracko-import/SKILL.md) has the detail.
+Once the signed PDF exists, import it with `clm_import_contracts`, which extracts dates, parties, and terms into a managed contract. [contracko-import](../contracko-import/SKILL.md) has the detail. If the user also asked for a folder, use the confirmed filing workflow in [contracko](../contracko/SKILL.md) after import.
 
 Then reconcile against the handoff from step 2. Extraction reads what the document says; the handoff is what the user believed they agreed. Where the notice period, renewal term or liability cap differ, that gap is the most useful thing you will tell them all day, so surface it rather than quietly trusting the extraction.
 

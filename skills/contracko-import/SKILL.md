@@ -79,7 +79,7 @@ So for a first-time user with a folder of contracts: import first, configure aft
 
 New contracts land as `entityStatus: "pending-review"`. Say so. A human is expected to confirm the extraction, and nothing about a successful import marks the data as verified.
 
-Once documents are in, the questions start: renewals, notice dates, risk, what the workspace now holds. That is [contracko-review](../contracko-review/SKILL.md).
+Once documents are in, the questions start: renewals, notice dates, risk, and what the workspace now holds. That is [contracko-review](../contracko-review/SKILL.md). If the user also asks to place imported contracts in folders, use the confirmed filing workflow in [contracko](../contracko/SKILL.md).
 
 ## Prepare and file
 

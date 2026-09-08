@@ -1,52 +1,97 @@
 # Contracko MCP tool index
 
-What each tool is for, and what it costs to get wrong. Parameters, types and limits are in the tool schemas already loaded in your context; this file carries only what those schemas cannot say.
+Use live discovery for tool names and schemas. This index records workflow rules that schemas do not express. [workflows.md](workflows.md) maps user jobs to these tools.
 
-Verified against the Phase 5 catalog in the product app (37 tools when every parser and contract scope is granted). That count includes seven event and reminder tools that existing Phase 5 credentials already have. New tools are gated by capability phase. Improvements to an existing tool, including filters and output schemas, apply to that tool without a Phase 5 upgrade.
+## Discovery and results
 
-User jobs (bring in, calendar, compare, audit, file, report) live in [workflows.md](workflows.md). This file is tools, not jobs.
+Tools absent from discovery are unavailable to this connection. First refresh discovery or reconnect if the client has cached schemas. If an older credential still omits newly available actions, a workspace admin can enable new MCP actions for its key, or the user can re-consent OAuth. Do not guess a call.
 
-## Your tool list is the truth
-
-Contracko decides which tools a credential may see and omits the rest. Absence is normal, not an error, and never a reason to guess at a call.
-
-Three causes, in order of likelihood: the scope was not granted (see the scope table in [SKILL.md](../SKILL.md)), the workspace is not entitled to the feature, or the credential predates an action that a workspace admin has not confirmed yet in Settings > Integrations. A key does not gain new abilities on its own.
-
-So: read your tool list, work with what is in it, and treat everything below that you cannot see as unavailable rather than broken.
+Check `isError` first. On success, use `structuredContent` when present or the legacy JSON text otherwise, never both. Required fields missing from the discovered `outputSchema` are a response mismatch, not empty data. Re-read before retrying an `OUTCOME_UNKNOWN` mutation.
 
 ## Connection
 
-| Tool | Scope | What it is for |
+| Tool | Scope | Use |
 |---|---|---|
-| `auth_validate` | any valid credential | Workspace, key and granted scopes. First call of every session. |
+| `auth_validate` | any valid credential | Confirm workspace and scopes before work. |
 
-## Reading contracts
+## Contracts and folders
 
-| Tool | Scope | What it is for |
+| Tool | Scope | Use |
 |---|---|---|
-| `clm_list_contracts` | `contract:read` | Paged contracts. Filter first with supported metadata criteria, then page to `nextCursor: null`: see below. |
-| `clm_get_contract` | `contract:read` | One contract in full, with its documents, parties, dates, notice window, liability and custom field values. |
-| `clm_get_contract_analysis` | `contract:read` | AI overview, risks with severity and evidence quotes, obligations, key terms. Judgement, not the document itself. |
-| `clm_search_contract_documents` | `contract:read` | Cited passages from indexed document text. Prefer this for "what does this say". `hybrid` is the default; `exact` is the only stably paginated mode. Semantic and hybrid results are `partial`. |
-| `clm_read_contract_document` | `contract:read` | Bounded document text in cited sections. Follow `nextCursor`. Do not read a whole library this way. |
-| `clm_get_contract_document_download_url` | `contract:read` | Short-lived HTTPS URL for original bytes or a preview PDF. Expires in 15 minutes. Never log the URL. |
-| `clm_list_contract_comments` | `contract:read` | Comments on one contract. |
-| `clm_list_contract_types` | `contract:read` | Types with their full field definitions. |
-| `clm_get_contract_type` | `contract:read` | One type. |
-| `clm_list_parties` | `contract:read` | Resolve a vendor by `query` and `type` before filtering contracts by its returned id. |
-| `clm_get_party` | `contract:read` | Contact and address detail for one party. |
+| `clm_list_contracts` | `contract:read` | Page contract records and business filters. |
+| `clm_get_contract` | `contract:read` | Read one contract, including filing state. |
+| `clm_list_folders` | `contract:read` | Page folders visible to the user. |
+| `clm_get_folder` | `contract:read` | Inspect one visible folder and its visible path. |
+| `clm_create_folder` | `contract:write` | Create a root folder or a child of a visible parent. |
+| `clm_rename_folder` | `contract:write` | Rename a manageable folder. |
+| `clm_move_folder` | `contract:write` | Move a folder to a visible parent or the root. |
+| `clm_move_contract` | `contract:write` | File a contract in a visible folder, or unfile it. |
+| `clm_get_folder_access` | `contract:read` | Read a folder access overview. |
+| `clm_get_contract_access` | `contract:read` | Read a contract access overview. |
 
-## Filter contracts first, then page
+`clm_list_folders` uses `continuation`, not the contract `cursor`. Omitting `parentFolderId`, or sending `parentFolderId: null`, lists only the visible root. Complete root pages, then list and complete the children of every visible folder recursively to enumerate the visible tree. A completed root page set is not a full-tree result. For each parent, repeat the same parent and limit with the opaque continuation until it is `null`. Returned paths contain visible ancestors only. Omission does not prove a hidden folder exists or does not exist.
 
-`clm_list_contracts` supports `status`, `categoryId`, `counterpartyId`, `query`, `endDateFrom`, `endDateTo`, `noticeDateFrom`, and `noticeDateTo`. Filters combine with AND. `query` is a literal, trimmed, case-insensitive substring over the title, assigned Party B effective display name, or live legal name. It is not semantic search.
+Inspect a destination before changing it. Confirm the visible path and every bulk change. `clm_move_contract` accepts `folderId: null` only to unfile. `clm_move_folder` accepts `parentFolderId: null` to move to the root. Folder deletes and all access changes are app work. The access tools are overview-only and provide no ACL write operation.
 
-Use the narrowest supported criteria. Page until `nextCursor` is `null`, repeating the same normalized filters and `updatedSince` when it is used. `limit` can change. Treat cursors as opaque and never edit them. Change any filter, then restart with no cursor. `updatedSince` can combine with business filters. An `updatedSince`-only legacy sync remains unbound, and it is not an end-date filter or renewal window.
+```json mcp:clm_list_folders
+{ "limit": 50 }
+```
 
-Date windows are inclusive `YYYY-MM-DD` values. For unsupported value, currency, null-presence, or custom-field filtering, narrow by supported criteria and page the complete result before applying the local filter. A full-workspace audit pages every contract. Do not use a date window to audit missing dates, because null dates are excluded.
+Continue a child-folder page with the same parent and limit. The continuation is opaque.
 
-Resolve a vendor through `clm_list_parties` with `query` and `type`. If more than one party matches, confirm the selection. Then call contracts with the selected `counterpartyId`.
+```json mcp:clm_list_folders
+{
+  "parentFolderId": "11111111-1111-4111-8111-111111111111",
+  "limit": 50,
+  "continuation": "opaque-folder-page-token"
+}
+```
 
-Illustrative examples only. Use the actual date for a real question.
+```json mcp:clm_get_folder
+{ "id": "11111111-1111-4111-8111-111111111111" }
+```
+
+```json mcp:clm_create_folder
+{ "name": "Legal", "parentFolderId": null }
+```
+
+```json mcp:clm_rename_folder
+{ "id": "11111111-1111-4111-8111-111111111111", "name": "Legal and compliance" }
+```
+
+```json mcp:clm_move_folder
+{ "id": "11111111-1111-4111-8111-111111111111", "parentFolderId": null }
+```
+
+```json mcp:clm_move_contract
+{ "id": "22222222-2222-4222-8222-222222222222", "folderId": "11111111-1111-4111-8111-111111111111" }
+```
+
+Unfile only after the user asks to remove the contract from its folder.
+
+```json mcp:clm_move_contract
+{ "id": "22222222-2222-4222-8222-222222222222", "folderId": null }
+```
+
+```json mcp:clm_get_folder_access
+{ "id": "11111111-1111-4111-8111-111111111111" }
+```
+
+```json mcp:clm_get_contract_access
+{ "id": "22222222-2222-4222-8222-222222222222" }
+```
+
+Use IDs returned by discovery in real calls. The UUIDs above are valid example values only.
+
+### Contract filters and filing state
+
+`clm_list_contracts` supports `status`, `categoryId`, `counterpartyId`, `query`, `endDateFrom`, `endDateTo`, `noticeDateFrom`, `noticeDateTo`, `updatedSince`, and `folderId`. All supplied filters combine with AND. `query` is a literal, trimmed, case-insensitive substring over the title and the assigned Party B display or legal name, including historical names. It is not document search.
+
+The `folderId` list filter must be a valid visible UUID. It cannot be `null`. To audit unfiled contracts, page the applicable contract result and inspect `filing.kind`. A contract has `filing.kind` of `unfiled`, `folder`, or `unavailable`. Every returned contract has `folderId`: it is a visible UUID only for `folder`, otherwise `null`. `filing.folder.id` and `filing.folder.path` are available only for `folder`. Treat `unavailable` as unknown filing, not as unfiled.
+
+Use the narrowest supported filters, then repeat the same normalized filters and opaque `cursor` until `nextCursor` is `null`. Changing any filter starts a new query without a cursor. For an OR question, run separate complete queries and deduplicate by contract ID. For value, currency, null-presence, or custom-field filters, complete the narrowed server result before local filtering. Date windows exclude null dates.
+
+Resolve a vendor with `clm_list_parties` using `query` and `type` before passing its returned ID as `counterpartyId`. When more than one party matches, ask the user to choose.
 
 ```json mcp:clm_list_contracts
 {
@@ -57,97 +102,48 @@ Illustrative examples only. Use the actual date for a real question.
 }
 ```
 
-```json mcp:clm_list_contracts
-{
-  "noticeDateFrom": "2026-04-01",
-  "noticeDateTo": "2026-04-30",
-  "limit": 50
-}
-```
-
 ```json mcp:clm_list_parties
-{
-  "query": "Acme",
-  "type": "company"
-}
+{ "query": "Acme", "type": "company" }
 ```
 
-After the party lookup returns the vendor's actual id, use that id as `counterpartyId`. This illustrative UUID stands for the id returned by that lookup:
+## Evidence and review
 
-```json mcp:clm_list_contracts
-{ "counterpartyId": "11111111-1111-4111-8111-111111111111", "limit": 50 }
-```
-
-Document-text search is a different tool: `clm_search_contract_documents` finds clauses, not "renews in 90 days". [contracko-review](../../contracko-review/SKILL.md) covers applying these rules to calendar, audit, and report jobs.
-
-## Writing contracts
-
-| Tool | Scope | What it is for |
+| Tool | Scope | Use |
 |---|---|---|
-| `clm_import_contracts` | `contract:write` | The default way in. One managed contract per document, extraction starts automatically, idempotency key required. |
-| `clm_get_import_status` | `contract:read` | Aggregate and per-document progress. Honour `pollAfterMs`. |
-| `clm_create_upload_url` | `contract:write` | Signed destination for one file. Step 1 of the manual path. |
-| `clm_ingest_contract` | `contract:write` | Files one contract from uploaded documents using metadata you supply. Step 2. `endDate` is required unless `isOpenEnded` is true, which the schema does not say. |
-| `clm_create_party` | `contract:write` | `isOwned` marks your own entity rather than the counterparty. |
-| `clm_update_party` | `contract:write` | Partial: omitted fields keep their value. |
-| `clm_update_contract` | `contract:write` | Partial metadata on one contract. Send the exact `updatedAt` from the latest read as `expectedUpdatedAt`. A stale value conflicts instead of overwriting. |
-| `clm_bulk_update_contracts` | `contract:write` | Independent partial updates, 1–100 contracts. One failure does not roll back the rest. Confirm before a bulk write. |
-| `clm_add_contract_documents` | `contract:write` | Add draft or related files, or replace the primary, on an existing contract. Needs an idempotency key. |
-| `clm_add_contract_comment` | `contract:write` | Not idempotent. After a timeout, list comments before retrying. |
-| `clm_create_contract_type` | `contract:write` | Type plus fields. `select` choices go in `config.options`. |
-| `clm_update_contract_type` | `contract:write` | Replaces the whole field set when `fields` is sent. Send every field you want to keep. |
+| `clm_get_contract_analysis` | `contract:read` | Risk, obligations, and key-term analysis. |
+| `clm_search_contract_documents` | `contract:read` | Find cited text. `exact` is the stable pagination mode. |
+| `clm_read_contract_document` | `contract:read` | Read bounded cited sections. |
+| `clm_get_contract_document_download_url` | `contract:read` | Get a short-lived original or preview URL. Do not log it. |
+| `clm_list_contract_comments` | `contract:read` | Read comments on one contract. |
 
-[contracko-import](../../contracko-import/SKILL.md) covers the two paths and the rules that are not in the schema.
+## Import and contract writes
 
-## Events and reminders
-
-A reminder hangs off an event. List first. Mutations need `contract:write`, an idempotency key, and (for update or delete) `expectedUpdatedAt` from the latest list. [contracko-review](../../contracko-review/SKILL.md) owns the calendar.
-
-| Tool | Scope | What it is for |
+| Tool | Scope | Use |
 |---|---|---|
-| `clm_list_contract_events` | `contract:read` | Dated custom events and supported system events (`notice`, `end`, `open_ended_review`) with their reminder schedules. |
-| `clm_create_contract_events` | `contract:write` | Custom events, optionally with nested reminders. You do not create system events. |
-| `clm_update_contract_events` | `contract:write` | Custom events. Sending `reminders` replaces that event's reminder set. Relist first. |
-| `clm_delete_contract_events` | `contract:write` | Custom events and every reminder linked to them. |
-| `clm_create_event_reminders` | `contract:write` | Linked reminders on a custom event or a supported system event. Renewal alerts target `end`. |
-| `clm_update_event_reminders` | `contract:write` | Timing, recipient, or message of an existing reminder. |
-| `clm_delete_event_reminders` | `contract:write` | The reminder only. The event stays. |
+| `clm_import_contracts` | `contract:write` | Managed import from inline bytes or a remote URL. |
+| `clm_get_import_status` | `contract:read` | Poll import progress and honour `pollAfterMs`. |
+| `clm_create_upload_url` | `contract:write` | Create a short-lived upload destination for ingest. |
+| `clm_ingest_contract` | `contract:write` | File uploaded documents with agent-supplied metadata and analysis. |
+| `clm_add_contract_documents` | `contract:write` | Add draft or related documents, or replace the primary document. |
+| `clm_update_contract` | `contract:write` | Partially update one contract with its latest `updatedAt`. |
+| `clm_bulk_update_contracts` | `contract:write` | Independently update up to 100 contracts. Confirm the batch. |
+| `clm_add_contract_comment` | `contract:write` | Add a comment. After an unknown outcome, list comments before retrying. |
+| `clm_create_contract_type` / `clm_update_contract_type` | `contract:write` | Create types and fields, or replace a supplied field set. |
+| `clm_list_contract_types` / `clm_get_contract_type` | `contract:read` | Inspect types and fields. |
+| `clm_create_party` / `clm_update_party` | `contract:write` | Create or partially update parties. |
+| `clm_list_parties` / `clm_get_party` | `contract:read` | Resolve and inspect parties. |
 
-## Parser
+Use inline base64 import only for a small local file when Contracko should extract it. Use a signed short-lived remote URL when Contracko can fetch the document. Use upload then ingest when bytes must bypass model context and the agent supplies the extraction. Never publish a confidential contract to make a remote URL work. [contracko-import](../../contracko-import/SKILL.md) defines these paths.
 
-Extracts structured data from documents without filing them as managed contracts. Spends credits, where the contract tools do not.
+## Events, reminders, and parser
 
-| Tool | Scope | What it is for |
+Events and reminders need `contract:read` to list and `contract:write` to change. List before a change, use the latest `expectedUpdatedAt` for updates or deletes, and confirm a bulk write. Renewal reminders attach to the existing `end` system event.
+
+| Tool family | Scope | Use |
 |---|---|---|
-| `parser_get_credits` | `parser:compute` | Remaining credits, plan, concurrency. |
-| `parser_preflight` | `parser:compute` | Free, and returns the exact cost per file. Run it before every job. |
-| `parser_create_upload_url` | `parser:compute` | Signed destination, returns the reference a job takes. |
-| `parser_create_job` | `parser:compute` | Spends. `runKind: "extraction"` is fields only; `"review"` adds analysis at roughly double. |
-| `parser_get_job` | `parser:compute` | Status, an inline preview per file, and a download URL for the full export. |
-| `parser_list_jobs` | `parser:compute` | Recent jobs, newest first. |
+| `clm_list_contract_events` | `contract:read` | List custom and supported system events with reminders. |
+| `clm_create_contract_events`, `clm_update_contract_events`, `clm_delete_contract_events` | `contract:write` | Manage custom events. |
+| `clm_create_event_reminders`, `clm_update_event_reminders`, `clm_delete_event_reminders` | `contract:write` | Manage reminders on events. |
+| `parser_get_credits`, `parser_preflight`, `parser_create_upload_url`, `parser_create_job`, `parser_get_job`, `parser_list_jobs` | `parser:compute` | Extract or review documents without filing them as contracts. |
 
-Results expire on the job's `retentionExpiresAt`, after which the export is gone. Where the user needs it kept, download during the window.
-
-## Steps that happen in the app today
-
-The skills in this bundle describe complete workflows, because that is how the work is actually done. Parts of those workflows do not have a tool yet, and the MCP surface is rolling out in phases, so the set below shrinks over time.
-
-**The rule that keeps this safe: your tool list decides, not this table.** Where a tool exists for a step, use it. Where the step is named here and no tool answers to it, that step is the user's to do in the app: say which step, say where, and carry on with the rest of the flow. Never improvise a call for a tool you cannot see, and never quote this table as proof a feature is missing from the product.
-
-| The workflow step | Where it is today | The nearest thing over MCP |
-|---|---|---|
-| folders, filing, moving contracts into a structure | app | A contract carries a `folderId` you can read, and nothing that sets one. |
-| drafting from a template or questionnaire, changing a contract's status | app | The write tools file documents that already exist. |
-| sending for signature, chasing a signer, signature status | app | Nothing. File the executed copy once it comes back. |
-| playbook and clause-library comparison, deviation reports | app | `clm_get_contract_analysis` judges a contract on its own terms rather than against a playbook. |
-| knowledge base and business-context enrichment | app | Nothing yet. |
-| handing an uploaded file to the import pipeline | not yet | `clm_create_upload_url` returns a reference only `clm_ingest_contract` accepts, and `clm_import_contracts` cannot take it. So a local file is either base64 through your context with Contracko extracting, or uploaded machine-to-machine with you extracting. [contracko-import](../../contracko-import/SKILL.md) has the decision. |
-| filtering by value, currency, null presence, or custom fields | local after a complete filtered page-through | First narrow with supported server criteria, then page that complete result before applying the local condition. |
-| attaching an existing party to an existing contract | not yet | Import and ingest attach parties as they file a contract. |
-| deleting or archiving anything | app, by design | Destructive operations are deliberately kept out of an agent's hands. Cleanup is a web app job, so get creates right the first time rather than waiting for a tool that is not coming. |
-
-Every row except the last is a phase question rather than a decision, so re-read your tool list rather than this file when a user asks whether something is possible.
-
-## Product knowledge
-
-What you remember about Contracko's features, limits and pricing may be out of date. Prefer retrieval over recall: the product's machine-readable documentation is at `https://contracko.com/llms.txt`, with markdown endpoints behind it, and where it disagrees with anything here or anything remembered, the documentation wins.
+Parser jobs spend credits. Preflight before creating one, and retrieve exports before their retention window ends.

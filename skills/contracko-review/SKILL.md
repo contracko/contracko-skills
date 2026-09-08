@@ -35,7 +35,7 @@ Never paste a download URL into the chat if you can avoid it. Fetch, then summar
 
 ## Portfolio questions: filter first, then page
 
-`clm_list_contracts` supports `status`, `categoryId`, `counterpartyId`, `query`, `endDateFrom`, `endDateTo`, `noticeDateFrom`, and `noticeDateTo`. These filters combine with AND. `query` is a literal, trimmed, case-insensitive substring of the title, assigned Party B effective display name, or live legal name. It is not semantic search. `clm_search_contract_documents` searches document text, not these fields.
+`clm_list_contracts` supports `status`, `categoryId`, `counterpartyId`, `query`, `endDateFrom`, `endDateTo`, `noticeDateFrom`, `noticeDateTo`, `updatedSince`, and a valid visible `folderId`. These filters combine with AND. `query` is a literal, trimmed, case-insensitive substring of the title and assigned Party B display or legal name, including historical names. It is not semantic search. `clm_search_contract_documents` searches document text, not these fields.
 
 Use the narrowest supported server criteria first. Then follow `nextCursor` until it is `null`, repeating the same normalized filters and `updatedSince` if used. `limit` may change between calls. Cursors are opaque: never edit one. If any filter changes, restart without a cursor.
 
@@ -77,7 +77,7 @@ A reminder needs `offsetValue`, `offsetUnit` (`days` | `weeks` | `months` | `qua
 
 Mutations need `idempotencyKey` (8–128 characters). Update and delete need `expectedUpdatedAt` as a UTC timestamp ending in `Z`. Changing reminders on a custom event advances that event's version: relist before you replace its reminder set. Deleting an event deletes its reminders; deleting a reminder leaves the event.
 
-If these seven tools are missing while `contract:read` or `contract:write` is granted, the credential is below Phase 5: a workspace admin confirms **Enable new MCP actions**, or the user re-consents OAuth. Do not invent a different tool name.
+If these tools are missing while `contract:read` or `contract:write` is granted, refresh discovery first. An older credential can gain newly available MCP actions when a workspace admin confirms **Enable new MCP actions**, or when the user re-consents OAuth. Do not invent a different tool name.
 
 Confirm with the user before a bulk write.
 
@@ -121,12 +121,12 @@ Use `noticeDate` or `endDate` windows for dated buckets, and `status`, `category
 5. `entityStatus: "pending-review"`
 6. Missing `noticeDate` or `endDate` (and not `isOpenEnded`)
 7. Missing `financialAnnualValue`
-8. `folderId` empty — name it as a filing gap; moving is app work
+8. `filing.kind: "unfiled"` — name it as a filing gap; `unavailable` is not an unfiled contract
 9. Analysis `risks` null — not "no risk"
 
 Rank inside a bucket by `noticeDate`, then value. Say how many contracts you paged.
 
-For "What do we have with vendor X", first resolve the vendor with `clm_list_parties` using `query` and, when known, `type`. Confirm the user's selection if the results are ambiguous, then use that party's id as `counterpartyId` in `clm_list_contracts` and page that result.
+For "What do we have with vendor X", first resolve the vendor with `clm_list_parties` using `query` and, when known, `type`. Confirm the user's selection if the results are ambiguous, then use that party's id as `counterpartyId` in `clm_list_contracts` and page that result. For a filing audit, page the relevant result and inspect `filing.kind`; `folderId: null` is not a valid list filter.
 
 **Check `financialValueCurrency` before adding anything up.** Values are per contract and the currency varies, so a total across mixed currencies is a made-up number. Sum per currency, or convert with a rate you state.
 
