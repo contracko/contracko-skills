@@ -1,64 +1,15 @@
-# Install instructions for coding agents
+# Set up Contracko
 
-You are setting up Contracko for a user. Contracko is contract management: a workspace of contracts with extracted dates, parties and values. This repository holds agent skills; the workspace itself is reached over a remote MCP server.
+This repository contains agent skills, not an MCP server to build or run locally. The Contracko MCP server is already hosted at `https://app.contracko.com/mcp` and uses Streamable HTTP.
 
-There is nothing to build, clone or run locally. Do not look for a package to install, a Dockerfile, or a command to start a process. The server is already hosted.
+## Follow the official setup guide
 
-## Step 1: add the skills
+Fetch and follow **https://contracko.com/mcp/install/prompt.md**. It covers skill installation, client configuration, OAuth sign-in, dedicated MCP bearer credentials when OAuth is unavailable, workspace selection, privacy, and read-only verification. Do not ask for a credential in chat or create a duplicate connection.
 
-```bash
-npx skills@latest add contracko/contracko-skills
-```
+For Cline, explicitly select Streamable HTTP (`"type": "streamableHttp"`); see the Cline section of [README.md](README.md). Do not start a local server process.
 
-This installs four skills (`contracko`, `contracko-import`, `contracko-review`, `contracko-create`) into the agent skills directory. It works across Claude Code, Codex, Cursor, Cline, Kilo Code, Gemini CLI, GitHub Copilot, OpenClaw, Hermes and others.
+## After setup
 
-## Step 2: add the connection
+Follow the installed `contracko` skill for contract search, folder filing, and other workflows. Tool names and input/output schemas come from the connection's live MCP discovery, not a copied inventory. Do not broaden permissions simply because an action is missing.
 
-The server address is:
-
-```
-https://app.contracko.com/mcp
-```
-
-It speaks **Streamable HTTP**. Set the transport explicitly where the client offers the choice, because several clients still default to the older SSE transport.
-
-Authentication is **OAuth**. On first use the client opens a browser window where the user signs in to Contracko. A free trial can be started on that screen, so the user does not need an existing account. Do not ask the user for an API key or paste any token unless they specifically want the headless path described below.
-
-Client-specific shapes:
-
-```json
-// Cline: ~/.cline/mcp.json, or the Configure tab in the Cline panel
-{ "mcpServers": { "contracko": { "type": "streamableHttp", "url": "https://app.contracko.com/mcp" } } }
-```
-
-```json
-// Cursor: .cursor/mcp.json
-{ "mcpServers": { "contracko": { "url": "https://app.contracko.com/mcp" } } }
-```
-
-```json
-// VS Code and GitHub Copilot: .vscode/mcp.json
-{ "servers": { "contracko": { "type": "http", "url": "https://app.contracko.com/mcp" } } }
-```
-
-```bash
-# Claude Code
-claude mcp add --transport http contracko https://app.contracko.com/mcp
-
-# Codex
-codex mcp add contracko --url https://app.contracko.com/mcp && codex mcp login contracko
-```
-
-## Step 3: scopes
-
-At the sign-in screen the user picks permissions. Recommend **Read** on its own unless the user has said they want the assistant to change data. **Write** is needed to import contracts, edit fields, or set reminders. Read-only is a safe default and can be widened later by reconnecting.
-
-## Verifying it worked
-
-Ask the server for the contract list. If tools are missing rather than failing, the cause is almost always scopes, not a broken connection. If a call returns `"Your Contracko connection needs to be renewed."`, the OAuth session has expired and the user should reconnect from the client's connector settings.
-
-Do not add Contracko twice. Adding the skills and adding the connection are separate steps, and running the connection step again creates a duplicate entry.
-
-## Docs
-
-https://contracko.com/docs/mcp-server
+Human-readable documentation: https://contracko.com/docs/mcp-server
