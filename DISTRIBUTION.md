@@ -11,12 +11,12 @@ The bundle is a GitHub repo with one folder per skill, `SKILL.md` at each folder
 | Public GitHub repo `contracko/contracko-skills` | this directory as the repo root | created; every official directory pins this URL |
 | Claude Code | plugin marketplace, `claude plugin install` | ready from this repo; skills-only, no MCP double-register |
 | Claude Desktop / claude.ai chat | one zip per skill, uploaded by hand | zips build on release |
-| Claude Connectors Directory | remote MCP listing in Claude.ai | blocked on tool `title`s plus `serverInfo` branding; hints already ship |
+| Claude Connectors Directory | remote MCP listing in Claude.ai | blocked on a Team or Enterprise [claude.ai](https://claude.ai) org (Owners submit from org settings). Tool `title`s and `serverInfo` branding already ship |
 | Claude plugin directory (Cowork + Claude Code) | public GitHub plugin, `claude plugin validate` then Anthropic form | skills-only submit is unblocked; connector listing is preferred, not required |
 | Codex / ChatGPT workspace import | `.agents/plugins/marketplace.json` + `.codex-plugin/plugin.json` | ready for workspace import; public Plugin Directory needs OpenAI review |
 | GitHub Copilot CLI | `.github/plugin/marketplace.json` | ready for `copilot plugin marketplace add contracko/contracko-skills` |
 | Gemini CLI | install skills from the public GitHub repo | no third-party marketplace; GitHub install only |
-| Other coding agents | `npx skills add` | untested |
+| Other coding agents | `npx skills add https://contracko.com` | ready once production serves `/.well-known/skills/index.json` (site PR [contracko/contracko-site#693](https://github.com/contracko/contracko-site/pull/693) merged) |
 
 Do **not** add `.mcp.json` to this plugin. Users who already connected Contracko from a connector directory would get the same server twice. ChatGPT may also mark a plugin with `.mcp.json` as Desktop-only.
 
@@ -26,7 +26,7 @@ Nearly every published distribution pattern is a developer-tool pattern: `npx`, 
 
 **Path A, the contract manager.** A remote MCP server with OAuth, added through their client's connector UI, ideally from a directory listing so it is a button rather than a URL. Ends with a first prompt to try, because the activation event is an answer, not a config file.
 
-**Path B, the coding agent.** One line: fetch [agent-setup/prompt.md](agent-setup/prompt.md) and let the agent install everything itself.
+**Path B, the coding agent.** One line: `npx skills add https://contracko.com`. The MCP connection steps live at [`https://contracko.com/mcp/install/prompt.md`](https://contracko.com/mcp/install/prompt.md); do not add a `/agent-setup/prompt.md` alias.
 
 ## Claude chat needs zips, and the repo has to serve them
 
@@ -62,8 +62,8 @@ Same constraint on frontmatter: claude.ai, the Skills API and `package_skill.py`
 None of this is in this repo, and all of it gates the good distribution paths.
 
 - **Connectors Directory submission** needs: a Team or Enterprise claude.ai org to submit from, OAuth 2.0 (have it), a published privacy policy URL, an icon, a support contact, a test account, and every tool carrying a `title` plus `readOnlyHint` or `destructiveHint`. That last one is real work across 22 tools and it is also just good hygiene: a directory reviewer and a model want the same thing, which is to know whether calling a tool changes anything.
-- **Skills discovery at a well-known path.** Publishing `https://contracko.com/.well-known/skills/index.json` makes `npx skills add https://contracko.com` work and turns a docs deploy into the release. Stripe does exactly this.
-- **`https://contracko.com/agent-setup/prompt.md`** served as plain markdown, no auth, no HTML wrapper. Cloudflare's equivalent is 121 lines and it is the model.
+- **Skills discovery at a well-known path.** `https://contracko.com/.well-known/skills/index.json` makes `npx skills add https://contracko.com` work and turns a docs deploy into the release. Stripe does exactly this. Shipped in site PR 693; live after that production deploy.
+- **Canonical install prompt.** `https://contracko.com/mcp/install/prompt.md`, plain markdown, no auth, no HTML wrapper. There is no `/agent-setup/prompt.md` on the site; that path 404s and should not be documented.
 - **A read-only connection variant.** For contract data, a documented read-only URL is a trust feature rather than a footnote, and it is what an IT team asks for first.
 
 ## Not this
@@ -76,7 +76,7 @@ That principle has a consequence worth holding Contracko to. Some write tools st
 
 Three standards now cover nearly everything, so a vendor shipping from one repo mostly just has to satisfy them.
 
-- **MCP** for tools. Every client supports remote Streamable HTTP; only the wrapper key differs (`url`, `httpUrl`, `serverUrl`, `context_servers`, `streamableHttp`). Verified shapes and config paths per client live in [agent-setup/prompt.md](agent-setup/prompt.md).
+- **MCP** for tools. Every client supports remote Streamable HTTP; only the wrapper key differs (`url`, `httpUrl`, `serverUrl`, `context_servers`, `streamableHttp`). Verified shapes and config paths per client live in [`https://contracko.com/mcp/install/prompt.md`](https://contracko.com/mcp/install/prompt.md).
 - **Agent Skills / `SKILL.md`** became an open standard, and is now read by Codex (`.agents/skills/`), Copilot and VS Code (`.github/skills/`, `.claude/skills/`, `.agents/skills/`), Gemini CLI, Cursor, Cline and Zed. The format here is already the portable one.
 - **Agent Plugins 1.0**, announced August 2026 by Amazon, Cursor, Microsoft, OpenAI, Vercel and Google: one directory with `plugin.json` + `skills/` + `mcp.json`, launching in ChatGPT, Codex, Cursor, Copilot, VS Code and Kiro. Anthropic is not a member, so it does not replace the Claude plugin format.
 
