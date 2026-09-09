@@ -71,7 +71,7 @@ In Claude Code, run:
 
 ```
 /plugin marketplace add https://github.com/contracko/contracko-skills.git
-/plugin install contracko-skills@contracko
+/plugin install contracko@contracko
 ```
 
 Paste that full GitHub address (not a short `owner/repo` name). Then connect:
@@ -81,6 +81,8 @@ claude mcp add --transport http contracko https://app.contracko.com/mcp
 ```
 
 Type `/mcp` in the session and sign in in the browser.
+
+If you installed the older `contracko-skills` plugin, remove that plugin and install `contracko@contracko` after updating the marketplace. The GitHub repository remains `contracko/contracko-skills`; the MCP connection remains `contracko`.
 
 </details>
 

@@ -5,7 +5,7 @@
   },
   "plugins": [
     {
-      "name": "contracko-skills",
+      "name": "contracko",
       "source": {
         "source": "local",
         "path": "./"
