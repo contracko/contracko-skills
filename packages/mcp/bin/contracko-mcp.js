@@ -17,6 +17,13 @@ export function buildProxyArgv(extraArgs = process.argv.slice(2)) {
 // Always start. npm/npx invoke this file through a symlink, so comparing
 // process.argv[1] to import.meta.url without realpath would no-op.
 const child = spawn(process.execPath, buildProxyArgv(), { stdio: 'inherit' })
+
+for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+	process.on(signal, () => {
+		child.kill(signal)
+	})
+}
+
 child.on('exit', (code, signal) => {
 	if (signal) {
 		process.kill(process.pid, signal)

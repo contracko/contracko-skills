@@ -22,6 +22,7 @@ class McpShimTests(unittest.TestCase):
         self.assertIn("mcp-remote", package["dependencies"])
         self.assertNotIn("private", package)
         self.assertEqual(package["engines"]["node"], ">=20.18.1")
+        self.assertEqual(package["mcpName"], "com.contracko/contracko")
 
         launcher = (PACKAGE_DIR / "bin" / "contracko-mcp.js").read_text()
         self.assertIn(MCP_URL, launcher)
