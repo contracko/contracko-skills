@@ -19,8 +19,16 @@ if [ -n "${CI:-}" ] && ! [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]]; then
   exit 2
 fi
 
+release_version="${VERSION:-}"
+directory_check_args=(--check-directory)
+if [ -n "$release_version" ]; then
+  release_version="${release_version#v}"
+  directory_check_args+=(--version "$release_version")
+fi
+python3 scripts/build_release_artifacts.py "${directory_check_args[@]}"
+
 python3 scripts/build_release_artifacts.py \
   --output dist \
-  --version "${VERSION:-0.0.0-dev}" \
+  --version "${release_version:-0.0.0-dev}" \
   --source-commit "$source_commit" \
   $allow_unpinned

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build deterministic skill, chat, OpenClaw, and Hermes release archives."""
+"""Build deterministic skill archives and Agent Plugins directory/release packages."""
 
 from __future__ import annotations
 
@@ -18,6 +18,7 @@ from urllib.parse import urlsplit, urlunsplit
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ("contracko", "contracko-create", "contracko-import", "contracko-review")
 PLATFORMS = ("openclaw", "hermes")
+DIRECTORY_PACKAGE = ROOT / "packages" / "agent-plugin"
 PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 VERSION_PATTERN = re.compile(
     r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)"
@@ -165,14 +166,24 @@ def validate_manifest(manifest: dict[str, object], version: str) -> None:
         raise ValueError("manifest keywords must be a list of strings")
 
 
+def load_manifest(version: str | None = None) -> dict[str, object]:
+    manifest = json.loads((ROOT / "packaging" / "manifest.json").read_text())
+    if version is not None:
+        manifest["version"] = version
+    manifest_version = manifest.get("version")
+    if not isinstance(manifest_version, str) or "{{" in manifest_version:
+        raise ValueError("packaging manifest must contain a concrete version")
+    validate_manifest(manifest, manifest_version)
+    return manifest
+
+
 def build_platform_bundle(output: Path, platform: str, version: str, source_commit: str) -> None:
     package = output / platform
     if package.exists():
         shutil.rmtree(package)
     package.mkdir(parents=True)
 
-    manifest = json.loads((ROOT / "packaging" / "manifest.json").read_text().replace("{{VERSION}}", version))
-    validate_manifest(manifest, version)
+    manifest = load_manifest(version)
     for filename in ("mcp.json", ".mcp.json"):
         if (ROOT / "packaging" / platform / filename).exists():
             raise ValueError(f"{platform} bundle must not include {filename}")
@@ -195,6 +206,84 @@ def build_platform_bundle(output: Path, platform: str, version: str, source_comm
     for skill in SKILLS:
         copy_tree(ROOT / "skills" / skill, package / "skills" / skill)
     zip_tree(package, output / f"contracko-{platform}.zip")
+
+
+def populate_directory_package(destination: Path, manifest: dict[str, object]) -> None:
+    source = ROOT / "packaging" / "directory"
+    reject_symlink_entries(source, label="directory packaging source")
+    for filename in ("mcp.json", ".mcp.json"):
+        if (source / filename).exists():
+            raise ValueError(f"directory package must not include {filename}")
+    destination.mkdir(parents=True, exist_ok=True)
+    write_bytes(destination / "plugin.json", (json.dumps(manifest, indent=2) + "\n").encode())
+    copy_tree(source, destination)
+    write_bytes(destination / "LICENSE", (ROOT / "LICENSE").read_bytes())
+    write_bytes(destination / "NOTICE.md", (ROOT / "packaging" / "NOTICE.md").read_bytes())
+    for skill in SKILLS:
+        skill_source = ROOT / "skills" / skill
+        reject_symlink_entries(skill_source, label=f"canonical skill source {skill}")
+        copy_tree(skill_source, destination / "skills" / skill)
+
+
+def reject_symlink_entries(path: Path, *, label: str) -> None:
+    if path.is_symlink():
+        raise ValueError(f"{label} must not be a symlink: {path}")
+    for child in path.rglob("*"):
+        if child.is_symlink():
+            relative = child.relative_to(path).as_posix()
+            raise ValueError(f"{label} contains symlink: {relative}")
+
+
+def directory_files(path: Path) -> list[str]:
+    reject_symlink_entries(path, label="directory package")
+    return sorted(
+        child.relative_to(path).as_posix()
+        for child in path.rglob("*")
+        if child.is_file() and child.name != ".DS_Store"
+    )
+
+
+def check_directory_package(expected_version: str | None = None) -> None:
+    manifest = load_manifest()
+    if expected_version is not None and manifest["version"] != expected_version:
+        raise ValueError(
+            "directory package version "
+            f"{manifest['version']} does not match requested release version {expected_version}"
+        )
+    with tempfile.TemporaryDirectory() as temporary:
+        expected = Path(temporary) / "agent-plugin"
+        populate_directory_package(expected, manifest)
+        if not DIRECTORY_PACKAGE.is_dir() or DIRECTORY_PACKAGE.is_symlink():
+            raise ValueError("packages/agent-plugin is missing or is not a real directory")
+        expected_files = directory_files(expected)
+        actual_files = directory_files(DIRECTORY_PACKAGE)
+        if expected_files != actual_files:
+            missing = sorted(set(expected_files) - set(actual_files))
+            extra = sorted(set(actual_files) - set(expected_files))
+            raise ValueError(
+                "directory package drift: "
+                f"missing={missing or 'none'} extra={extra or 'none'}"
+            )
+        for relative in expected_files:
+            expected_bytes = (expected / relative).read_bytes()
+            actual_bytes = (DIRECTORY_PACKAGE / relative).read_bytes()
+            if expected_bytes != actual_bytes:
+                raise ValueError(f"directory package drift: {relative} differs")
+
+
+def write_directory_package() -> None:
+    manifest = load_manifest()
+    with tempfile.TemporaryDirectory() as temporary:
+        expected = Path(temporary) / "agent-plugin"
+        populate_directory_package(expected, manifest)
+        if DIRECTORY_PACKAGE.exists() and DIRECTORY_PACKAGE.is_symlink():
+            raise ValueError("packages/agent-plugin must not be a symlink")
+        if DIRECTORY_PACKAGE.exists() and not DIRECTORY_PACKAGE.is_dir():
+            raise ValueError("packages/agent-plugin must be a directory")
+        DIRECTORY_PACKAGE.parent.mkdir(parents=True, exist_ok=True)
+        if DIRECTORY_PACKAGE.exists():
+            shutil.rmtree(DIRECTORY_PACKAGE)
+        shutil.copytree(expected, DIRECTORY_PACKAGE)
 
 
 def default_source_commit() -> str:
@@ -240,16 +329,43 @@ def validate_output_path(output: Path) -> Path:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ROOT / "dist")
-    parser.add_argument("--version", default="0.0.0-dev")
+    parser.add_argument(
+        "--version",
+        default=None,
+        help="Release version; directory checks reject versions differing from the committed package",
+    )
     parser.add_argument("--source-commit", default=default_source_commit())
     parser.add_argument(
         "--allow-unpinned",
         action="store_true",
         help="Allow a non-SHA source marker for local, non-release builds",
     )
+    directory = parser.add_mutually_exclusive_group()
+    directory.add_argument(
+        "--check-directory",
+        action="store_true",
+        help="Check the committed Agent Plugins directory package for generated drift",
+    )
+    directory.add_argument(
+        "--write-directory",
+        action="store_true",
+        help="Regenerate the committed Agent Plugins directory package",
+    )
     args = parser.parse_args()
-    if not VERSION_PATTERN.fullmatch(args.version):
+    version = args.version or "0.0.0-dev"
+    if not VERSION_PATTERN.fullmatch(version):
         parser.error("--version must be a semantic version")
+
+    if args.check_directory or args.write_directory:
+        try:
+            if args.write_directory:
+                write_directory_package()
+            else:
+                check_directory_package(args.version)
+        except ValueError as error:
+            parser.error(str(error))
+        return 0
+
     if not args.source_commit:
         parser.error("--source-commit must not be empty")
     if not COMMIT_PATTERN.fullmatch(args.source_commit) and not args.allow_unpinned:
@@ -268,7 +384,7 @@ def main() -> int:
     build_skill_archives(output)
     build_chat_archive(output)
     for platform in PLATFORMS:
-        build_platform_bundle(output, platform, args.version, args.source_commit)
+        build_platform_bundle(output, platform, version, args.source_commit)
     print("\n".join(path.name for path in sorted(output.glob("*.zip"))))
     return 0
 

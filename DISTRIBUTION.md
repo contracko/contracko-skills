@@ -18,6 +18,7 @@ The bundle is a GitHub repo with one folder per skill, `SKILL.md` at each folder
 | Gemini CLI | install skills from the public GitHub repo | no third-party marketplace; GitHub install only |
 | OpenClaw | generated Agent Plugins v1 content bundle | release artifact; native MCP registration and OAuth remain user-owned |
 | Hermes | generated Agent Plugins v1 content bundle | release artifact; native MCP registration and OAuth remain user-owned |
+| Agent Plugins Directory | `packages/agent-plugin/plugin.json` in the public Git tree | canonical skills-only package; nested manifest is crawler-discoverable; native MCP registration and OAuth remain user-owned |
 | Other coding agents | `npx skills add https://contracko.com` | ready once production serves `/.well-known/skills/index.json` (site PR [contracko/contracko-site#693](https://github.com/contracko/contracko-site/pull/693) merged) |
 | Goose and other stdio MCP clients | `npx -y @contracko/mcp` | launcher in `packages/mcp`; publishes to the public npm registry, not GitHub Packages. Proxies stdio to `https://app.contracko.com/mcp`. Not a second MCP server. First publish needs the `NPM_TOKEN` secret on this repo. |
 
@@ -84,9 +85,11 @@ Three standards now cover nearly everything, so a vendor shipping from one repo 
 - **Agent Skills / `SKILL.md`** became an open standard, and is now read by Codex (`.agents/skills/`), Copilot and VS Code (`.github/skills/`, `.claude/skills/`, `.agents/skills/`), Gemini CLI, Cursor, Cline and Zed. The format here is already the portable one.
 - **Agent Plugins 1.0**, announced August 2026 by Amazon, Cursor, Microsoft, OpenAI, Vercel and Google: one directory with `plugin.json` + `skills/` + `mcp.json`, launching in ChatGPT, Codex, Cursor, Copilot, VS Code and Kiro. Anthropic is not a member, so it does not replace the Claude plugin format.
 
-**Agent Plugins v1 is used only for the OpenClaw and Hermes content bundles.** The bundles contain a standard `plugin.json` and the four canonical skills. They intentionally omit `mcp.json`: the portable format has no OAuth field, and an unauthenticated duplicate server would be misleading. Existing Claude, Codex, Cursor, Gemini, and other client manifests remain unchanged for compatibility.
+**Agent Plugins v1 is used for the canonical directory package and the OpenClaw/Hermes release bundles.** The directory package at `packages/agent-plugin/` contains a standard `plugin.json` and the four canonical skills as generated files. It is the public Git-tree package for the directory crawler, which records its nested manifest path. The release bundles use the same generated content. All Agent Plugins packages intentionally omit `mcp.json`: the portable format has no OAuth field, and an unauthenticated duplicate server would be misleading. Existing Claude, Codex, Cursor, Gemini, and other client manifests remain unchanged for compatibility.
 
-The release builder renders both bundles from `skills/` and `packaging/manifest.json`. It records the source commit in `RELEASE-METADATA.json`, fixes archive ordering and timestamps, and runs in the existing release workflow. No host software, OAuth client, credential store, or background updater is shipped.
+The release builder renders the directory package and both bundles from `skills/` and `packaging/manifest.json`. It records the source commit in bundle `RELEASE-METADATA.json`, fixes archive ordering and timestamps, and runs in the existing release workflow. No host software, OAuth client, credential store, or background updater is shipped.
+
+The committed directory package is not hand-maintained. Regenerate it with `python3 scripts/build_release_artifacts.py --write-directory`; CI and `build-zips.sh` run `--check-directory` and fail on missing, extra, or changed files. Keep the repository-root `mcp.json` and `.mcp.json` outside this package because they serve existing client integrations, including Cursor's format.
 
 The generated manifest follows the [Agent Plugins v1 specification](https://agent-plugins.org/specification/). The host flows follow [OpenClaw bundle mapping](https://github.com/openclaw/openclaw/blob/2f8cd215e92320703237b8def415b691f15f3b56/docs/plugins/bundles.md) and [Hermes portable package guidance](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins).
 
