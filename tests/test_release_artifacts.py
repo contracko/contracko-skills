@@ -93,6 +93,56 @@ class ReleaseArtifactTests(unittest.TestCase):
                                 archive_name = f"skills/{skill}/{path.relative_to(ROOT / 'skills' / skill).as_posix()}"
                                 self.assertEqual(archive.read(archive_name), path.read_bytes())
 
+    def test_committed_directory_package_exposes_canonical_skills(self) -> None:
+        package = ROOT / "packages" / "agent-plugin"
+        self.assertTrue((package / "plugin.json").is_file())
+        self.assertTrue((package / "README.md").is_file())
+        self.assertTrue((package / "LICENSE").is_file())
+        self.assertTrue((package / "NOTICE.md").is_file())
+        self.assertNotIn("mcp.json", {path.name for path in package.rglob("*")})
+        self.assertNotIn(".mcp.json", {path.name for path in package.rglob("*")})
+
+        manifest = json.loads((package / "plugin.json").read_text())
+        self.assertEqual(manifest["$schema"], PLUGIN_SCHEMA)
+        self.assertEqual(manifest["name"], "contracko")
+        self.assertNotIn("{{VERSION}}", manifest["version"])
+        self.assertEqual(
+            set(manifest),
+            {
+                "$schema",
+                "name",
+                "version",
+                "description",
+                "author",
+                "homepage",
+                "repository",
+                "license",
+                "keywords",
+            },
+        )
+
+        for skill in SKILLS:
+            source = ROOT / "skills" / skill
+            generated = package / "skills" / skill
+            self.assertTrue((generated / "SKILL.md").is_file())
+            for path in source.rglob("*"):
+                if path.is_file():
+                    relative = path.relative_to(source)
+                    self.assertEqual((generated / relative).read_bytes(), path.read_bytes())
+
+    def test_committed_directory_package_passes_generator_drift_check(self) -> None:
+        result = subprocess.run(
+            [
+                "python3",
+                str(ROOT / "scripts/build_release_artifacts.py"),
+                "--check-directory",
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_platform_archives_are_reproducible_for_same_inputs(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             first = Path(temporary) / "first"

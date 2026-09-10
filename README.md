@@ -27,6 +27,8 @@ A browser window will open. Sign in to Contracko (or start the free trial there)
 
 When you sign in, tick **Read** so it can answer questions. Tick **Write** only if it should add or change contracts. Leave **Write** off unless you want that.
 
+The canonical Agent Plugins v1 skills package is generated at [`packages/agent-plugin/`](packages/agent-plugin/). It is skills-only. Connect `https://app.contracko.com/mcp` through the host client's native MCP and OAuth flow.
+
 Open the section for the product you use.
 
 <details>

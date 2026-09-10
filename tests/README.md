@@ -20,6 +20,16 @@ Build the same release artifacts locally with:
 SOURCE_COMMIT=$(git rev-parse HEAD) VERSION=1.2.3 ./build-zips.sh
 ```
 
+The public Agent Plugins Directory package is generated from the same canonical skills:
+
+```bash
+python3 scripts/build_release_artifacts.py --write-directory
+python3 scripts/build_release_artifacts.py --check-directory
+```
+
+Do not edit `packages/agent-plugin/` by hand. The check fails on drift and keeps the nested
+`plugin.json` plus immediate `skills/<name>/SKILL.md` files aligned with `skills/`.
+
 Tag releases supply the tag version and GitHub commit SHA through the release workflow. The generated
 platform archives contain setup guidance only; native MCP registration and OAuth remain host-owned.
 

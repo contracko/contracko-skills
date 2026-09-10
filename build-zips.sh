@@ -19,6 +19,8 @@ if [ -n "${CI:-}" ] && ! [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]]; then
   exit 2
 fi
 
+python3 scripts/build_release_artifacts.py --check-directory
+
 python3 scripts/build_release_artifacts.py \
   --output dist \
   --version "${VERSION:-0.0.0-dev}" \
