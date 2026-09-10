@@ -1,0 +1,39 @@
+{
+  "name": "@contracko/mcp",
+  "version": "0.1.0",
+  "mcpName": "com.contracko/contracko",
+  "description": "npx launcher for the Contracko MCP server (stdio to Streamable HTTP).",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "contracko-mcp": "bin/contracko-mcp.js"
+  },
+  "files": [
+    "bin",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/contracko/contracko-skills.git",
+    "directory": "packages/mcp"
+  },
+  "homepage": "https://contracko.com/mcp",
+  "bugs": {
+    "url": "https://github.com/contracko/contracko-skills/issues"
+  },
+  "keywords": [
+    "mcp",
+    "contracko",
+    "modelcontextprotocol"
+  ],
+  "engines": {
+    "node": ">=20.18.1"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org"
+  },
+  "dependencies": {
+    "mcp-remote": "^0.8.6"
+  }
+}

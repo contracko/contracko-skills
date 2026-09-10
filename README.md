@@ -213,6 +213,19 @@ Run `hermes mcp login contracko` and sign in in the browser. Choose **Read** or 
 </details>
 
 <details>
+<summary><strong>Goose and other stdio clients</strong></summary>
+
+These clients spawn a local process instead of opening the HTTP endpoint themselves:
+
+```bash
+npx -y @contracko/mcp
+```
+
+That package only launches the hosted server at `https://app.contracko.com/mcp`. It is not a second MCP implementation. Skills still install with `npx skills add https://contracko.com`.
+
+</details>
+
+<details>
 <summary><strong>Any other assistant</strong></summary>
 
 Paste this into the assistant and let it follow the file:

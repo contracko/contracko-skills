@@ -19,6 +19,7 @@ The bundle is a GitHub repo with one folder per skill, `SKILL.md` at each folder
 | OpenClaw | generated Agent Plugins v1 content bundle | release artifact; native MCP registration and OAuth remain user-owned |
 | Hermes | generated Agent Plugins v1 content bundle | release artifact; native MCP registration and OAuth remain user-owned |
 | Other coding agents | `npx skills add https://contracko.com` | ready once production serves `/.well-known/skills/index.json` (site PR [contracko/contracko-site#693](https://github.com/contracko/contracko-site/pull/693) merged) |
+| Goose and other stdio MCP clients | `npx -y @contracko/mcp` | launcher in `packages/mcp`; publishes to the public npm registry, not GitHub Packages. Proxies stdio to `https://app.contracko.com/mcp`. Not a second MCP server. First publish needs the `NPM_TOKEN` secret on this repo. |
 
 Do **not** add `.mcp.json` to this plugin. Users who already connected Contracko from a connector directory would get the same server twice. ChatGPT may also mark a plugin with `.mcp.json` as Desktop-only.
 
@@ -67,6 +68,7 @@ None of this is in this repo, and all of it gates the good distribution paths.
 - **Skills discovery at a well-known path.** `https://contracko.com/.well-known/skills/index.json` makes `npx skills add https://contracko.com` work and turns a docs deploy into the release. Stripe does exactly this. Shipped in site PR 693; live after that production deploy.
 - **Canonical install prompt.** `https://contracko.com/mcp/install/prompt.md`, plain markdown, no auth, no HTML wrapper. There is no `/agent-setup/prompt.md` on the site; that path 404s and should not be documented.
 - **A read-only connection variant.** For contract data, a documented read-only URL is a trust feature rather than a footnote, and it is what an IT team asks for first.
+- **Public npm for `@contracko/mcp`.** Goose and other stdio clients run `npx -y @contracko/mcp`. That package lives in `packages/mcp` and publishes from the `v*` release workflow when `NPM_TOKEN` is set. GitHub Packages is the wrong registry for this: Goose cannot fetch it. The launcher is not a second MCP server.
 
 ## Not this
 

@@ -14,5 +14,17 @@
       "type": "streamable-http",
       "url": "https://app.contracko.com/mcp"
     }
+  ],
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@contracko/mcp",
+      "version": "0.1.0",
+      "runtimeHint": "npx",
+      "transport": {
+        "type": "stdio"
+      }
+    }
   ]
 }
