@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import tempfile
 import unittest
@@ -142,6 +143,66 @@ class ReleaseArtifactTests(unittest.TestCase):
             text=True,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_directory_check_rejects_release_version_mismatch(self) -> None:
+        result = subprocess.run(
+            [
+                "python3",
+                str(ROOT / "scripts/build_release_artifacts.py"),
+                "--check-directory",
+                "--version",
+                "9.9.9",
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("does not match requested release version", result.stderr)
+
+    def test_release_wrapper_rejects_version_mismatch(self) -> None:
+        environment = os.environ.copy()
+        environment.update(
+            {
+                "VERSION": "9.9.9",
+                "SOURCE_COMMIT": "0123456789abcdef0123456789abcdef01234567",
+            }
+        )
+        result = subprocess.run(
+            ["bash", str(ROOT / "build-zips.sh")],
+            cwd=ROOT,
+            env=environment,
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("does not match requested release version", result.stderr)
+
+    def test_directory_check_rejects_symlinked_entries(self) -> None:
+        package_file = ROOT / "packages/agent-plugin/skills/contracko/SKILL.md"
+        original = package_file.read_bytes()
+        result = None
+        try:
+            package_file.unlink()
+            package_file.symlink_to(ROOT / "skills/contracko/SKILL.md")
+            result = subprocess.run(
+                [
+                    "python3",
+                    str(ROOT / "scripts/build_release_artifacts.py"),
+                    "--check-directory",
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+            )
+        finally:
+            if package_file.is_symlink():
+                package_file.unlink()
+            package_file.write_bytes(original)
+
+        self.assertIsNotNone(result)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("contains symlink", result.stderr)
 
     def test_platform_archives_are_reproducible_for_same_inputs(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

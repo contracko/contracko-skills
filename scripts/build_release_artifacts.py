@@ -210,6 +210,7 @@ def build_platform_bundle(output: Path, platform: str, version: str, source_comm
 
 def populate_directory_package(destination: Path, manifest: dict[str, object]) -> None:
     source = ROOT / "packaging" / "directory"
+    reject_symlink_entries(source, label="directory packaging source")
     for filename in ("mcp.json", ".mcp.json"):
         if (source / filename).exists():
             raise ValueError(f"directory package must not include {filename}")
@@ -219,10 +220,22 @@ def populate_directory_package(destination: Path, manifest: dict[str, object]) -
     write_bytes(destination / "LICENSE", (ROOT / "LICENSE").read_bytes())
     write_bytes(destination / "NOTICE.md", (ROOT / "packaging" / "NOTICE.md").read_bytes())
     for skill in SKILLS:
-        copy_tree(ROOT / "skills" / skill, destination / "skills" / skill)
+        skill_source = ROOT / "skills" / skill
+        reject_symlink_entries(skill_source, label=f"canonical skill source {skill}")
+        copy_tree(skill_source, destination / "skills" / skill)
+
+
+def reject_symlink_entries(path: Path, *, label: str) -> None:
+    if path.is_symlink():
+        raise ValueError(f"{label} must not be a symlink: {path}")
+    for child in path.rglob("*"):
+        if child.is_symlink():
+            relative = child.relative_to(path).as_posix()
+            raise ValueError(f"{label} contains symlink: {relative}")
 
 
 def directory_files(path: Path) -> list[str]:
+    reject_symlink_entries(path, label="directory package")
     return sorted(
         child.relative_to(path).as_posix()
         for child in path.rglob("*")
@@ -230,8 +243,13 @@ def directory_files(path: Path) -> list[str]:
     )
 
 
-def check_directory_package() -> None:
+def check_directory_package(expected_version: str | None = None) -> None:
     manifest = load_manifest()
+    if expected_version is not None and manifest["version"] != expected_version:
+        raise ValueError(
+            "directory package version "
+            f"{manifest['version']} does not match requested release version {expected_version}"
+        )
     with tempfile.TemporaryDirectory() as temporary:
         expected = Path(temporary) / "agent-plugin"
         populate_directory_package(expected, manifest)
@@ -311,7 +329,11 @@ def validate_output_path(output: Path) -> Path:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ROOT / "dist")
-    parser.add_argument("--version", default="0.0.0-dev")
+    parser.add_argument(
+        "--version",
+        default=None,
+        help="Release version; directory checks reject versions differing from the committed package",
+    )
     parser.add_argument("--source-commit", default=default_source_commit())
     parser.add_argument(
         "--allow-unpinned",
@@ -330,7 +352,8 @@ def main() -> int:
         help="Regenerate the committed Agent Plugins directory package",
     )
     args = parser.parse_args()
-    if not VERSION_PATTERN.fullmatch(args.version):
+    version = args.version or "0.0.0-dev"
+    if not VERSION_PATTERN.fullmatch(version):
         parser.error("--version must be a semantic version")
 
     if args.check_directory or args.write_directory:
@@ -338,7 +361,7 @@ def main() -> int:
             if args.write_directory:
                 write_directory_package()
             else:
-                check_directory_package()
+                check_directory_package(args.version)
         except ValueError as error:
             parser.error(str(error))
         return 0
@@ -361,7 +384,7 @@ def main() -> int:
     build_skill_archives(output)
     build_chat_archive(output)
     for platform in PLATFORMS:
-        build_platform_bundle(output, platform, args.version, args.source_commit)
+        build_platform_bundle(output, platform, version, args.source_commit)
     print("\n".join(path.name for path in sorted(output.glob("*.zip"))))
     return 0
 
