@@ -176,25 +176,30 @@ Sign in in the browser that opens.
 <details>
 <summary><strong>OpenClaw</strong></summary>
 
+For the thin wrapper, download [contracko-openclaw.zip](https://github.com/contracko/contracko-skills/releases/latest/download/contracko-openclaw.zip), extract it, and install the directory through OpenClaw's normal bundle flow. The archive contains the four skills only. It does not register or authenticate an MCP server.
+
+For a skills-only install, run `npx skills@latest add contracko/contracko-skills`.
+
+If you already have the skills, use the native setup below. Check for an existing `contracko` entry first and do not add a second connection:
+
 ```bash
-npx skills@latest add contracko/contracko-skills
 openclaw mcp set contracko '{"url":"https://app.contracko.com/mcp","transport":"streamable-http"}'
 openclaw mcp configure contracko --auth oauth
 openclaw mcp login contracko
 ```
 
-Sign in in the browser that opens.
+Run those commands only after explicitly approving the new central entry. Sign in in the browser that opens and choose **Read** or **Write** scopes yourself.
 
 </details>
 
 <details>
 <summary><strong>Hermes</strong></summary>
 
-```bash
-npx skills@latest add contracko/contracko-skills
-```
+For the thin wrapper, download [contracko-hermes.zip](https://github.com/contracko/contracko-skills/releases/latest/download/contracko-hermes.zip), extract it, and install the directory through Hermes's normal plugin flow. Review and enable the package explicitly. The archive contains the four skills only. It does not write MCP configuration or credentials.
 
-Then add this to `~/.hermes/config.yaml`:
+For a skills-only install, run `npx skills@latest add contracko/contracko-skills`.
+
+If you already have the skills, check `~/.hermes/config.yaml` for an existing `mcp_servers.contracko` entry first. If none exists, explicitly approve adding this entry while preserving the rest of the file:
 
 ```yaml
 mcp_servers:
@@ -203,7 +208,7 @@ mcp_servers:
     auth: oauth
 ```
 
-Run `hermes mcp login contracko` and sign in in the browser.
+Run `hermes mcp login contracko` and sign in in the browser. Choose **Read** or **Write** scopes yourself.
 
 </details>
 
