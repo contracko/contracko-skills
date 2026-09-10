@@ -123,6 +123,32 @@ class ReleaseArtifactTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("full 40-character commit SHA", result.stderr)
 
+    def test_release_build_accepts_prerelease_and_build_metadata(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "dist"
+            self.build(output, version="1.2.3-rc.1+build.5")
+            with zipfile.ZipFile(output / "contracko-openclaw.zip") as archive:
+                manifest = json.loads(archive.read("plugin.json"))
+            self.assertEqual(manifest["version"], "1.2.3-rc.1+build.5")
+
+    def test_release_build_rejects_repository_output_paths(self) -> None:
+        result = subprocess.run(
+            [
+                "python3",
+                str(ROOT / "scripts/build_release_artifacts.py"),
+                "--output",
+                str(ROOT),
+                "--source-commit",
+                "0123456789abcdef0123456789abcdef01234567",
+            ],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+        )
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("--output", result.stderr)
+        self.assertIn("repository", result.stderr)
+
     def test_setup_guidance_keeps_registration_and_consent_host_owned(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "dist"

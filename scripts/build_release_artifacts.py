@@ -19,7 +19,12 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ("contracko", "contracko-create", "contracko-import", "contracko-review")
 PLATFORMS = ("openclaw", "hermes")
 PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
-VERSION_PATTERN = re.compile(r"^[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?$")
+VERSION_PATTERN = re.compile(
+    r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)"
+    r"(?:-(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)"
+    r"(?:\.(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*)?"
+    r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$"
+)
 COMMIT_PATTERN = re.compile(r"^[a-f0-9]{40}$")
 
 
@@ -201,6 +206,36 @@ def default_source_commit() -> str:
         return "working-tree"
 
 
+def validate_output_path(output: Path) -> Path:
+    """Return a safe output path without allowing source-tree deletion."""
+    resolved = output.resolve()
+    root = ROOT.resolve()
+    dist = (root / "dist").resolve()
+
+    # The default release output lives under dist. Every other path inside the
+    # checkout is either source, tests, metadata, or git state and must remain
+    # protected from the clean-before-build step.
+    try:
+        resolved.relative_to(dist)
+    except ValueError:
+        try:
+            resolved.relative_to(root)
+        except ValueError:
+            pass
+        else:
+            raise ValueError("--output must be outside the repository or inside repository dist/")
+
+    # An ancestor of the repository would delete the checkout when cleaned.
+    try:
+        root.relative_to(resolved)
+    except ValueError:
+        pass
+    else:
+        raise ValueError("--output cannot contain the repository")
+
+    return resolved
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ROOT / "dist")
@@ -219,17 +254,21 @@ def main() -> int:
     if not COMMIT_PATTERN.fullmatch(args.source_commit) and not args.allow_unpinned:
         parser.error("--source-commit must be a full 40-character commit SHA")
 
-    args.output.mkdir(parents=True, exist_ok=True)
-    for child in args.output.iterdir():
+    try:
+        output = validate_output_path(args.output)
+    except ValueError as error:
+        parser.error(str(error))
+    output.mkdir(parents=True, exist_ok=True)
+    for child in output.iterdir():
         if child.is_dir():
             shutil.rmtree(child)
         else:
             child.unlink()
-    build_skill_archives(args.output)
-    build_chat_archive(args.output)
+    build_skill_archives(output)
+    build_chat_archive(output)
     for platform in PLATFORMS:
-        build_platform_bundle(args.output, platform, args.version, args.source_commit)
-    print("\n".join(path.name for path in sorted(args.output.glob("*.zip"))))
+        build_platform_bundle(output, platform, args.version, args.source_commit)
+    print("\n".join(path.name for path in sorted(output.glob("*.zip"))))
     return 0
 
 
