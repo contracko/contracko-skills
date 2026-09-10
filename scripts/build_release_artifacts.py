@@ -210,19 +210,20 @@ def validate_output_path(output: Path) -> Path:
     """Return a safe output path without allowing source-tree deletion."""
     resolved = output.resolve()
     root = ROOT.resolve()
-    dist = (root / "dist").resolve()
+    dist = root / "dist"
 
     # The default release output lives under dist. Every other path inside the
     # checkout is either source, tests, metadata, or git state and must remain
-    # protected from the clean-before-build step.
+    # protected from the clean-before-build step. Keep dist lexical: resolving
+    # it would let a symlink redefine the only repository subtree we may clean.
     try:
-        resolved.relative_to(dist)
+        resolved.relative_to(root)
     except ValueError:
+        pass
+    else:
         try:
-            resolved.relative_to(root)
+            resolved.relative_to(dist)
         except ValueError:
-            pass
-        else:
             raise ValueError("--output must be outside the repository or inside repository dist/")
 
     # An ancestor of the repository would delete the checkout when cleaned.

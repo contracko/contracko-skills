@@ -149,6 +149,26 @@ class ReleaseArtifactTests(unittest.TestCase):
         self.assertIn("--output", result.stderr)
         self.assertIn("repository", result.stderr)
 
+    def test_release_build_rejects_symlinked_source_output(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "dist-link"
+            output.symlink_to(ROOT / "scripts", target_is_directory=True)
+            result = subprocess.run(
+                [
+                    "python3",
+                    str(ROOT / "scripts/build_release_artifacts.py"),
+                    "--output",
+                    str(output),
+                    "--source-commit",
+                    "0123456789abcdef0123456789abcdef01234567",
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("inside repository dist/", result.stderr)
+
     def test_setup_guidance_keeps_registration_and_consent_host_owned(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "dist"
