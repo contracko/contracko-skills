@@ -41,8 +41,8 @@ jobs:
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
-      - name: Publish @contracko/mcp
+      - name: Stage @contracko/mcp
         working-directory: packages/mcp
         run: |
           npm ci
-          npm publish --access public
+          npm stage publish --access public
