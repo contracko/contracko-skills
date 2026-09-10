@@ -17,8 +17,12 @@ jobs:
           python-version: '3.12'
       - name: Validate tool contracts and packaged links
         run: python3 -m unittest discover -s tests -v
-      - name: Build one zip per skill
-        run: ./build-zips.sh
+      - name: Build deterministic release archives
+        env:
+          SOURCE_COMMIT: ${{ github.sha }}
+          VERSION: ${{ github.ref_name }}
+        run: |
+          VERSION="${VERSION#v}" ./build-zips.sh
       - name: Attach to the release
         uses: softprops/action-gh-release@v2
         with:

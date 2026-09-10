@@ -22,7 +22,7 @@ Where the user asks for words rather than mechanics, drafting a clause, a summar
 ## The flow
 
 1. **Establish what the contract has to do.** The questionnaire below.
-2. **Write the answers down somewhere that outlives this conversation.** The handoff, and it is not optional.
+2. **Offer a handoff, but persist it only after an explicit destination choice and consent.**
 3. **Draft it** from a template — app step.
 4. **Route it for signature** — app step.
 5. **Add the executed copy** — [contracko-import](../contracko-import/SKILL.md), and this one is yours.
@@ -61,9 +61,17 @@ Read the answers back before drafting. A questionnaire whose answers were never 
 
 Signature takes days or weeks, in an app, with the agent gone. The user comes back in a new conversation that remembers none of this, and **a drafted contract has no record in Contracko**, because nothing is filed until step 5. So unless the answers are written down, the notice period you just made someone decide is lost between the deciding and the signing.
 
-Write them where the user will find them again. In a coding agent, a file next to their work, named for the counterparty. In a chat client with no filesystem, a single block handed to the user to keep, and say plainly that it is the only copy.
+The handoff can contain sensitive contract details. Before writing it, show the fields you plan to record and ask the user to choose a destination:
 
-Record, at minimum:
+- an exact local path the user names and can secure
+- an encrypted vault or notebook destination the user names
+- a chat-only copy that the user saves themselves
+
+State the exact destination and contents, then ask for explicit consent before writing. Do not write a handoff to the current working directory, a temporary directory, plugin data, logs, transcripts, a remote store, or Contracko without that choice and consent. Never add credentials or full contract text to a handoff unless the user asks for it.
+
+If the user does not choose a destination and give consent, do not persist the handoff. Provide a redacted block in the response for the user to save themselves, and say that it is not stored by the agent.
+
+For an explicitly approved secure destination, record at minimum:
 
 - the parties, and which entity of ours is contracting
 - start date, end date or open-ended, renewal term

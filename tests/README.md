@@ -10,6 +10,18 @@ The checks verify tool names across skill Markdown, annotated MCP examples, sele
 claims, and links inside the merged chat ZIP. Example arguments are checked against the pinned input
 schemas, including types, enums, bounds, string patterns, nullable branches, and date windows. This
 is a targeted documentation check, not a general JSON Schema validator or a live MCP integration test.
+The release tests also build the OpenClaw and Hermes bundles from the canonical skill directories,
+check the Agent Plugins v1 manifest boundary, compare skill bytes, and verify reproducibility. They
+do not install or run OpenClaw or Hermes.
+
+Build the same release artifacts locally with:
+
+```bash
+SOURCE_COMMIT=$(git rev-parse HEAD) VERSION=1.2.3 ./build-zips.sh
+```
+
+Tag releases supply the tag version and GitHub commit SHA through the release workflow. The generated
+platform archives contain setup guidance only; native MCP registration and OAuth remain host-owned.
 
 Mark executable examples with `json mcp:<tool-name>` on the opening code fence. Values must be
 syntactically valid examples, not placeholders. Explain nearby that real IDs come from discovery and

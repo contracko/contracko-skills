@@ -16,6 +16,8 @@ The bundle is a GitHub repo with one folder per skill, `SKILL.md` at each folder
 | Codex / ChatGPT workspace import | `.agents/plugins/marketplace.json` + `.codex-plugin/plugin.json` | ready for workspace import; public Plugin Directory needs OpenAI review |
 | GitHub Copilot CLI | `.github/plugin/marketplace.json` | ready for `copilot plugin marketplace add contracko/contracko-skills` |
 | Gemini CLI | install skills from the public GitHub repo | no third-party marketplace; GitHub install only |
+| OpenClaw | generated Agent Plugins v1 content bundle | release artifact; native MCP registration and OAuth remain user-owned |
+| Hermes | generated Agent Plugins v1 content bundle | release artifact; native MCP registration and OAuth remain user-owned |
 | Other coding agents | `npx skills add https://contracko.com` | ready once production serves `/.well-known/skills/index.json` (site PR [contracko/contracko-site#693](https://github.com/contracko/contracko-site/pull/693) merged) |
 
 Do **not** add `.mcp.json` to this plugin. Users who already connected Contracko from a connector directory would get the same server twice. ChatGPT may also mark a plugin with `.mcp.json` as Desktop-only.
@@ -80,7 +82,16 @@ Three standards now cover nearly everything, so a vendor shipping from one repo 
 - **Agent Skills / `SKILL.md`** became an open standard, and is now read by Codex (`.agents/skills/`), Copilot and VS Code (`.github/skills/`, `.claude/skills/`, `.agents/skills/`), Gemini CLI, Cursor, Cline and Zed. The format here is already the portable one.
 - **Agent Plugins 1.0**, announced August 2026 by Amazon, Cursor, Microsoft, OpenAI, Vercel and Google: one directory with `plugin.json` + `skills/` + `mcp.json`, launching in ChatGPT, Codex, Cursor, Copilot, VS Code and Kiro. Anthropic is not a member, so it does not replace the Claude plugin format.
 
-**Not adopting Agent Plugins yet.** It is still a Working Draft with no signing, no permission model and no secrets story, and adopting it means a second manifest and a repo restructure. The reason to do it is coverage: one layout would serve Codex, ChatGPT, Cursor, Copilot and VS Code at once. Revisit when the draft freezes, or when a real user asks from one of those clients.
+**Agent Plugins v1 is used only for the OpenClaw and Hermes content bundles.** The bundles contain a standard `plugin.json` and the four canonical skills. They intentionally omit `mcp.json`: the portable format has no OAuth field, and an unauthenticated duplicate server would be misleading. Existing Claude, Codex, Cursor, Gemini, and other client manifests remain unchanged for compatibility.
+
+The release builder renders both bundles from `skills/` and `packaging/manifest.json`. It records the source commit in `RELEASE-METADATA.json`, fixes archive ordering and timestamps, and runs in the existing release workflow. No host software, OAuth client, credential store, or background updater is shipped.
+
+The generated manifest follows the [Agent Plugins v1 specification](https://agent-plugins.org/specification/). The host flows follow [OpenClaw bundle mapping](https://github.com/openclaw/openclaw/blob/2f8cd215e92320703237b8def415b691f15f3b56/docs/plugins/bundles.md) and [Hermes portable package guidance](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins).
+
+Release assets:
+
+- `https://github.com/contracko/contracko-skills/releases/latest/download/contracko-openclaw.zip`
+- `https://github.com/contracko/contracko-skills/releases/latest/download/contracko-hermes.zip`
 
 Two cheap things worth doing when the docs page is built, both MCP-only and neither carrying skills:
 

@@ -1,0 +1,20 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "contracko",
+  "version": "{{VERSION}}",
+  "description": "Contracko contract-management skills with guided native MCP setup.",
+  "author": {
+    "name": "Contracko",
+    "url": "https://contracko.com"
+  },
+  "homepage": "https://contracko.com/mcp/contract-management",
+  "repository": "https://github.com/contracko/contracko-skills",
+  "license": "MIT",
+  "keywords": [
+    "contracko",
+    "contract-management",
+    "mcp",
+    "legal",
+    "procurement"
+  ]
+}
