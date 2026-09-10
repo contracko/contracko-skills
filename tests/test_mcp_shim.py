@@ -21,11 +21,14 @@ class McpShimTests(unittest.TestCase):
         self.assertEqual(package["publishConfig"]["registry"], "https://registry.npmjs.org")
         self.assertIn("mcp-remote", package["dependencies"])
         self.assertNotIn("private", package)
+        self.assertEqual(package["engines"]["node"], ">=20.18.1")
 
         launcher = (PACKAGE_DIR / "bin" / "contracko-mcp.js").read_text()
         self.assertIn(MCP_URL, launcher)
         self.assertIn("mcp-remote", launcher)
         self.assertIn("'proxy.js'", launcher)
+        self.assertIn("stdio", launcher)
+        self.assertNotIn("path.resolve(process.argv[1])", launcher)
 
     def test_server_json_advertises_the_npm_package_beside_the_http_remote(self) -> None:
         server = json.loads((REPO_ROOT / "server.json").read_text())
