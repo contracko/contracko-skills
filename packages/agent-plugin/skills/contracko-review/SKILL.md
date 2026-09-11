@@ -1,11 +1,11 @@
 ---
 name: contracko-review
-description: Reviews Contracko contracts. Use for notice dates, end dates, annual review, reminders, risk audits, comparing proposals or redlines, or portfolio priorities and gaps.
+description: Reviews Contracko contracts. Use for notice dates, end dates, annual review, notifications (reminders), risk audits, comparing proposals or redlines, or portfolio priorities and gaps.
 ---
 
 # Answering contract questions from Contracko
 
-Requires `contract:read`. Compare, audit and report stay read-only. Setting reminders needs `contract:write`. Where the tools are missing from your tool list, the credential is narrower than the user thinks: see [contracko](../contracko/SKILL.md), which also covers connecting and reading Contracko's errors.
+Requires `contract:read`. Compare, audit and report stay read-only. Setting notifications needs `contract:write`. Where the tools are missing from your tool list, the credential is narrower than the user thinks: see [contracko](../contracko/SKILL.md), which also covers connecting and reading Contracko's errors.
 
 Jobs this skill owns: calendar, compare, audit, report. Playbooks for those jobs: [workflows](../contracko/references/workflows.md).
 
@@ -63,19 +63,19 @@ Sort by `noticeDate`, not `endDate`. The deadline that costs money is the notice
 
 Where the contract is not in the workspace at all, import it first: [contracko-import](../contracko-import/SKILL.md).
 
-## Events and reminders
+## Events and notifications
 
-A reminder hangs off an event. List first: `clm_list_contract_events`.
+A notification hangs off an event. List first: `clm_list_contract_events`.
 
-**System events** (`notice`, `end`, `open_ended_review`) already exist. You do not create them. Renewal alerts target `end`. Attach a reminder with `clm_create_event_reminders`, `anchorType: "system"`, and that `systemType`.
+**System events** (`notice`, `end`, `open_ended_review`) already exist. You do not create them. Renewal alerts target `end`. Attach a notification with `clm_create_event_reminders`, `anchorType: "system"`, and that `systemType`.
 
-**Custom events** (a review meeting, an option window, an insurance expiry) are created with `clm_create_contract_events`: `title`, `date` as `YYYY-MM-DD`, optional recurrence (`recurrenceInterval` and `recurrenceUnit` together), optional nested `reminders` (max 25 per event). Batches are max 100 events or reminders, each item independent.
+**Custom events** (a review meeting, an option window, an insurance expiry) are created with `clm_create_contract_events`: `title`, `date` as `YYYY-MM-DD`, optional recurrence (`recurrenceInterval` and `recurrenceUnit` together), optional nested `reminders` (max 25 per event). Batches are max 100 events or notifications, each item independent.
 
 **Annual review.** On an open-ended contract, use the `open_ended_review` system event. Otherwise create a custom event, or fall back to a review custom field / the anniversary of `startDate`. Say which rule you used.
 
-A reminder needs `offsetValue`, `offsetUnit` (`days` | `weeks` | `months` | `quarters` | `years`), `offsetDirection` (`before` | `on` | `after`), and `recipient` (`{ "type": "contract_owner" }` or `{ "type": "user", "userId" }`). `on` requires `offsetValue: 0`. Optional `message`.
+A notification needs `offsetValue`, `offsetUnit` (`days` | `weeks` | `months` | `quarters` | `years`), `offsetDirection` (`before` | `on` | `after`), and `recipient` (`{ "type": "contract_owner" }` or `{ "type": "user", "userId" }`). `on` requires `offsetValue: 0`. Optional `message`.
 
-Mutations need `idempotencyKey` (8–128 characters). Update and delete need `expectedUpdatedAt` as a UTC timestamp ending in `Z`. Changing reminders on a custom event advances that event's version: relist before you replace its reminder set. Deleting an event deletes its reminders; deleting a reminder leaves the event.
+Mutations need `idempotencyKey` (8–128 characters). Update and delete need `expectedUpdatedAt` as a UTC timestamp ending in `Z`. Changing notifications on a custom event advances that event's version: relist before you replace its notification set. Deleting an event deletes its notifications; deleting a notification leaves the event.
 
 If these tools are missing while `contract:read` or `contract:write` is granted, refresh discovery first. An older credential can gain newly available MCP actions when a workspace admin confirms **Enable new MCP actions**, or when the user re-consents OAuth. Do not invent a different tool name.
 
@@ -87,7 +87,7 @@ There is no playbook tool and no redline-diff tool. Comparison is a table you as
 
 **Two contracts already in Contracko.** Get both records and both analyses. Search each for the contested terms (price, term, notice, liability, termination, data, IP). Table: term | A | B | who is better off, with an `evidenceQuote` on anything that decides the deal.
 
-**Two files not in Contracko.** Import them (or run the parser if the user does not want them filed), then compare. A vendor A/B belongs as two contracts, not one.
+**Two files not in Contracko.** Import them (or use document processing if the user does not want them filed), then compare. A vendor A/B belongs as two contracts, not one.
 
 **Redline vs previous draft.** If the user says these are versions of one agreement, keep them as documents on *one* contract (`clm_add_contract_documents` is a write: send them to [contracko-import](../contracko-import/SKILL.md) if they are not attached yet). Read both texts. Analysis is per document, not a diff — you still have to line the clauses up.
 

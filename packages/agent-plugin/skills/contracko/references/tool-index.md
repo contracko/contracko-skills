@@ -135,15 +135,15 @@ Resolve a vendor with `clm_list_parties` using `query` and `type` before passing
 
 Use inline base64 import only for a small local file when Contracko should extract it. Use a signed short-lived remote URL when Contracko can fetch the document. Use upload then ingest when bytes must bypass model context and the agent supplies the extraction. Never publish a confidential contract to make a remote URL work. [contracko-import](../../contracko-import/SKILL.md) defines these paths.
 
-## Events, reminders, and parser
+## Events, notifications, and document processing
 
-Events and reminders need `contract:read` to list and `contract:write` to change. List before a change, use the latest `expectedUpdatedAt` for updates or deletes, and confirm a bulk write. Renewal reminders attach to the existing `end` system event.
+Events and notifications need `contract:read` to list and `contract:write` to change. List before a change, use the latest `expectedUpdatedAt` for updates or deletes, and confirm a bulk write. Renewal notifications attach to the existing `end` system event.
 
 | Tool family | Scope | Use |
 |---|---|---|
-| `clm_list_contract_events` | `contract:read` | List custom and supported system events with reminders. |
+| `clm_list_contract_events` | `contract:read` | List custom and supported system events with notifications. |
 | `clm_create_contract_events`, `clm_update_contract_events`, `clm_delete_contract_events` | `contract:write` | Manage custom events. |
-| `clm_create_event_reminders`, `clm_update_event_reminders`, `clm_delete_event_reminders` | `contract:write` | Manage reminders on events. |
+| `clm_create_event_reminders`, `clm_update_event_reminders`, `clm_delete_event_reminders` | `contract:write` | Manage notifications on events. |
 | `parser_get_credits`, `parser_preflight`, `parser_create_upload_url`, `parser_create_job`, `parser_get_job`, `parser_list_jobs` | `parser:compute` | Extract or review documents without filing them as contracts. |
 
-Parser jobs spend credits. Preflight before creating one, and retrieve exports before their retention window ends.
+Document-processing jobs spend credits. Preflight before creating one, and retrieve exports before their retention window ends.

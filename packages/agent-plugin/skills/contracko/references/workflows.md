@@ -16,9 +16,9 @@ If the user also wants filing, inspect visible folders, confirm the proposed des
 
 **They say:** notice dates, end dates, renewals, annual review, reminders, notifications.
 
-Get today's date from the environment. Use inclusive end-date or notice-date filters for dated candidates and complete every returned page. `autoRenewing` identifies a renewal; a date window alone does not. For contracts ending OR needing notice, run separate complete queries and deduplicate by contract ID. Use existing system events for renewal or notice reminders. [contracko-review](../../contracko-review/SKILL.md) owns the calendar.
+Get today's date from the environment. Use inclusive end-date or notice-date filters for dated candidates and complete every returned page. `autoRenewing` identifies a renewal; a date window alone does not. For contracts ending OR needing notice, run separate complete queries and deduplicate by contract ID. Use existing system events for renewal or notice notifications. [contracko-review](../../contracko-review/SKILL.md) owns the calendar.
 
-**Done when:** the user has the urgent bucket, its dates, and any requested reminder confirmed as created.
+**Done when:** the user has the urgent bucket, its dates, and any requested notification confirmed as created.
 
 ## Compare these
 

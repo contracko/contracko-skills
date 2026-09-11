@@ -94,6 +94,70 @@ class ReleaseArtifactTests(unittest.TestCase):
                                 archive_name = f"skills/{skill}/{path.relative_to(ROOT / 'skills' / skill).as_posix()}"
                                 self.assertEqual(archive.read(archive_name), path.read_bytes())
 
+    def test_canonical_skills_use_approved_product_vocabulary(self) -> None:
+        expected_lines = {
+            "skills/contracko/SKILL.md": (
+                "| `parser:compute` | document-processing tools |",
+                "| `contract:write` | contract and folder changes, import and ingest, documents, comments, events, notifications, types, and parties |",
+                "| notice dates, notifications, comparisons, risk, priorities, or gaps | [contracko-review](../contracko-review/SKILL.md) |",
+                "| extraction without a managed contract | document-processing tools in [references/tool-index.md](references/tool-index.md) |",
+                "### Notifications and registers",
+                "A notification hangs from a contract event. [contracko-review](../contracko-review/SKILL.md) owns date queries and notification writes. Renewal notifications use the existing `end` system event.",
+                "SaaS subscriptions, leases, permits, certificates, insurance policies, warranties, and domains use the same pattern: a type, countable fields, native renewal dates, and a notification. Use supported filters first, then complete the required pages before local filtering.",
+            ),
+            "skills/contracko-create/SKILL.md": (
+                "6. **Set the notification** that will matter in a year — [contracko-review](../contracko-review/SKILL.md).",
+                "## Step 6: the notification",
+                "A filed contract with no notification is a renewal nobody sees coming. After import, list events, then add a notification on the `end` system event (renewal) or `notice` if they care about the notice window. [contracko-review](../contracko-review/SKILL.md) has the calls. Prefer notice over end when both exist and they asked not to miss the window to get out.",
+            ),
+            "skills/contracko-review/SKILL.md": (
+                "description: Reviews Contracko contracts. Use for notice dates, end dates, annual review, notifications (reminders), risk audits, comparing proposals or redlines, or portfolio priorities and gaps.",
+                "Requires `contract:read`. Compare, audit and report stay read-only. Setting notifications needs `contract:write`. Where the tools are missing from your tool list, the credential is narrower than the user thinks: see [contracko](../contracko/SKILL.md), which also covers connecting and reading Contracko's errors.",
+                "## Events and notifications",
+                "A notification hangs off an event. List first: `clm_list_contract_events`.",
+                "**System events** (`notice`, `end`, `open_ended_review`) already exist. You do not create them. Renewal alerts target `end`. Attach a notification with `clm_create_event_reminders`, `anchorType: \"system\"`, and that `systemType`.",
+                "**Custom events** (a review meeting, an option window, an insurance expiry) are created with `clm_create_contract_events`: `title`, `date` as `YYYY-MM-DD`, optional recurrence (`recurrenceInterval` and `recurrenceUnit` together), optional nested `reminders` (max 25 per event). Batches are max 100 events or notifications, each item independent.",
+                "A notification needs `offsetValue`, `offsetUnit` (`days` | `weeks` | `months` | `quarters` | `years`), `offsetDirection` (`before` | `on` | `after`), and `recipient` (`{ \"type\": \"contract_owner\" }` or `{ \"type\": \"user\", \"userId\" }`). `on` requires `offsetValue: 0`. Optional `message`.",
+                "Mutations need `idempotencyKey` (8–128 characters). Update and delete need `expectedUpdatedAt` as a UTC timestamp ending in `Z`. Changing notifications on a custom event advances that event's version: relist before you replace its notification set. Deleting an event deletes its notifications; deleting a notification leaves the event.",
+                "**Two files not in Contracko.** Import them (or use document processing if the user does not want them filed), then compare. A vendor A/B belongs as two contracts, not one.",
+            ),
+            "skills/contracko/references/tool-index.md": (
+                "## Events, notifications, and document processing",
+                "Events and notifications need `contract:read` to list and `contract:write` to change. List before a change, use the latest `expectedUpdatedAt` for updates or deletes, and confirm a bulk write. Renewal notifications attach to the existing `end` system event.",
+                "| `clm_list_contract_events` | `contract:read` | List custom and supported system events with notifications. |",
+                "| `clm_create_event_reminders`, `clm_update_event_reminders`, `clm_delete_event_reminders` | `contract:write` | Manage notifications on events. |",
+                "Document-processing jobs spend credits. Preflight before creating one, and retrieve exports before their retention window ends.",
+            ),
+            "skills/contracko/references/workflows.md": (
+                "Get today's date from the environment. Use inclusive end-date or notice-date filters for dated candidates and complete every returned page. `autoRenewing` identifies a renewal; a date window alone does not. For contracts ending OR needing notice, run separate complete queries and deduplicate by contract ID. Use existing system events for renewal or notice notifications. [contracko-review](../../contracko-review/SKILL.md) owns the calendar.",
+                "**Done when:** the user has the urgent bucket, its dates, and any requested notification confirmed as created.",
+                "**They say:** notice dates, end dates, renewals, annual review, reminders, notifications.",
+            ),
+            "README.md": (
+                "| I do not want silent renewals. What needs notice, ends, or auto-renews in the next quarter? Set reminders for all of it. | Lists the dates that matter today, then creates notifications on those contracts so you are notified in time. |",
+                "| [contracko-review](skills/contracko-review/SKILL.md) | Notice dates, notifications, comparisons, risk language, and what to look at next |",
+            ),
+            ".claude-plugin/plugin.json": (
+                '"version": "0.7.2",',
+                '"description": "Agent skills for Contracko contract management over MCP: connect and verify the server, organise the workspace, import contracts, set notifications, create and file new agreements, and answer renewal, risk and vendor questions.",',
+            ),
+            ".codex-plugin/plugin.json": (
+                '"version": "0.7.1",',
+                '"description": "Agent skills for Contracko contract management over MCP: connect and verify the server, organise the workspace, import contracts, set notifications, create and file new agreements, and answer renewal, risk and vendor questions.",',
+            ),
+        }
+
+        for relative, lines in expected_lines.items():
+            with self.subTest(path=relative):
+                text = (ROOT / relative).read_text()
+                for line in lines:
+                    self.assertIn(line, text)
+
+        claude_plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
+        claude_marketplace = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
+        self.assertEqual(claude_plugin["version"], "0.7.2")
+        self.assertEqual(claude_marketplace["metadata"]["version"], claude_plugin["version"])
+
     def test_committed_directory_package_exposes_canonical_skills(self) -> None:
         package = ROOT / "packages" / "agent-plugin"
         self.assertTrue((package / "plugin.json").is_file())

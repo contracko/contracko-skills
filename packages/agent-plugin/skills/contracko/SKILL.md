@@ -32,9 +32,9 @@ Run `auth_validate` first in every session. The connection is ready only when it
 | Scope | Available work |
 |---|---|
 | any valid credential | connection validation |
-| `parser:compute` | parser tools |
+| `parser:compute` | document-processing tools |
 | `contract:read` | contracts, folders, access overviews, types, parties, comments, events, document search and reads |
-| `contract:write` | contract and folder changes, import and ingest, documents, comments, events, reminders, types, and parties |
+| `contract:write` | contract and folder changes, import and ingest, documents, comments, events, notifications, types, and parties |
 
 The discovered tool list is authoritative. An existing current credential needs only a discovery refresh or reconnect if its client has cached old schemas. An older credential can gain newly available MCP actions when a workspace admin enables new MCP actions for its key, or when the user re-consents OAuth. If an argument or tool remains absent after discovery refresh, use only what is discovered and state the limitation.
 
@@ -51,10 +51,10 @@ Treat the discovered `outputSchema` as a contract. A missing or malformed requir
 | The user wants | Use |
 |---|---|
 | import, onboard, migrate, or bring files from disk, Drive, SharePoint, or Box | [contracko-import](../contracko-import/SKILL.md) |
-| notice dates, reminders, comparisons, risk, priorities, or gaps | [contracko-review](../contracko-review/SKILL.md) |
+| notice dates, notifications, comparisons, risk, priorities, or gaps | [contracko-review](../contracko-review/SKILL.md) |
 | a new agreement drafted, signed, and filed | [contracko-create](../contracko-create/SKILL.md) |
 | folders, types, fields, parties, or filing | this skill |
-| extraction without a managed contract | parser tools in [references/tool-index.md](references/tool-index.md) |
+| extraction without a managed contract | document-processing tools in [references/tool-index.md](references/tool-index.md) |
 
 ## Organise the workspace
 
@@ -86,11 +86,11 @@ A contract's filing state is `filing.kind`: `unfiled`, `folder`, or `unavailable
 
 `clm_get_folder_access` and `clm_get_contract_access` are read-only overviews. They show access state and principals but do not change permissions. Direct access changes and folder deletion happen in the Contracko app.
 
-### Reminders and registers
+### Notifications and registers
 
-A reminder hangs from a contract event. [contracko-review](../contracko-review/SKILL.md) owns date queries and reminder writes. Renewal reminders use the existing `end` system event.
+A notification hangs from a contract event. [contracko-review](../contracko-review/SKILL.md) owns date queries and notification writes. Renewal notifications use the existing `end` system event.
 
-SaaS subscriptions, leases, permits, certificates, insurance policies, warranties, and domains use the same pattern: a type, countable fields, native renewal dates, and a reminder. Use supported filters first, then complete the required pages before local filtering.
+SaaS subscriptions, leases, permits, certificates, insurance policies, warranties, and domains use the same pattern: a type, countable fields, native renewal dates, and a notification. Use supported filters first, then complete the required pages before local filtering.
 
 ## Write safely
 
