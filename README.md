@@ -249,7 +249,7 @@ Once connected, talk to the assistant the way you would a colleague. These are t
 | Try asking | What it does |
 |---|---|
 | We are onboarding. Pull every PDF from this folder, and from our Drive / SharePoint / Box contracts library, into Contracko. | Finds the files (on disk or in cloud storage you already have connected), checks the set with you, imports them, and lets Contracko extract dates, parties, and types. |
-| I do not want silent renewals. What needs notice, ends, or auto-renews in the next quarter? Set reminders for all of it. | Lists the dates that matter today, then creates reminders on those contracts so you are notified in time. |
+| I do not want silent renewals. What needs notice, ends, or auto-renews in the next quarter? Set reminders for all of it. | Lists the dates that matter today, then creates notifications on those contracts so you are notified in time. |
 | Compare Acme's MSA to Beta's. Who has the better liability cap, termination, and data-processing terms? | Puts both records side by side, with quoted clauses, so you can choose. |
 | Audit our vendor contracts for uncapped liability, one-sided indemnities, and missing notice periods. | Walks the portfolio, flags the risk language, and quotes the sentence behind each finding. |
 | Our filing is a mess. Set up MSA, NDA, SOW, and DPA with the fields we actually use, then put each contract in the right folder. | Shapes types and fields, shows visible folders, confirms the destination, then creates folders or files contracts as requested. |
@@ -264,7 +264,7 @@ Four playbooks. You do not have to pick one; asking in plain language is enough.
 |---|---|
 | [contracko](skills/contracko/SKILL.md) | Connecting, then organising types, fields, and counterparties |
 | [contracko-import](skills/contracko-import/SKILL.md) | Bringing PDFs and Word files in from disk, Drive, SharePoint, Box, or a link |
-| [contracko-review](skills/contracko-review/SKILL.md) | Notice dates, reminders, comparisons, risk language, and what to look at next |
+| [contracko-review](skills/contracko-review/SKILL.md) | Notice dates, notifications, comparisons, risk language, and what to look at next |
 | [contracko-create](skills/contracko-create/SKILL.md) | A new agreement, from questions through filing the signed PDF |
 
 ## Get help

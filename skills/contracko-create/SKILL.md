@@ -26,7 +26,7 @@ Where the user asks for words rather than mechanics, drafting a clause, a summar
 3. **Draft it** from a template — app step.
 4. **Route it for signature** — app step.
 5. **Add the executed copy** — [contracko-import](../contracko-import/SKILL.md), and this one is yours.
-6. **Set the reminder** that will matter in a year — [contracko-review](../contracko-review/SKILL.md).
+6. **Set the notification** that will matter in a year — [contracko-review](../contracko-review/SKILL.md).
 
 Steps 3 and 4 have no tool yet, so name the step, say it happens in Contracko, and keep moving. The parts either side are real work you can do well.
 
@@ -109,6 +109,6 @@ Then reconcile against the handoff from step 2. Extraction reads what the docume
 
 New records land as `entityStatus: "pending-review"`, which means the extraction is unconfirmed. Say so when you hand back.
 
-## Step 6: the reminder
+## Step 6: the notification
 
-A filed contract with no reminder is a renewal nobody sees coming. After import, list events, then add a reminder on the `end` system event (renewal) or `notice` if they care about the notice window. [contracko-review](../contracko-review/SKILL.md) has the calls. Prefer notice over end when both exist and they asked not to miss the window to get out.
+A filed contract with no notification is a renewal nobody sees coming. After import, list events, then add a notification on the `end` system event (renewal) or `notice` if they care about the notice window. [contracko-review](../contracko-review/SKILL.md) has the calls. Prefer notice over end when both exist and they asked not to miss the window to get out.
