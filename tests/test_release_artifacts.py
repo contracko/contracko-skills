@@ -138,8 +138,8 @@ class ReleaseArtifactTests(unittest.TestCase):
                 "| [contracko-review](skills/contracko-review/SKILL.md) | Notice dates, notifications, comparisons, risk language, and what to look at next |",
             ),
             ".claude-plugin/plugin.json": (
-                '"version": "0.7.2",',
-                '"description": "Agent skills for Contracko contract management over MCP: connect and verify the server, organise the workspace, import contracts, set notifications, create and file new agreements, and answer renewal, risk and vendor questions.",',
+                '"version": "0.7.3",',
+                '"description": "Manage your contracts from Claude. Import PDFs and Word files into Contracko, keep renewal and notice dates on track with reminders, file new agreements, and ask about terms, risk and vendors across your portfolio.",',
             ),
             ".codex-plugin/plugin.json": (
                 '"version": "0.7.1",',
@@ -155,7 +155,7 @@ class ReleaseArtifactTests(unittest.TestCase):
 
         claude_plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
         claude_marketplace = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
-        self.assertEqual(claude_plugin["version"], "0.7.2")
+        self.assertEqual(claude_plugin["version"], "0.7.3")
         self.assertEqual(claude_marketplace["metadata"]["version"], claude_plugin["version"])
 
     def test_committed_directory_package_exposes_canonical_skills(self) -> None:
