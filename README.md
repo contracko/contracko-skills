@@ -6,6 +6,20 @@
 
 **No account yet?** Start a [7-day free trial](https://contracko.com) (no credit card). You can also create the trial account on the OAuth screen the first time you connect the server.
 
+## Usage
+
+Once connected, talk to the assistant the way you would a colleague. These are the jobs people actually run:
+
+| Try asking | What it does |
+|---|---|
+| We are onboarding. Pull every PDF from this folder, and from our Drive / SharePoint / Box contracts library, into Contracko. | Finds the files (on disk or in cloud storage you already have connected), checks the set with you, imports them, and lets Contracko extract dates, parties, and types. |
+| I do not want silent renewals. What needs notice, ends, or auto-renews in the next quarter? Set reminders for all of it. | Lists the dates that matter today, then creates notifications on those contracts so you are notified in time. |
+| Compare Acme's MSA to Beta's. Who has the better liability cap, termination, and data-processing terms? | Puts both records side by side, with quoted clauses, so you can choose. |
+| Audit our vendor contracts for uncapped liability, one-sided indemnities, and missing notice periods. | Walks the portfolio, flags the risk language, and quotes the sentence behind each finding. |
+| Our filing is a mess. Set up MSA, NDA, SOW, and DPA with the fields we actually use, then put each contract in the right folder. | Shapes types and fields, shows visible folders, confirms the destination, then creates folders or files contracts as requested. |
+| What should we look at this month? What is urgent, and what are we missing? | Ranks the workspace by urgency and gaps, with a count of how much it looked at. |
+| Walk me through a new NDA, send it for signature, and file the signed PDF when it comes back. | Runs the questionnaire, then files the executed copy. Drafting and signing still happen in Contracko. |
+
 ## Security
 
 Contracko does not train models on your contracts. Analysis inside the product runs under commercial API terms, with Zero Data Retention where we have it, and we work to get ZDR with every AI subprocessor. See [Security](https://contracko.com/features/security).
@@ -44,6 +58,28 @@ If Contracko already appears under Connectors, do not add it a second time.
 </details>
 
 <details>
+<summary><strong>Claude Code</strong></summary>
+
+In Claude Code, run:
+
+```
+/plugin marketplace add https://github.com/contracko/contracko-skills.git
+/plugin install contracko@contracko
+```
+
+Paste that full GitHub address (not a short `owner/repo` name). Then connect:
+
+```bash
+claude mcp add --transport http contracko https://app.contracko.com/mcp
+```
+
+Type `/mcp` in the session and sign in in the browser.
+
+If you installed the older `contracko-skills` plugin, remove that plugin and install `contracko@contracko` after updating the marketplace. The GitHub repository remains `contracko/contracko-skills`; the MCP connection remains `contracko`.
+
+</details>
+
+<details>
 <summary><strong>ChatGPT</strong></summary>
 
 1. In the workspace, go to **Settings → Plugins → Import marketplace** and enter `contracko/contracko-skills`.
@@ -63,28 +99,6 @@ ChatGPT has no settings file for this. Use the screens above.
 3. Sign in in the browser that opens.
 
 For Grok in the terminal, see **Any other assistant** below.
-
-</details>
-
-<details>
-<summary><strong>Claude Code</strong></summary>
-
-In Claude Code, run:
-
-```
-/plugin marketplace add https://github.com/contracko/contracko-skills.git
-/plugin install contracko@contracko
-```
-
-Paste that full GitHub address (not a short `owner/repo` name). Then connect:
-
-```bash
-claude mcp add --transport http contracko https://app.contracko.com/mcp
-```
-
-Type `/mcp` in the session and sign in in the browser.
-
-If you installed the older `contracko-skills` plugin, remove that plugin and install `contracko@contracko` after updating the marketplace. The GitHub repository remains `contracko/contracko-skills`; the MCP connection remains `contracko`.
 
 </details>
 
@@ -242,20 +256,6 @@ Step-by-step recipes: [agent-setup/prompt.md](agent-setup/prompt.md).
 
 </details>
 
-## Usage
-
-Once connected, talk to the assistant the way you would a colleague. These are the jobs people actually run:
-
-| Try asking | What it does |
-|---|---|
-| We are onboarding. Pull every PDF from this folder, and from our Drive / SharePoint / Box contracts library, into Contracko. | Finds the files (on disk or in cloud storage you already have connected), checks the set with you, imports them, and lets Contracko extract dates, parties, and types. |
-| I do not want silent renewals. What needs notice, ends, or auto-renews in the next quarter? Set reminders for all of it. | Lists the dates that matter today, then creates notifications on those contracts so you are notified in time. |
-| Compare Acme's MSA to Beta's. Who has the better liability cap, termination, and data-processing terms? | Puts both records side by side, with quoted clauses, so you can choose. |
-| Audit our vendor contracts for uncapped liability, one-sided indemnities, and missing notice periods. | Walks the portfolio, flags the risk language, and quotes the sentence behind each finding. |
-| Our filing is a mess. Set up MSA, NDA, SOW, and DPA with the fields we actually use, then put each contract in the right folder. | Shapes types and fields, shows visible folders, confirms the destination, then creates folders or files contracts as requested. |
-| What should we look at this month? What is urgent, and what are we missing? | Ranks the workspace by urgency and gaps, with a count of how much it looked at. |
-| Walk me through a new NDA, send it for signature, and file the signed PDF when it comes back. | Runs the questionnaire, then files the executed copy. Drafting and signing still happen in Contracko. |
-
 ## Skills
 
 Four playbooks. You do not have to pick one; asking in plain language is enough.
@@ -270,6 +270,8 @@ Four playbooks. You do not have to pick one; asking in plain language is enough.
 ## Get help
 
 Want guidance on Contracko? Read the [docs](https://contracko.com/docs) or [contact us](https://contracko.com/contact). That covers the product, your workspace, and anything else you want to talk through.
+
+Policies: [privacy policy](https://contracko.com/legal/privacy-policy) and [terms of service](https://contracko.com/legal/terms-of-service).
 
 Have a question about these skills, a suggestion, or an improvement? [Open a GitHub issue](https://github.com/contracko/contracko-skills/issues).
 
