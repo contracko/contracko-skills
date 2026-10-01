@@ -1,7 +1,7 @@
 {
   "name": "contracko",
   "displayName": "Contracko",
-  "version": "0.7.4",
+  "version": "0.7.5",
   "description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",
   "icon": "./assets/icon.png",
   "author": {

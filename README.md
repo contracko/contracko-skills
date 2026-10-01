@@ -35,7 +35,9 @@ Connecting this plugin is different: when Claude, ChatGPT, Codex, or another ass
 
 ## Install
 
-You connect your assistant to Contracko in two steps:
+**Using Claude?** Add Contracko from Claude's connector directory: [claude.ai/directory/connectors/contracko](https://claude.ai/directory/connectors/contracko). Open the **Claude** or **Claude Code** section below for the details.
+
+For every other assistant, you connect to Contracko in two steps:
 
 1. **Add the skills** (this repo) so it knows how to help with contracts.
 2. **Add the connection** so it can reach your workspace. Paste this address when asked:
@@ -53,34 +55,38 @@ The canonical Agent Plugins v1 skills package is generated at [`packages/agent-p
 Open the section for the product you use.
 
 <details>
-<summary><strong>Claude</strong> (claude.ai or Claude Desktop)</summary>
+<summary><strong>Claude</strong> (web, desktop, mobile, Cowork)</summary>
 
-1. Download the skill files from [Releases](https://github.com/contracko/contracko-skills/releases/latest) and add them in Claude.
-2. Go to **Settings → Connectors → Add custom connector**.
-3. Paste `https://app.contracko.com/mcp`.
-4. Sign in in the browser that opens.
+1. Open [https://claude.ai/directory/connectors/contracko](https://claude.ai/directory/connectors/contracko), choose **Connect to Claude** and sign in to Contracko.
+2. On Pro and above you can also install the **Contracko** plugin (**Customize, Plugins**) for the four contract skills, then connect from its **Connectors** tab.
 
-If Contracko already appears under Connectors, do not add it a second time.
+The directory connector works on every Claude plan, including Free. On Team and Enterprise, an Owner enables it first. Once connected on web or desktop, it also works in the Claude mobile app.
+
+Added Contracko as a custom connector before? Remove that one, or you will see every tool twice.
+
+On the Free plan you can still add the skills by hand: download them from [Releases](https://github.com/contracko/contracko-skills/releases/latest) and upload each one under **Customize, Skills**.
 
 </details>
 
 <details>
 <summary><strong>Claude Code</strong></summary>
 
-In Claude Code, run:
+Signed in with your Claude account? A connector added in Claude is already available here.
+
+For the skills, install the plugin, which also registers the connection:
 
 ```
 /plugin marketplace add https://github.com/contracko/contracko-skills.git
 /plugin install contracko@contracko
 ```
 
-Paste that full GitHub address (not a short `owner/repo` name). Then connect:
+Paste that full GitHub address (not a short `owner/repo` name). Then run `/mcp` and sign in in the browser.
+
+Using an API key without the plugin? Run this only if `claude mcp list` shows no Contracko entry:
 
 ```bash
 claude mcp add --transport http contracko https://app.contracko.com/mcp
 ```
-
-Type `/mcp` in the session and sign in in the browser.
 
 If you installed the older `contracko-skills` plugin, remove that plugin and install `contracko@contracko` after updating the marketplace. The GitHub repository remains `contracko/contracko-skills`; the MCP connection remains `contracko`.
 

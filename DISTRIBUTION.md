@@ -9,10 +9,10 @@ The bundle is a GitHub repo with one folder per skill, `SKILL.md` at each folder
 | Path | Mechanism | State |
 |---|---|---|
 | Public GitHub repo `contracko/contracko-skills` | this directory as the repo root | created; every official directory pins this URL |
-| Claude Code | plugin marketplace, `claude plugin install` | ready from this repo; skills-only, no MCP double-register |
-| Claude Desktop / claude.ai chat | one zip per skill, uploaded by hand | zips build on release |
-| Claude Connectors Directory | remote MCP listing in Claude.ai | blocked on a Team or Enterprise [claude.ai](https://claude.ai) org (Owners submit from org settings). Tool `title`s and `serverInfo` branding already ship |
-| Claude plugin directory (Cowork + Claude Code) | public GitHub plugin, `claude plugin validate` then Anthropic form | skills-only submit is unblocked; connector listing is preferred, not required |
+| Claude Code | plugin marketplace, `/plugin install contracko@contracko` | ready from this repo; the plugin's `.mcp.json` registers the server, so no `claude mcp add` after it |
+| Claude Desktop / claude.ai chat | directory connector first; one zip per skill, uploaded by hand, as the Free-plan skills path | zips build on release |
+| Claude Connectors Directory | remote MCP listing in Claude.ai | live (Community) at [claude.ai/directory/connectors/contracko](https://claude.ai/directory/connectors/contracko); the primary path on every Claude surface |
+| Claude plugin directory (Cowork + Claude Code) | public GitHub plugin, `claude plugin validate` then Anthropic form | listed; tracks `main`, so a merge to `main` auto-publishes. Paid plans only |
 | Codex / ChatGPT workspace import | `.agents/plugins/marketplace.json` + `.codex-plugin/plugin.json` | ready for workspace import; public Plugin Directory needs OpenAI review |
 | GitHub Copilot CLI | `.github/plugin/marketplace.json` | ready for `copilot plugin marketplace add contracko/contracko-skills` |
 | Gemini CLI | install skills from the public GitHub repo | no third-party marketplace; GitHub install only |
@@ -22,7 +22,9 @@ The bundle is a GitHub repo with one folder per skill, `SKILL.md` at each folder
 | Other coding agents | `npx skills add https://contracko.com` | ready once production serves `/.well-known/skills/index.json` (site PR [contracko/contracko-site#693](https://github.com/contracko/contracko-site/pull/693) merged) |
 | Goose and other stdio MCP clients | `npx -y @contracko/mcp` | launcher in `packages/mcp`; publishes to the public npm registry, not GitHub Packages. Proxies stdio to `https://app.contracko.com/mcp`. Not a second MCP server. First version is a local `npm publish`; later versions `npm stage publish` from `release.yml` (OIDC), then a maintainer `npm stage approve` with 2FA. |
 
-Do **not** add `.mcp.json` to this plugin. Users who already connected Contracko from a connector directory would get the same server twice. ChatGPT may also mark a plugin with `.mcp.json` as Desktop-only.
+`.mcp.json` is intentional (CTO-791). The Claude plugin registers the Contracko server itself, which the plugin directory listing needs. The duplicate risk moved to the docs instead: someone who added Contracko as a custom connector earlier must remove it, and in Claude Code `claude mcp add` is only the fallback for API-key users without the plugin, run only when `claude mcp list` shows no Contracko entry. A manually added server with the same URL hides the claude.ai connector but not the plugin's own server. Never tell a plugin user to run `claude mcp add`; `tests/test_release_artifacts.py` fails if the README or the `contracko` skill does.
+
+Claude connect copy follows the canonical install prompt at [`https://contracko.com/mcp/install/prompt.md`](https://contracko.com/mcp/install/prompt.md): the directory listing first, the plugin `contracko@contracko` for Claude Code skills, and the raw `https://app.contracko.com/mcp` URL for every other client.
 
 ## The two audiences are not the same person
 
@@ -65,7 +67,7 @@ Same constraint on frontmatter: claude.ai, the Skills API and `package_skill.py`
 
 None of this is in this repo, and all of it gates the good distribution paths.
 
-- **Connectors Directory submission** needs: a Team or Enterprise claude.ai org to submit from, OAuth 2.0 (have it), a published privacy policy URL, an icon, a support contact, a test account, and every tool carrying a `title` plus `readOnlyHint` or `destructiveHint`. That last one is real work across 22 tools and it is also just good hygiene: a directory reviewer and a model want the same thing, which is to know whether calling a tool changes anything.
+- **Connectors Directory listing.** Done: live at `https://claude.ai/directory/connectors/contracko`. Keep every tool carrying a `title` plus `readOnlyHint` or `destructiveHint`; a directory reviewer and a model want the same thing, which is to know whether calling a tool changes anything. Directory rank counts distinct accounts using the directory server, so custom-connector installs do not count toward it.
 - **Skills discovery at a well-known path.** `https://contracko.com/.well-known/skills/index.json` makes `npx skills add https://contracko.com` work and turns a docs deploy into the release. Stripe does exactly this. Shipped in site PR 693; live after that production deploy.
 - **Canonical install prompt.** `https://contracko.com/mcp/install/prompt.md`, plain markdown, no auth, no HTML wrapper. There is no `/agent-setup/prompt.md` on the site; that path 404s and should not be documented.
 - **A read-only connection variant.** For contract data, a documented read-only URL is a trust feature rather than a footnote, and it is what an IT team asks for first.
