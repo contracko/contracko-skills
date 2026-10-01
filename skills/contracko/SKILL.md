@@ -21,9 +21,15 @@ Endpoint: `https://app.contracko.com/mcp`
 
 Check whether the client already has a Contracko server before adding one. OAuth is the default. It opens a browser for the user to sign in, choose a workspace, and grant scopes. The consent screen belongs to the user. Do not automate it or ask for credentials in chat.
 
+In Claude apps (web, desktop, mobile, Cowork), the server is already registered when the user connected Contracko from Claude's connector directory (https://claude.ai/directory/connectors/contracko). Point a user who has not connected yet to that listing. In Claude Code, a connector added in Claude is already available when signed in with a Claude account, and the Contracko plugin (`/plugin install contracko@contracko`) registers the server itself. Do not register it a second time. A user who sees every tool twice should remove the older custom connector.
+
+Only a Claude Code user on an API key without the plugin needs a manual entry, and only if `claude mcp list` shows no Contracko entry:
+
 ```bash
 claude mcp add --transport http contracko https://app.contracko.com/mcp
 ```
+
+Every other client adds the endpoint through its own MCP or connector settings.
 
 An MCP API key is only a fallback for a headless client or one without OAuth. It must be created in Contracko with purpose **MCP server** and is bound to one workspace. Never put a bearer credential in chat, source code, or logs. In a non-interactive session, report OAuth as blocked rather than bypassing sign-in.
 

@@ -15,6 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ("contracko", "contracko-create", "contracko-import", "contracko-review")
 PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+CLAUDE_DIRECTORY_URL = "https://claude.ai/directory/connectors/contracko"
 
 
 class ReleaseArtifactTests(unittest.TestCase):
@@ -138,11 +139,11 @@ class ReleaseArtifactTests(unittest.TestCase):
                 "| [contracko-review](skills/contracko-review/SKILL.md) | Notice dates, notifications, comparisons, risk language, and what to look at next |",
             ),
             ".claude-plugin/plugin.json": (
-                '"version": "0.7.4",',
+                '"version": "0.7.5",',
                 '"description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",',
             ),
             ".codex-plugin/plugin.json": (
-                '"version": "0.7.4",',
+                '"version": "0.7.5",',
                 '"description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",',
             ),
         }
@@ -155,8 +156,34 @@ class ReleaseArtifactTests(unittest.TestCase):
 
         claude_plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
         claude_marketplace = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
-        self.assertEqual(claude_plugin["version"], "0.7.4")
+        self.assertEqual(claude_plugin["version"], "0.7.5")
         self.assertEqual(claude_marketplace["metadata"]["version"], claude_plugin["version"])
+
+    def test_claude_connect_copy_is_directory_first(self) -> None:
+        sources = {
+            "README.md": (ROOT / "README.md").read_text(),
+            "skills/contracko/SKILL.md": (ROOT / "skills/contracko/SKILL.md").read_text(),
+        }
+        for relative, text in sources.items():
+            with self.subTest(path=relative):
+                self.assertIn(CLAUDE_DIRECTORY_URL, text)
+                self.assertIn("contracko@contracko", text)
+                self.assertNotIn("contracko-skills@contracko", text)
+                plugin_install = text.index("/plugin install contracko@contracko")
+                mcp_add = text.index("claude mcp add")
+                self.assertGreater(mcp_add, plugin_install)
+                between = text[plugin_install:mcp_add]
+                self.assertIn("without the plugin", between)
+                self.assertIn("claude mcp list", text[mcp_add - 400 : mcp_add + 400])
+
+        readme = sources["README.md"]
+        claude_section = readme[readme.index("<summary><strong>Claude</strong>") :]
+        claude_section = claude_section[: claude_section.index("</details>")]
+        first_step = claude_section[claude_section.index("1. ") :].splitlines()[0]
+        self.assertIn(CLAUDE_DIRECTORY_URL, first_step)
+        self.assertIn("custom connector", claude_section)
+        self.assertNotIn("Add custom connector", claude_section)
+        self.assertIn("https://app.contracko.com/mcp", readme[readme.index("<summary><strong>Codex</strong>") :])
 
     def test_client_manifests_mirror_claude_plugin_version(self) -> None:
         # packaging/manifest.json and packages/agent-plugin follow the v* release tag line instead.
