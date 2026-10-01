@@ -1,7 +1,7 @@
 {
   "name": "contracko",
-  "version": "0.7.3",
-  "description": "Contract management for your agent via Contracko: import contracts, review terms, track renewals, and manage your workspace over MCP.",
+  "version": "0.7.4",
+  "description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",
   "mcpServers": {
     "contracko": {
       "httpUrl": "https://app.contracko.com/mcp",

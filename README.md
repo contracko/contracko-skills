@@ -2,7 +2,14 @@
 
 **AI contract management MCP server by Contracko.** Manage your business contracts with Claude, ChatGPT, Codex, Gemini, Copilot, Cursor, Grok, and other AI tools.
 
-[Contracko](https://contracko.com) is a contract repository: PDFs and Word files in one workspace, with dates, values, parties, and AI analysis on top. These skills teach an assistant how to import, review, organise, and file that work. The MCP server is the live connection to your workspace.
+[Contracko](https://contracko.com) is AI contract management software, a contract lifecycle management (CLM) workspace for PDFs and Word files with dates, values, parties, and AI analysis on top. This plugin connects Claude and other assistants to that workspace so they can:
+
+- **Review and analyse contracts with AI.** Surface risks, liabilities and obligations, compare two agreements clause by clause, and quote the sentence behind each finding.
+- **Extract and parse contract data.** Import PDF and Word contracts and let Contracko extract dates, parties, renewal and notice terms, governing law and liability terms, or parse a document without filing it.
+- **Set automated reminders.** Add notifications to contract events so the right person hears about them in time.
+- **Track renewal and notice deadlines.** List what ends, auto-renews, or needs notice in a given window, across the whole portfolio.
+
+These skills teach the assistant how to import, review, organise, and file that work. The MCP server is the live connection to your workspace.
 
 **No account yet?** Start a [7-day free trial](https://contracko.com) (no credit card). You can also create the trial account on the OAuth screen the first time you connect the server.
 

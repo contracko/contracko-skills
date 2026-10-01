@@ -7,8 +7,8 @@
   "plugins": [
     {
       "name": "contracko",
-      "description": "Connect an agent to the Contracko MCP server, import contracts, and answer renewal, risk and vendor questions.",
-      "version": "0.7.3",
+      "description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",
+      "version": "0.7.4",
       "source": "./",
       "keywords": [
         "contracko",

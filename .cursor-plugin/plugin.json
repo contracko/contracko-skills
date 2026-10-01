@@ -1,7 +1,7 @@
 {
   "name": "contracko",
-  "version": "0.7.3",
-  "description": "Contracko contract management skills and MCP connection: import and organize contracts, review risks, compare vendors, and track renewal and notice dates.",
+  "version": "0.7.4",
+  "description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",
   "author": {
     "name": "Contracko",
     "email": "support@contracko.com"

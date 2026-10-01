@@ -1,8 +1,8 @@
 {
   "name": "contracko",
   "displayName": "Contracko",
-  "version": "0.7.3",
-  "description": "Manage your contracts from Claude. Import PDFs and Word files into Contracko, keep renewal and notice dates on track with reminders, file new agreements, and ask about terms, risk and vendors across your portfolio.",
+  "version": "0.7.4",
+  "description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",
   "icon": "./assets/icon.png",
   "author": {
     "name": "Contracko",
@@ -23,7 +23,14 @@
     "vendor-management",
     "procurement",
     "legal",
-    "mcp"
+    "mcp",
+    "contract-review",
+    "ai-contract-review",
+    "contract-analysis",
+    "contract-data-extraction",
+    "contract-parsing",
+    "contract-lifecycle-management",
+    "obligations"
   ],
   "skills": [
     "./skills/contracko",
