@@ -2,8 +2,8 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "com.contracko/contracko",
   "title": "Contracko",
-  "description": "Import, review and track renewals on your business contracts from your AI assistant.",
-  "version": "0.7.3",
+  "description": "AI contract management (CLM): contract review, data extraction, reminders and renewal deadlines.",
+  "version": "0.7.4",
   "websiteUrl": "https://contracko.com/mcp/contract-management",
   "icons": [
     {
