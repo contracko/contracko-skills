@@ -3,8 +3,15 @@
   "name": "com.contracko/contracko",
   "title": "Contracko",
   "description": "Import, review and track renewals on your business contracts from your AI assistant.",
-  "version": "0.7.0",
-  "websiteUrl": "https://contracko.com",
+  "version": "0.7.3",
+  "websiteUrl": "https://contracko.com/mcp/contract-management",
+  "icons": [
+    {
+      "src": "https://app.contracko.com/mcp/icon-512.png",
+      "mimeType": "image/png",
+      "sizes": ["512x512"]
+    }
+  ],
   "repository": {
     "url": "https://github.com/contracko/contracko-skills",
     "source": "github"

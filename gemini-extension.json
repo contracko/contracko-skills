@@ -1,6 +1,6 @@
 {
   "name": "contracko",
-  "version": "0.7.0",
+  "version": "0.7.3",
   "description": "Contract management for your agent via Contracko: import contracts, review terms, track renewals, and manage your workspace over MCP.",
   "mcpServers": {
     "contracko": {
