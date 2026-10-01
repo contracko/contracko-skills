@@ -142,7 +142,7 @@ class ReleaseArtifactTests(unittest.TestCase):
                 '"description": "Manage your contracts from Claude. Import PDFs and Word files into Contracko, keep renewal and notice dates on track with reminders, file new agreements, and ask about terms, risk and vendors across your portfolio.",',
             ),
             ".codex-plugin/plugin.json": (
-                '"version": "0.7.1",',
+                '"version": "0.7.3",',
                 '"description": "Agent skills for Contracko contract management over MCP: connect and verify the server, organise the workspace, import contracts, set notifications, create and file new agreements, and answer renewal, risk and vendor questions.",',
             ),
         }
@@ -157,6 +157,22 @@ class ReleaseArtifactTests(unittest.TestCase):
         claude_marketplace = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
         self.assertEqual(claude_plugin["version"], "0.7.3")
         self.assertEqual(claude_marketplace["metadata"]["version"], claude_plugin["version"])
+
+    def test_client_manifests_mirror_claude_plugin_version(self) -> None:
+        # packaging/manifest.json and packages/agent-plugin follow the v* release tag line instead.
+        expected = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())["version"]
+        versions = {
+            ".codex-plugin/plugin.json": json.loads((ROOT / ".codex-plugin/plugin.json").read_text())["version"],
+            ".cursor-plugin/plugin.json": json.loads((ROOT / ".cursor-plugin/plugin.json").read_text())["version"],
+            "gemini-extension.json": json.loads((ROOT / "gemini-extension.json").read_text())["version"],
+            "server.json": json.loads((ROOT / "server.json").read_text())["version"],
+        }
+        github_marketplace = json.loads((ROOT / ".github/plugin/marketplace.json").read_text())
+        for plugin in github_marketplace["plugins"]:
+            versions[f".github/plugin/marketplace.json:{plugin['name']}"] = plugin["version"]
+        for relative, version in versions.items():
+            with self.subTest(path=relative):
+                self.assertEqual(version, expected)
 
     def test_committed_directory_package_exposes_canonical_skills(self) -> None:
         package = ROOT / "packages" / "agent-plugin"
