@@ -58,7 +58,7 @@ A full connection lists 50 tools. `clm_search_tools` searches only the tools thi
 { "query": "Add my first contract", "toolset": "imports" }
 ```
 
-`toolset` is optional and only narrows the results: `contracts`, `parties`, `folders`, `events`, `imports`, `parser`, or `connection`. Search reads no workspace data and calls nothing. Its examples use synthetic IDs, so replace them with values the connection returns. A tool that search does not return is not on this connection; search never makes an unlisted tool callable.
+`toolset` is optional and only narrows the results: `contracts`, `parties`, `folders`, `events`, `imports`, `parser`, or `connection`. Search reads no workspace data and calls nothing. Its examples use synthetic IDs, so replace them with values the connection returns. Search returns at most five matches, so a tool missing from one result may still be available: the discovered tool list decides that. Search never makes an unlisted tool callable.
 
 ## Read tool results once
 
