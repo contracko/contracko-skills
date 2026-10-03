@@ -2,6 +2,8 @@
 
 Use live discovery for tool names and schemas. This index records workflow rules that schemas do not express. [workflows.md](workflows.md) maps user jobs to these tools.
 
+This index lists all 50 tools a connection with every scope can see. A narrower connection sees fewer. When you are unsure which tool fits, call `clm_search_tools` instead of guessing from this page.
+
 ## Discovery and results
 
 Tools absent from discovery are unavailable to this connection. First refresh discovery or reconnect if the client has cached schemas. If an older credential still omits newly available actions, a workspace admin can enable new MCP actions for its key, or the user can re-consent OAuth. Do not guess a call.
@@ -13,6 +15,13 @@ Check `isError` first. On success, use `structuredContent` when present or the l
 | Tool | Scope | Use |
 |---|---|---|
 | `auth_validate` | any valid credential | Confirm workspace and scopes before work. |
+| `clm_search_tools` | any valid credential | Find up to five listed tools, with examples and step sequences, for a task. Reads no workspace data. |
+
+Use `clm_search_tools` when the right tool is unclear, before a multi-step job, and for a first contract in an empty workspace. Results come only from this connection's tool list. Example arguments use synthetic IDs; replace them with real values from the connection.
+
+```json mcp:clm_search_tools
+{ "query": "set renewal reminders", "toolset": "events" }
+```
 
 ## Contracts and folders
 
@@ -21,17 +30,16 @@ Check `isError` first. On success, use `structuredContent` when present or the l
 | `clm_list_contracts` | `contract:read` | Page contract records and business filters. |
 | `clm_get_contract` | `contract:read` | Read one contract, including filing state. |
 | `clm_list_folders` | `contract:read` | Page folders visible to the user. |
-| `clm_get_folder` | `contract:read` | Inspect one visible folder and its visible path. |
+| `clm_get_folder` | `contract:read` | Inspect one visible folder: its visible path, visibility, permission, and bounded members. |
 | `clm_create_folder` | `contract:write` | Create a root folder or a child of a visible parent. |
 | `clm_rename_folder` | `contract:write` | Rename a manageable folder. |
 | `clm_move_folder` | `contract:write` | Move a folder to a visible parent or the root. |
 | `clm_move_contract` | `contract:write` | File a contract in a visible folder, or unfile it. |
-| `clm_get_folder_access` | `contract:read` | Read a folder access overview. |
 | `clm_get_contract_access` | `contract:read` | Read a contract access overview. |
 
 `clm_list_folders` uses `continuation`, not the contract `cursor`. Omitting `parentFolderId`, or sending `parentFolderId: null`, lists only the visible root. Complete root pages, then list and complete the children of every visible folder recursively to enumerate the visible tree. A completed root page set is not a full-tree result. For each parent, repeat the same parent and limit with the opaque continuation until it is `null`. Returned paths contain visible ancestors only. Omission does not prove a hidden folder exists or does not exist.
 
-Inspect a destination before changing it. Confirm the visible path and every bulk change. `clm_move_contract` accepts `folderId: null` only to unfile. `clm_move_folder` accepts `parentFolderId: null` to move to the root. Folder deletes and all access changes are app work. The access tools are overview-only and provide no ACL write operation.
+Inspect a destination before changing it. Confirm the visible path and every bulk change. `clm_move_contract` accepts `folderId: null` only to unfile. `clm_move_folder` accepts `parentFolderId: null` to move to the root. Folder deletes and all access changes are app work. `clm_get_folder` and `clm_get_contract_access` are read-only and provide no ACL write operation.
 
 ```json mcp:clm_list_folders
 { "limit": 50 }
@@ -73,10 +81,6 @@ Unfile only after the user asks to remove the contract from its folder.
 { "id": "22222222-2222-4222-8222-222222222222", "folderId": null }
 ```
 
-```json mcp:clm_get_folder_access
-{ "id": "11111111-1111-4111-8111-111111111111" }
-```
-
 ```json mcp:clm_get_contract_access
 { "id": "22222222-2222-4222-8222-222222222222" }
 ```
@@ -116,6 +120,19 @@ Resolve a vendor with `clm_list_parties` using `query` and `type` before passing
 | `clm_get_contract_document_download_url` | `contract:read` | Get a short-lived original or preview URL. Do not log it. |
 | `clm_list_contract_comments` | `contract:read` | Read comments on one contract. |
 
+## Document re-reads
+
+A re-read runs AI extraction on one contract document again and compares the result with the saved contract. It never changes saved data on its own: it produces per-field findings that a person approves.
+
+| Tool | Scope | Use |
+|---|---|---|
+| `clm_reprocess_contract_document` | `contract:write` | Start a re-read of one document. Retry with the same `idempotencyKey` to get the original run. |
+| `clm_get_contract_reprocess_run` | `contract:read` | Check a re-read's progress. |
+| `clm_list_contract_reconciliations` | `contract:read` | List a contract's recent re-reads, including completed ones nobody has reviewed. |
+| `clm_get_contract_reconciliation` | `contract:read` | Read the per-field differences a completed re-read found. Reading never applies or dismisses a finding. |
+| `clm_apply_contract_reconciliation` | `contract:write` | Write selected findings onto the contract after a person approves that exact selection. |
+
+The reads are safe to call at any time. Apply only works in a client that can ask the person to approve; otherwise send the user to the review in Contracko. A re-read uses the same extraction allowance as an import.
 ## Import and contract writes
 
 | Tool | Scope | Use |
@@ -133,11 +150,28 @@ Resolve a vendor with `clm_list_parties` using `query` and `type` before passing
 | `clm_create_party` / `clm_update_party` | `contract:write` | Create or partially update parties. |
 | `clm_list_parties` / `clm_get_party` | `contract:read` | Resolve and inspect parties. |
 
+`taxId` and `registrationNumber` are for organisations only (`company`, `non-profit`, `government`), never for an `individual` or a personal identifier. Changing a party to `individual` needs both cleared in the same update.
+
+### Add your first contract
+
+For a single local file in an empty workspace, `clm_search_tools` with "Add my first contract" returns this sequence. [workflows.md](workflows.md#add-your-first-contract) has the full job.
+
+1. `clm_create_upload_url` with `fileName`, `mimeType`, and `fileSize`.
+2. HTTP `PUT` the bytes to the returned URL with the same `Content-Type`. This is a plain request, not a tool call.
+3. `clm_ingest_contract` with the returned `uploadReference` and the contract details you read from the document.
+4. `clm_get_contract` to verify the new record.
+
+```json mcp:clm_create_upload_url
+{ "fileName": "acme-msa.pdf", "mimeType": "application/pdf", "fileSize": 182044 }
+```
+
 Use inline base64 import only for a small local file when Contracko should extract it. Use a signed short-lived remote URL when Contracko can fetch the document. Use upload then ingest when bytes must bypass model context and the agent supplies the extraction. Never publish a confidential contract to make a remote URL work. [contracko-import](../../contracko-import/SKILL.md) defines these paths.
 
 ## Events, notifications, and document processing
 
 Events and notifications need `contract:read` to list and `contract:write` to change. List before a change, use the latest `expectedUpdatedAt` for updates or deletes, and confirm a bulk write. Renewal notifications attach to the existing `end` system event.
+
+Contracko emails each notification to its recipient when it falls due. Creating or changing events and notifications therefore schedules email to real people; say who will receive what before writing. Deleting an event or notification stops those emails.
 
 | Tool family | Scope | Use |
 |---|---|---|

@@ -17,6 +17,6 @@ OpenClaw's portable bundle format does not carry Contracko's interactive OAuth c
    openclaw mcp login contracko
    ```
 
-5. A browser opens for Contracko sign-in and consent. Select the workspace yourself. Approve **Read** for questions and reviews. Approve **Write** only when you want the assistant to import or change contracts.
+5. A browser opens for Contracko sign-in and consent. Approve **Read** for questions and reviews. Approve **Write** only when you want the assistant to import or change contracts.
 
 The login command is an explicit user action. Do not put a bearer token in this package, a command, or a log. Do not assume that installing the bundle registers or authenticates the server.

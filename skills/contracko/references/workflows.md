@@ -1,6 +1,21 @@
 # Jobs
 
-Use live tool discovery first. These are user jobs, not a substitute for discovered schemas. Mechanics live in the named skill.
+Use live tool discovery first. These are user jobs, not a substitute for discovered schemas. Mechanics live in the named skill. When a job needs several tools and the order is unclear, `clm_search_tools` returns the listed tools and their step sequences for that task.
+
+## Add your first contract
+
+**They say:** I just signed up, the workspace is empty, add this contract, try it with one file.
+
+Run `auth_validate`, then `clm_search_tools` with "Add my first contract" to confirm the steps this connection can run. For one local file, prepare, upload, and ingest:
+
+1. `clm_create_upload_url` with the file's `fileName`, `mimeType`, and `fileSize`. Measure the file; do not read it to size it.
+2. HTTP `PUT` the bytes to the returned URL with the same `Content-Type`, and expect `200`.
+3. `clm_ingest_contract` with the `uploadReference`, the contract details from the document, and its analysis. Send `endDate` or `isOpenEnded: true`.
+4. `clm_get_contract` to read back the new record.
+
+If the file is small and the user wants Contracko's own extraction, `clm_import_contracts` with an inline file is the alternative. [contracko-import](../../contracko-import/SKILL.md) owns both paths and their limits. After the first contract lands, list the extracted types and parties before designing anything.
+
+**Done when:** the contract reads back in the intended workspace, and the user knows it is `pending-review` until a person confirms it.
 
 ## Bring contracts in
 
@@ -32,7 +47,7 @@ Get both records, analyses, and cited document text for disputed terms. Compare 
 
 **They say:** risks, liability, caps, indemnity, or what could hurt us.
 
-Complete the relevant portfolio page set before opening hot contracts. Use `clm_get_contract_analysis`, contract liability fields, and cited clauses. A null analysis field does not prove no risk. [contracko-review](../../contracko-review/SKILL.md) owns audit.
+Complete the relevant portfolio page set before opening hot contracts. Use `clm_get_contract_analysis`, contract liability fields, and cited clauses. A null analysis field does not prove no risk. Where a saved value looks wrong, read any completed document re-read with `clm_list_contract_reconciliations` and `clm_get_contract_reconciliation`; reading changes nothing. [contracko-review](../../contracko-review/SKILL.md) owns audit.
 
 **Done when:** every material finding has a quote, a severity, and a clear extraction-review status.
 

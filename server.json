@@ -3,7 +3,7 @@
   "name": "com.contracko/contracko",
   "title": "Contracko",
   "description": "AI contract management (CLM): contract review, data extraction, reminders and renewal deadlines.",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "websiteUrl": "https://contracko.com/mcp/contract-management",
   "icons": [
     {

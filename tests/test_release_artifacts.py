@@ -139,11 +139,11 @@ class ReleaseArtifactTests(unittest.TestCase):
                 "| [contracko-review](skills/contracko-review/SKILL.md) | Notice dates, notifications, comparisons, risk language, and what to look at next |",
             ),
             ".claude-plugin/plugin.json": (
-                '"version": "0.7.5",',
+                '"version": "0.7.6",',
                 '"description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",',
             ),
             ".codex-plugin/plugin.json": (
-                '"version": "0.7.5",',
+                '"version": "0.7.6",',
                 '"description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",',
             ),
         }
@@ -156,7 +156,7 @@ class ReleaseArtifactTests(unittest.TestCase):
 
         claude_plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
         claude_marketplace = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
-        self.assertEqual(claude_plugin["version"], "0.7.5")
+        self.assertEqual(claude_plugin["version"], "0.7.6")
         self.assertEqual(claude_marketplace["metadata"]["version"], claude_plugin["version"])
 
     def test_claude_connect_copy_is_directory_first(self) -> None:
@@ -184,6 +184,36 @@ class ReleaseArtifactTests(unittest.TestCase):
         self.assertIn("custom connector", claude_section)
         self.assertNotIn("Add custom connector", claude_section)
         self.assertIn("https://app.contracko.com/mcp", readme[readme.index("<summary><strong>Codex</strong>") :])
+
+    def test_skills_cover_tool_search_and_full_catalog(self) -> None:
+        catalog = json.loads((ROOT / "tests/fixtures/mcp-contract.json").read_text())
+        names = {tool["name"] for tool in catalog["tools"]}
+        self.assertEqual(len(names), 50)
+        index = (ROOT / "skills/contracko/references/tool-index.md").read_text()
+        self.assertIn("all 50 tools", index)
+        self.assertEqual({name for name in names if f"`{name}`" not in index}, set())
+
+        skill = (ROOT / "skills/contracko/SKILL.md").read_text()
+        when_to_use = skill[skill.index("## Find the right tool") :]
+        when_to_use = when_to_use[: when_to_use.index("\n## ", 1)]
+        for trigger in ("unsure which tool", "multi-step job", "first contract"):
+            with self.subTest(trigger=trigger):
+                self.assertIn(trigger, when_to_use)
+
+        workflows = (ROOT / "skills/contracko/references/workflows.md").read_text()
+        first = workflows[workflows.index("## Add your first contract") :]
+        first = first[: first.index("\n## ", 1)]
+        steps = [first.index(tool) for tool in ("clm_create_upload_url", "PUT", "clm_ingest_contract", "clm_get_contract`")]
+        self.assertEqual(steps, sorted(steps))
+
+    def test_connect_copy_has_no_workspace_choice(self) -> None:
+        paths = [ROOT / "README.md", ROOT / "GEMINI.md", ROOT / "llms-install.md", ROOT / "agent-setup/prompt.md"]
+        paths += sorted((ROOT / "skills").rglob("*.md")) + sorted((ROOT / "packaging").rglob("*.md"))
+        for path in paths:
+            text = path.read_text().lower()
+            for phrase in ("choose a workspace", "select the workspace", "workspace selection", "workspace picker"):
+                with self.subTest(path=path.relative_to(ROOT).as_posix(), phrase=phrase):
+                    self.assertNotIn(phrase, text)
 
     def test_client_manifests_mirror_claude_plugin_version(self) -> None:
         # packaging/manifest.json and packages/agent-plugin follow the v* release tag line instead.

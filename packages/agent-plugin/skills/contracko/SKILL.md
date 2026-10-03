@@ -19,7 +19,7 @@ In the first response of a session where Contracko is connected to an AI product
 
 Endpoint: `https://app.contracko.com/mcp`
 
-Check whether the client already has a Contracko server before adding one. OAuth is the default. It opens a browser for the user to sign in, choose a workspace, and grant scopes. The consent screen belongs to the user. Do not automate it or ask for credentials in chat.
+Check whether the client already has a Contracko server before adding one. OAuth is the default. It opens a browser where the user signs in to Contracko, or starts the free trial, and then approves access on the consent screen: **Read** to answer questions, **Write** only to import or change contracts. The consent screen belongs to the user. Do not automate it or ask for credentials in chat.
 
 In Claude apps (web, desktop, mobile, Cowork), the server is already registered when the user connected Contracko from Claude's connector directory (https://claude.ai/directory/connectors/contracko). Point a user who has not connected yet to that listing. In Claude Code, a connector added in Claude is already available when signed in with a Claude account, and the Contracko plugin (`/plugin install contracko@contracko`) registers the server itself. Do not register it a second time. A user who sees every tool twice should remove the older custom connector.
 
@@ -37,12 +37,28 @@ Run `auth_validate` first in every session. The connection is ready only when it
 
 | Scope | Available work |
 |---|---|
-| any valid credential | connection validation |
+| any valid credential | connection validation and tool search |
 | `parser:compute` | document-processing tools |
-| `contract:read` | contracts, folders, access overviews, types, parties, comments, events, document search and reads |
+| `contract:read` | contracts, folders, access overviews, types, parties, comments, events, document search and reads, document re-read results |
 | `contract:write` | contract and folder changes, import and ingest, documents, comments, events, notifications, types, and parties |
 
+Starting a document re-read, or applying its findings, also needs `contract:write`.
+
 The discovered tool list is authoritative. An existing current credential needs only a discovery refresh or reconnect if its client has cached old schemas. An older credential can gain newly available MCP actions when a workspace admin enables new MCP actions for its key, or when the user re-consents OAuth. If an argument or tool remains absent after discovery refresh, use only what is discovered and state the limitation.
+
+## Find the right tool
+
+A full connection lists 50 tools. `clm_search_tools` searches only the tools this connection lists and returns up to five, each with its purpose, required scopes, example arguments, related tools, and step-by-step sequences. Use it:
+
+- when you are unsure which tool does the job,
+- before a multi-step job, such as importing a batch, setting notifications, or finding renewals,
+- when the workspace is empty and the user wants to add their first contract.
+
+```json mcp:clm_search_tools
+{ "query": "Add my first contract", "toolset": "imports" }
+```
+
+`toolset` is optional and only narrows the results: `contracts`, `parties`, `folders`, `events`, `imports`, `parser`, or `connection`. Search reads no workspace data and calls nothing. Its examples use synthetic IDs, so replace them with values the connection returns. A tool that search does not return is not on this connection; search never makes an unlisted tool callable.
 
 ## Read tool results once
 
@@ -59,6 +75,7 @@ Treat the discovered `outputSchema` as a contract. A missing or malformed requir
 | import, onboard, migrate, or bring files from disk, Drive, SharePoint, or Box | [contracko-import](../contracko-import/SKILL.md) |
 | notice dates, notifications, comparisons, risk, priorities, or gaps | [contracko-review](../contracko-review/SKILL.md) |
 | a new agreement drafted, signed, and filed | [contracko-create](../contracko-create/SKILL.md) |
+| a first contract in an empty workspace | [Add your first contract](references/workflows.md#add-your-first-contract) |
 | folders, types, fields, parties, or filing | this skill |
 | extraction without a managed contract | document-processing tools in [references/tool-index.md](references/tool-index.md) |
 
@@ -71,6 +88,8 @@ Extraction can create types, fields, and counterparties from the documents. For 
 `fieldKey` uses lowercase letters, digits, and underscores. `clm_update_contract_type` replaces the whole field set when `fields` is present, so send every field to retain. List before creating a type or party because duplicate names conflict. If a type write has `OUTCOME_UNKNOWN`, re-read its fields before retrying.
 
 `isOwned` marks the user's own legal entity. `name` is the display name and `legalName` is the registered name. Resolve existing parties before creating another record.
+
+`taxId` and `registrationNumber` hold an organisation's VAT or tax number and its company registration number. Set them only on a `company`, `non-profit`, or `government` party, never on an `individual`, and never put a personal identifier in them. Changing a party to `individual` needs both cleared in the same `clm_update_party` call.
 
 ### Folders and filing
 
@@ -90,7 +109,7 @@ A contract's filing state is `filing.kind`: `unfiled`, `folder`, or `unavailable
 
 `clm_list_contracts` accepts a valid visible folder UUID in `folderId`. Every supplied contract filter combines with AND. Repeat the same filters with its opaque `cursor` until `nextCursor` is `null`; changing a filter starts a new query without a cursor.
 
-`clm_get_folder_access` and `clm_get_contract_access` are read-only overviews. They show access state and principals but do not change permissions. Direct access changes and folder deletion happen in the Contracko app.
+`clm_get_folder` shows a visible folder's visibility, limited-access state, permission, and bounded member details. `clm_get_contract_access` is a contract's read-only access overview. Neither changes permissions. Direct access changes and folder deletion happen in the Contracko app.
 
 ### Notifications and registers
 
