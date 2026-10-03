@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Check tool names and flat list/filing examples against a pinned released catalog slice."""
+"""Check tool names and flat list, filing, search, and upload examples against a pinned released catalog slice."""
 import argparse
 import datetime
 import json
@@ -17,7 +17,7 @@ def refresh(source, revision):
     selected = {
         "clm_list_contracts", "clm_list_parties", "clm_list_folders", "clm_get_folder",
         "clm_create_folder", "clm_rename_folder", "clm_move_folder", "clm_move_contract",
-        "clm_get_folder_access", "clm_get_contract_access",
+        "clm_get_contract_access", "clm_search_tools", "clm_create_upload_url",
     }
     snapshot = {
         "source": "Contracko released MCP catalog",

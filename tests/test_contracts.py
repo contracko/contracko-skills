@@ -37,7 +37,6 @@ class ContractDocumentationTests(unittest.TestCase):
         examples += self.call({"id": contract, "folderId": None}, "clm_move_contract")
         examples += self.call({"id": contract}, "clm_get_contract_access")
         examples += self.call({"id": contract}, "clm_get_folder")
-        examples += self.call({"id": contract}, "clm_get_folder_access")
         examples += self.call({"id": contract, "name": "Vendors"}, "clm_rename_folder")
         examples += self.call({"id": contract, "parentFolderId": None}, "clm_move_folder")
         result = self.check(examples)
@@ -51,10 +50,19 @@ class ContractDocumentationTests(unittest.TestCase):
             ("clm_list_folders", {"parentFolderId": "hidden-folder"}),
             ("clm_move_contract", {"id": contract}),
             ("clm_move_contract", {"id": contract, "folderId": 123}),
-            ("clm_get_folder_access", {"id": contract, "permission": "admin"}),
+            ("clm_get_folder", {"id": contract, "permission": "admin"}),
+            ("clm_get_folder_access", {"id": contract}),
         ):
             with self.subTest(tool=tool, args=args):
                 self.assertNotEqual(self.check(self.call(args, tool)).returncode, 0)
+
+    def test_tool_search_examples(self):
+        examples = self.call({"query": "Add my first contract", "toolset": "imports"}, "clm_search_tools")
+        examples += self.call({"query": "set renewal reminders"}, "clm_search_tools")
+        self.assertEqual(self.check(examples).returncode, 0)
+        for args in ({}, {"query": ""}, {"query": "renewals", "toolset": "billing"}):
+            with self.subTest(args=args):
+                self.assertNotEqual(self.check(self.call(args, "clm_search_tools")).returncode, 0)
 
     def test_rejects_obsolete_folder_claims(self):
         for claim in ("folderId` you can read and cannot set", "Creating folders and moving contracts is app work"):

@@ -83,11 +83,12 @@ Once documents are in, the questions start: renewals, notice dates, risk, and wh
 
 ## Prepare and file
 
-Three steps, per contract.
+Three steps, per contract, then a read-back. This is also the "add your first contract" sequence that `clm_search_tools` returns for an empty workspace.
 
-1. `clm_create_upload_url` with `fileName`, `mimeType` and `fileSize`. Returns a signed destination valid for one hour, and a file reference.
+1. `clm_create_upload_url` with `fileName`, `mimeType` and `fileSize`. Returns a signed destination valid for one hour, and an opaque `uploadReference`.
 2. `PUT` the bytes to that URL with the matching `Content-Type`, expecting a 200. A plain HTTP request, not a tool call.
-3. `clm_ingest_contract` with `externalSystem`, `externalId`, the `contract` object, and the file references, `isPrimary` on the main document.
+3. `clm_ingest_contract` with `externalSystem`, `externalId`, the `contract` object, and the upload references, `isPrimary` on the main document.
+4. `clm_get_contract` on the returned contract to confirm it landed.
 
 Accepted: PDF, DOCX, TXT, RTF, JPEG, PNG. 25 MiB per file, 100 files per contract.
 

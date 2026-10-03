@@ -19,6 +19,7 @@ Once connected, talk to the assistant the way you would a colleague. These are t
 
 | Try asking | What it does |
 |---|---|
+| I just signed up. Add this contract to Contracko. | Finds the right steps for a first contract, uploads the file, files it, and reads the new record back. |
 | We are onboarding. Pull every PDF from this folder, and from our Drive / SharePoint / Box contracts library, into Contracko. | Finds the files (on disk or in cloud storage you already have connected), checks the set with you, imports them, and lets Contracko extract dates, parties, and types. |
 | I do not want silent renewals. What needs notice, ends, or auto-renews in the next quarter? Set reminders for all of it. | Lists the dates that matter today, then creates notifications on those contracts so you are notified in time. |
 | Compare Acme's MSA to Beta's. Who has the better liability cap, termination, and data-processing terms? | Puts both records side by side, with quoted clauses, so you can choose. |
@@ -46,9 +47,11 @@ For every other assistant, you connect to Contracko in two steps:
 https://app.contracko.com/mcp
 ```
 
-A browser window will open. Sign in to Contracko (or start the free trial there). Adding the skills does not connect the workspace on its own. If Contracko is already listed in that assistant, skip step 2.
+A browser window will open. Sign in to Contracko, or start the free trial there, then approve access on the consent screen. That is the whole flow. Adding the skills does not connect the workspace on its own. If Contracko is already listed in that assistant, skip step 2.
 
-When you sign in, tick **Read** so it can answer questions. Tick **Write** only if it should add or change contracts. Leave **Write** off unless you want that.
+On the consent screen, tick **Read** so it can answer questions. Tick **Write** only if it should add or change contracts. Leave **Write** off unless you want that.
+
+Once connected, the assistant can see up to 50 Contracko tools, depending on what you approved. It can search them itself, so you do not need to know any tool names. Most assistants stay signed in; if one asks you to sign in again, repeat the browser step.
 
 The canonical Agent Plugins v1 skills package is generated at [`packages/agent-plugin/`](packages/agent-plugin/). It is skills-only. Connect `https://app.contracko.com/mcp` through the host client's native MCP and OAuth flow.
 

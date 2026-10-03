@@ -1,6 +1,6 @@
 {
   "source": "Contracko released MCP catalog",
-  "revision": "97b9cf17fe08fd89d0405905ba171b48fb0b19bb",
+  "revision": "31ede79bf30f381492adb61dc1191d9cdc31a07e",
   "tools": [
     {
       "name": "auth_validate",
@@ -13,6 +13,10 @@
     {
       "name": "clm_add_contract_documents",
       "introducedInCapabilityPolicyVersion": 3
+    },
+    {
+      "name": "clm_apply_contract_reconciliation",
+      "introducedInCapabilityPolicyVersion": 5
     },
     {
       "name": "clm_bulk_update_contracts",
@@ -66,7 +70,36 @@
     },
     {
       "name": "clm_create_upload_url",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "fileName": {
+            "description": "Original file name including extension",
+            "minLength": 1,
+            "type": "string"
+          },
+          "fileSize": {
+            "description": "File size in bytes",
+            "exclusiveMinimum": 0,
+            "maximum": 52428800,
+            "type": "integer"
+          },
+          "mimeType": {
+            "description": "File type of the uploaded document",
+            "maxLength": 200,
+            "minLength": 1,
+            "pattern": "^[\\w.+-]+\\/[\\w.+-]+$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "fileName",
+          "mimeType",
+          "fileSize"
+        ],
+        "type": "object"
+      }
     },
     {
       "name": "clm_delete_contract_events",
@@ -108,30 +141,19 @@
       "introducedInCapabilityPolicyVersion": 4
     },
     {
+      "name": "clm_get_contract_reconciliation",
+      "introducedInCapabilityPolicyVersion": 5
+    },
+    {
+      "name": "clm_get_contract_reprocess_run",
+      "introducedInCapabilityPolicyVersion": 5
+    },
+    {
       "name": "clm_get_contract_type",
       "introducedInCapabilityPolicyVersion": 1
     },
     {
       "name": "clm_get_folder",
-      "introducedInCapabilityPolicyVersion": 5,
-      "inputSchema": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "properties": {
-          "id": {
-            "description": "Folder identifier",
-            "format": "uuid",
-            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id"
-        ],
-        "type": "object"
-      }
-    },
-    {
-      "name": "clm_get_folder_access",
       "introducedInCapabilityPolicyVersion": 5,
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -171,6 +193,10 @@
     },
     {
       "name": "clm_list_contract_events",
+      "introducedInCapabilityPolicyVersion": 5
+    },
+    {
+      "name": "clm_list_contract_reconciliations",
       "introducedInCapabilityPolicyVersion": 5
     },
     {
@@ -414,8 +440,45 @@
       }
     },
     {
+      "name": "clm_reprocess_contract_document",
+      "introducedInCapabilityPolicyVersion": 5
+    },
+    {
       "name": "clm_search_contract_documents",
       "introducedInCapabilityPolicyVersion": 5
+    },
+    {
+      "name": "clm_search_tools",
+      "introducedInCapabilityPolicyVersion": 5,
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "query": {
+            "description": "Short task description or keywords",
+            "maxLength": 300,
+            "minLength": 1,
+            "type": "string"
+          },
+          "toolset": {
+            "description": "Optional group to search",
+            "enum": [
+              "contracts",
+              "parties",
+              "folders",
+              "events",
+              "imports",
+              "parser",
+              "connection"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "type": "object"
+      }
     },
     {
       "name": "clm_update_contract",
