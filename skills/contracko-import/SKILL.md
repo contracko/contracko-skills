@@ -86,7 +86,7 @@ Once documents are in, the questions start: renewals, notice dates, risk, and wh
 Three steps, per contract, then a read-back. This is also the "add your first contract" sequence that `clm_search_tools` returns for an empty workspace.
 
 1. `clm_create_upload_url` with `fileName`, `mimeType` and `fileSize`. Returns a signed destination valid for one hour, and an opaque `uploadReference`.
-2. `PUT` the bytes to that URL with the matching `Content-Type`, expecting a 200. A plain HTTP request, not a tool call.
+2. `PUT` the bytes only to that URL with the matching `Content-Type`. A plain HTTP request, not a tool call. Intake checks whether the bytes arrived; the curl exit code alone is not confirmation.
 3. `clm_ingest_contract` with `externalSystem`, `externalId`, the `contract` object, and the upload references, `isPrimary` on the main document.
 4. `clm_get_contract` on the returned contract to confirm it landed.
 
@@ -123,7 +123,7 @@ For a PDF, execute exactly one literal command:
 curl -T "<file>" -H "Content-Type: application/pdf" "<uploadUrl>"
 ```
 
-Replace `<file>` with the local path and `<uploadUrl>` with the real returned URL inline when executing. For another accepted file type, use the matching declared `Content-Type`; the server requires this header. Run the upload as one command, with no chaining, subshell, URL file, variable, extra destination, or added curl options. Do not follow redirects. Expect HTTP `200`; only then continue to ingest. If success cannot be confirmed, treat the upload as failed.
+Replace `<file>` with the local path and `<uploadUrl>` with the real returned URL inline when executing. For another accepted file type, use the matching declared `Content-Type`; the server requires this header. Run the upload as one command, with no chaining, subshell, URL file, variable, extra destination, or added curl options. Do not follow redirects. This plain curl command does not display HTTP status; exit code zero alone does not prove the bytes arrived. If it completes with no transport error or upload-error response, continue to the intake call using the returned reference, but do not claim upload or filing success yet. Contracko validates stored bytes before creating a contract. Confirm filing only from a successful intake result and the contract read-back. If intake returns `UPLOAD_NOT_RECEIVED`, stop and tell the user or use an offered fallback. Do not retry intake as an upload-status polling loop.
 
 If the upload fails or policy blocks it, stop and tell the user. Offer `clm_import_contracts` with `kind: "inline"` only for files <=35 MiB that also fit the live tool's file and encoded-payload limits (the pinned release limits are listed above), or use an upload page only if Contracko offers one. Do not weaken policy or try a different host.
 

@@ -44,7 +44,7 @@ For a PDF, the assistant must execute one literal command:
 curl -T "<file>" -H "Content-Type: application/pdf" "<uploadUrl>"
 ```
 
-At execution, substitute the local path and real returned URL directly inside the quotes. The `Content-Type` header is required by the server; use the declared MIME type for non-PDF files. Run it as one command, with no chaining, subshell, URL file, variable, extra destination, or added curl options. Do not follow redirects. Confirm HTTP `200` before ingesting. An unconfirmed result is a failure, not permission to file the upload reference.
+At execution, substitute the local path and real returned URL directly inside the quotes. The `Content-Type` header is required by the server; use the declared MIME type for non-PDF files. Run it as one command, with no chaining, subshell, URL file, variable, extra destination, or added curl options. Do not follow redirects. This plain curl command does not display HTTP status, and exit code zero alone does not prove the bytes arrived. A completed command with no transport error or upload-error response permits the next intake call, not a success claim. Contracko validates the stored bytes at intake; confirm filing only from a successful tool result and read-back. If intake returns `UPLOAD_NOT_RECEIVED`, stop and tell the user or use an offered fallback.
 
 If curl fails or execution policy blocks it, stop and tell the user. Offer inline import only for files <=35 MiB that also fit the live tool's file and encoded-payload limits, or an upload page if Contracko offers one. The [import skill](skills/contracko-import/SKILL.md#managed-import) lists the pinned release's smaller limits. Keep policy intact and do not try another host.
 
