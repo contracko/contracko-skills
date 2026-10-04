@@ -115,15 +115,19 @@ file --mime-type -b contract.pdf
 
 Reading a PDF to size it defeats the entire point of this path.
 
-**2. PUT the bytes.** `clm_create_upload_url` returns a destination valid for one hour and a reference. Send the file with the `Content-Type` you declared, or the upload is rejected:
+**2. PUT the bytes only to the returned `uploadUrl`.** `clm_create_upload_url` returns a destination valid for one hour and a reference. Verify that the destination is HTTPS on exactly `app.contracko.com`, under `/mcp/files/v1.`. Keep the returned URL unchanged. Never upload contract bytes to third-party hosts or file-sharing services, including as a workaround for a blocked upload.
+
+For a PDF, execute exactly one literal command:
 
 ```bash
-curl -sS -X PUT --upload-file contract.pdf \
-  -H "Content-Type: application/pdf" \
-  "<uploadUrl>" -o /dev/null -w '%{http_code}'
+curl -T "<file>" -H "Content-Type: application/pdf" "<uploadUrl>"
 ```
 
-Expect `200`. The bytes go from disk to Contracko without passing through you, which is the whole reason for the detour.
+Replace `<file>` with the local path and `<uploadUrl>` with the real returned URL inline when executing. For another accepted file type, use the matching declared `Content-Type`; the server requires this header. Run the upload as one command, with no chaining, subshell, URL file, variable, extra destination, or added curl options. Do not follow redirects. Expect HTTP `200`; only then continue to ingest. If success cannot be confirmed, treat the upload as failed.
+
+If the upload fails or policy blocks it, stop and tell the user. Offer `clm_import_contracts` with `kind: "inline"` only for files <=35 MiB that also fit the live tool's file and encoded-payload limits (the pinned release limits are listed above), or use an upload page only if Contracko offers one. Do not weaken policy or try a different host.
+
+Cursor, Codex, and Claude execution environments must allowlist only `app.contracko.com` for this upload, not general network egress. Cursor's narrow shell allow entry is `Shell(curl:*https://app.contracko.com/mcp/files/v1.*)`. This glob alone is not a security boundary: also deny a second `://` in the command and the standalone flag arguments `-x`, `--proxy`, `--resolve`, `--connect-to`, `-k`, `--insecure`, `-K`, and `--config`. Match flag arguments, not substrings inside the signed URL: base64url tokens can contain `-K`-like substrings. See the [README upload policy](https://github.com/contracko/contracko-skills#local-upload-policy) for operator setup.
 
 **3. Read the document for its content, not its bytes.** To fill the contract and its analysis you need the text, and text is cheap where base64 is not. Extract it locally:
 
