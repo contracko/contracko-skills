@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -304,6 +305,44 @@ class ReleaseArtifactTests(unittest.TestCase):
             text=True,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_directory_check_rejects_skill_tree_drift_without_writing(self) -> None:
+        cases = (
+            ("skills/new-skill/SKILL.md", b"New canonical skill\n"),
+            ("skills/shared.txt", b"Canonical asset\n"),
+            ("skills/contracko/SKILL.md", b"Changed canonical skill\n"),
+            ("packages/agent-plugin/skills/contracko/SKILL.md", b"Changed package\n"),
+            ("packages/agent-plugin/skills/contracko/SKILL.md", None),
+            ("packages/agent-plugin/skills/extra/asset.bin", b"\x00\xff"),
+        )
+        for relative, content in cases:
+            with self.subTest(path=relative, content=content):
+                with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
+                    fixture = Path(temporary)
+                    for directory in ("scripts", "skills", "packaging", "packages/agent-plugin"):
+                        shutil.copytree(ROOT / directory, fixture / directory)
+                    shutil.copyfile(ROOT / "LICENSE", fixture / "LICENSE")
+                    target = fixture / relative
+                    if content is None:
+                        target.unlink()
+                    else:
+                        target.parent.mkdir(parents=True, exist_ok=True)
+                        target.write_bytes(content)
+                    before = {
+                        path.relative_to(fixture): path.read_bytes()
+                        for path in fixture.rglob("*") if path.is_file()
+                    }
+                    result = subprocess.run(
+                        ["python3", str(fixture / "scripts/build_release_artifacts.py"), "--check-directory"],
+                        cwd=fixture, capture_output=True, text=True,
+                    )
+                    self.assertEqual(result.returncode, 2, result.stderr)
+                    self.assertIn("drift", result.stderr)
+                    after = {
+                        path.relative_to(fixture): path.read_bytes()
+                        for path in fixture.rglob("*") if path.is_file()
+                    }
+                    self.assertEqual(after, before)
 
     def test_directory_check_rejects_release_version_mismatch(self) -> None:
         result = subprocess.run(
