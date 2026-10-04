@@ -2,6 +2,10 @@
 
 User-facing changes to the Contracko skills and plugin packages. Client manifests (Claude, Codex, Cursor, Copilot, Gemini, MCP Registry) share one version; the Agent Plugins package and release bundles follow the `v*` release tag line.
 
+## Maintenance, 2026-10-04
+
+- CI now checks the complete canonical skill tree against the generated Agent Plugins package, including newly added skills that the generator would otherwise omit.
+
 ## 0.7.8 (Agent Plugins 0.8.3), 2026-10-04
 
 Matches the Contracko MCP surface live since 2026-10-04 (52 tools, about 24k tokens of tool descriptions).

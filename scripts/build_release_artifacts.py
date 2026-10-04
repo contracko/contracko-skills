@@ -223,6 +223,14 @@ def populate_directory_package(destination: Path, manifest: dict[str, object]) -
         skill_source = ROOT / "skills" / skill
         reject_symlink_entries(skill_source, label=f"canonical skill source {skill}")
         copy_tree(skill_source, destination / "skills" / skill)
+    canonical_files = directory_files(ROOT / "skills")
+    generated_files = directory_files(destination / "skills")
+    if canonical_files != generated_files:
+        omitted = sorted(set(canonical_files) - set(generated_files))
+        raise ValueError(
+            f"canonical skill tree drift: files omitted by generator={omitted}; "
+            "update SKILLS or the skill layout before regenerating"
+        )
 
 
 def reject_symlink_entries(path: Path, *, label: str) -> None:
