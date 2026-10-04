@@ -67,6 +67,13 @@ The directory connector works on every Claude plan, including Free. On Team and 
 
 Added Contracko as a custom connector before? Remove that one, or you will see every tool twice.
 
+How you hand Contracko a file depends on where you use Claude:
+
+- **Web (claude.ai) and desktop app chat.** Attach the file to the chat. It lands in Claude's code-execution sandbox, not on your computer, and Claude sends it from there. To make large files fast, allow `app.contracko.com` under **Settings > Capabilities > Code execution and file creation** (network egress); on Team and Enterprise an Owner sets this for the organization. Without it, Claude sends small files inline or points you to Contracko to upload larger ones.
+- **Cowork.** Grant the task a folder that holds the file, or attach it. Cowork uploads from its own environment when that can reach `app.contracko.com`, otherwise it sends the file inline. Which network rules apply there is still being confirmed.
+- **Mobile.** The same connector as web, so files follow the web path. Not yet tested on mobile.
+- **Claude Code.** See the Claude Code section: the file uploads straight from your machine.
+
 On the Free plan you can still add the skills by hand: download them from [Releases](https://github.com/contracko/contracko-skills/releases/latest) and upload each one under **Customize, Skills**.
 
 </details>
@@ -92,6 +99,8 @@ claude mcp add --transport http contracko https://app.contracko.com/mcp
 ```
 
 If you installed the older `contracko-skills` plugin, remove that plugin and install `contracko@contracko` after updating the marketplace. The GitHub repository remains `contracko/contracko-skills`; the MCP connection remains `contracko`.
+
+To add a contract, give Claude Code the file's path. It reads the file from your disk and uploads it from your own shell, so the bytes never pass through the chat. If you run Claude Code in sandbox mode, allow `app.contracko.com` in its network settings.
 
 </details>
 

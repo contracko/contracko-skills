@@ -121,7 +121,7 @@ SaaS subscriptions, leases, permits, certificates, insurance policies, warrantie
 
 Confirm a proposed field set before creating it. Confirm a folder destination before moving a contract, and confirm every bulk change. Mutations can have partial outcomes. Read the returned per-item result and reconcile writes that do not have a clear success state.
 
-For import, choose the transfer path before reading bytes: inline base64 import for a small file when Contracko should extract it, a signed short-lived remote URL for a document Contracko can fetch, or upload then ingest when bytes must bypass the model context and the agent supplies extraction. [contracko-import](../contracko-import/SKILL.md) has the limits and reconciliation rules.
+For import, choose the transfer path before reading bytes: inline base64 import for a small file when Contracko should extract it, a signed short-lived remote URL for a document Contracko can fetch, or upload then ingest when bytes must bypass the model context and the agent supplies extraction. Where you run decides the upload: a shell with network access uses the signed PUT. Claude's chat sandbox uses the PUT only if `app.contracko.com` is allowed; if it is not, or the PUT returns 403 or an HTML challenge page, send the same file inline without preparing it again. Without code execution, use an upload page link if one is offered, otherwise the app. In ChatGPT, use the attached-file import tool when it is listed. [contracko-import](../contracko-import/SKILL.md) has the limits and reconciliation rules.
 
 Never invent a tool signature. When a requested operation has no discovered tool, identify the available nearest step and hand the unavailable operation to the app.
 

@@ -104,6 +104,17 @@ Four defaults apply silently, so set them from the document rather than letting 
 
 ## Working the upload path
 
+First match where you are running, because that decides whether a PUT can work at all:
+
+| You are | Do |
+|---|---|
+| in a shell with network access (Claude Code, Cursor, Codex) | the signed PUT below |
+| in Claude's chat code sandbox (web, desktop, possibly Cowork) | try the PUT, which works only if `app.contracko.com` is an allowed domain. If it is not allowed, or the PUT returns 403 or an HTML challenge page, send the same file inline with `clm_import_contracts`. Do not prepare the upload again. |
+| without code execution | give the user an upload page link when your tools offer one, otherwise send them to the app. Base64 you type out yourself is not reliable. |
+| in ChatGPT with an attached file | use the attached-file import tool when it is listed |
+
+An HTML "Just a moment" page or a `cf-mitigated` header means the request was challenged, not stored. Do not retry the same PUT in a loop.
+
 The three steps, with the parts that actually trip agents up.
 
 **1. Measure the file without reading it.** You need `fileSize` in bytes and a `mimeType`, and neither requires the contents:
