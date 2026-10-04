@@ -51,7 +51,7 @@ A browser window will open. Sign in to Contracko, or start the free trial there,
 
 On the consent screen, tick **Read** so it can answer questions. Tick **Write** only if it should add or change contracts. Leave **Write** off unless you want that.
 
-Once connected, the assistant can see up to 50 Contracko tools, depending on what you approved. It can search them itself, so you do not need to know any tool names. Most assistants stay signed in; if one asks you to sign in again, repeat the browser step.
+Once connected, the assistant can see up to 52 Contracko tools, depending on what you approved. It can search them itself, so you do not need to know any tool names. Most assistants stay signed in; if one asks you to sign in again, repeat the browser step.
 
 The canonical Agent Plugins v1 skills package is generated at [`packages/agent-plugin/`](packages/agent-plugin/). It is skills-only. Connect `https://app.contracko.com/mcp` through the host client's native MCP and OAuth flow.
 
@@ -66,6 +66,8 @@ Open the section for the product you use.
 The directory connector works on every Claude plan, including Free. On Team and Enterprise, an Owner enables it first. Once connected on web or desktop, it also works in the Claude mobile app.
 
 Added Contracko as a custom connector before? Remove that one, or you will see every tool twice.
+
+To add a contract on web or desktop, attach the file to the chat. It lands in Claude's code-execution sandbox, and Claude uploads it from there once `app.contracko.com` is allowed under **Settings > Capabilities > Code execution and file creation** (network egress). On Team and Enterprise an Owner sets this for the organization. Without it, Claude sends only a tiny file inline, or gives you an upload link to add the file in your browser. Cowork and mobile are not tested yet.
 
 On the Free plan you can still add the skills by hand: download them from [Releases](https://github.com/contracko/contracko-skills/releases/latest) and upload each one under **Customize, Skills**.
 
@@ -93,6 +95,8 @@ claude mcp add --transport http contracko https://app.contracko.com/mcp
 
 If you installed the older `contracko-skills` plugin, remove that plugin and install `contracko@contracko` after updating the marketplace. The GitHub repository remains `contracko/contracko-skills`; the MCP connection remains `contracko`.
 
+To add a contract, give Claude Code the file's path. It uploads the file from your own shell, so the bytes never pass through the chat. In sandbox mode, allow `app.contracko.com` in its network settings.
+
 </details>
 
 <details>
@@ -104,6 +108,8 @@ If you installed the older `contracko-skills` plugin, remove that plugin and ins
 4. Sign in in the browser that opens.
 
 ChatGPT has no settings file for this. Use the screens above.
+
+To add a contract, attach the file to the chat and ask ChatGPT to import it. If the attachment does not reach Contracko, ChatGPT gives you an upload link where you add the file in your browser.
 
 </details>
 
@@ -271,6 +277,14 @@ If you are adding the connection yourself, the address is still `https://app.con
 Step-by-step recipes: [agent-setup/prompt.md](agent-setup/prompt.md).
 
 </details>
+
+### Adding contract files from Codex and Cursor
+
+- **Codex CLI:** the default sandbox has no network, so set `sandbox_workspace_write.network_access = true` for the upload. Non-interactive runs need approval for the import tool.
+- **Cursor CLI:** allow one plain `curl -T "<file>" "<uploadUrl>"` command and network access to `app.contracko.com`.
+- **Cursor web:** attachments are limited to 4 MB, so the assistant gives you an upload link instead.
+
+Contract files go only to Contracko's own upload address, never to a third-party host. If an upload is blocked, the assistant stops and tells you.
 
 ## Skills
 
