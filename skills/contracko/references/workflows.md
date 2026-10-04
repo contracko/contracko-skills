@@ -9,11 +9,21 @@ Use live tool discovery first. These are user jobs, not a substitute for discove
 Run `auth_validate`, then `clm_search_tools` with "Add my first contract" to confirm the steps this connection can run. For one local file, prepare, upload, and ingest:
 
 1. `clm_create_upload_url` with the file's `fileName`, `mimeType`, and `fileSize`. Measure the file; do not read it to size it.
-2. HTTP `PUT` the bytes to the returned URL with the same `Content-Type`, and expect `200`.
+2. HTTP `PUT` the bytes to the returned URL with the same `Content-Type`, and expect a 2xx status.
 3. `clm_ingest_contract` with the `uploadReference`, the contract details from the document, and its analysis. Send `endDate` or `isOpenEnded: true`.
 4. `clm_get_contract` to read back the new record.
 
-If the file is small and the user wants Contracko's own extraction, `clm_import_contracts` with an inline file is the alternative. [contracko-import](../../contracko-import/SKILL.md) owns both paths and their limits. After the first contract lands, list the extracted types and parties before designing anything.
+To let Contracko extract instead, replace step 3 with `clm_import_contracts` and a `kind: "upload"` file carrying the same `uploadReference`.
+
+Where you run decides the upload:
+
+| You are in | Do |
+|---|---|
+| a shell with network access (Claude Code, Codex with network on, Cursor CLI, Claude chat with `app.contracko.com` allowed) | the steps above |
+| ChatGPT | ask for the file as an attachment, then `clm_import_files`; otherwise the upload link |
+| an environment with no network | inline import only for a tiny file; otherwise `clm_create_upload_session` and give the user its `uploadPageUrl` |
+
+Upload only to the returned `uploadUrl`, never to a third-party host. If the upload is blocked, stop and tell the user. [contracko-import](../../contracko-import/SKILL.md) owns these paths and their limits. After the first contract lands, list the extracted types and parties before designing anything.
 
 **Done when:** the contract reads back in the intended workspace, and the user knows it is `pending-review` until a person confirms it.
 

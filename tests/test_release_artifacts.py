@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -139,11 +140,11 @@ class ReleaseArtifactTests(unittest.TestCase):
                 "| [contracko-review](skills/contracko-review/SKILL.md) | Notice dates, notifications, comparisons, risk language, and what to look at next |",
             ),
             ".claude-plugin/plugin.json": (
-                '"version": "0.7.7",',
+                '"version": "0.7.9",',
                 '"description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",',
             ),
             ".codex-plugin/plugin.json": (
-                '"version": "0.7.7",',
+                '"version": "0.7.9",',
                 '"description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",',
             ),
         }
@@ -156,7 +157,7 @@ class ReleaseArtifactTests(unittest.TestCase):
 
         claude_plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
         claude_marketplace = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
-        self.assertEqual(claude_plugin["version"], "0.7.7")
+        self.assertEqual(claude_plugin["version"], "0.7.9")
         self.assertEqual(claude_marketplace["metadata"]["version"], claude_plugin["version"])
 
     def test_claude_connect_copy_is_directory_first(self) -> None:
@@ -188,9 +189,9 @@ class ReleaseArtifactTests(unittest.TestCase):
     def test_skills_cover_tool_search_and_full_catalog(self) -> None:
         catalog = json.loads((ROOT / "tests/fixtures/mcp-contract.json").read_text())
         names = {tool["name"] for tool in catalog["tools"]}
-        self.assertEqual(len(names), 50)
+        self.assertEqual(len(names), 52)
         index = (ROOT / "skills/contracko/references/tool-index.md").read_text()
-        self.assertIn("all 50 tools", index)
+        self.assertIn("all 52 tools", index)
         self.assertEqual({name for name in names if f"`{name}`" not in index}, set())
 
         skill = (ROOT / "skills/contracko/SKILL.md").read_text()
@@ -230,6 +231,30 @@ class ReleaseArtifactTests(unittest.TestCase):
         for relative, version in versions.items():
             with self.subTest(path=relative):
                 self.assertEqual(version, expected)
+
+    def test_client_manifests_mirror_claude_plugin_description_except_cursor(self) -> None:
+        # Cursor's marketplace truncates long descriptions, so Cursor carries its own shorter one.
+        # server.json keeps its own MCP Registry description and is not checked here.
+        expected = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())["description"]
+        descriptions = {
+            ".codex-plugin/plugin.json": json.loads((ROOT / ".codex-plugin/plugin.json").read_text())["description"],
+            "gemini-extension.json": json.loads((ROOT / "gemini-extension.json").read_text())["description"],
+        }
+        for relative in (".claude-plugin/marketplace.json", ".github/plugin/marketplace.json"):
+            marketplace = json.loads((ROOT / relative).read_text())
+            for plugin in marketplace["plugins"]:
+                descriptions[f"{relative}:{plugin['name']}"] = plugin["description"]
+        for relative, description in descriptions.items():
+            with self.subTest(path=relative):
+                self.assertEqual(description, expected)
+
+        cursor = json.loads((ROOT / ".cursor-plugin/plugin.json").read_text())["description"]
+        self.assertEqual(
+            cursor,
+            "AI contract management: contract review and analysis, data extraction, automated reminders, "
+            "and renewal and notice deadline tracking.",
+        )
+        self.assertLess(len(cursor), len(expected))
 
     def test_committed_directory_package_exposes_canonical_skills(self) -> None:
         package = ROOT / "packages" / "agent-plugin"
@@ -280,6 +305,44 @@ class ReleaseArtifactTests(unittest.TestCase):
             text=True,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_directory_check_rejects_skill_tree_drift_without_writing(self) -> None:
+        cases = (
+            ("skills/new-skill/SKILL.md", b"New canonical skill\n"),
+            ("skills/shared.txt", b"Canonical asset\n"),
+            ("skills/contracko/SKILL.md", b"Changed canonical skill\n"),
+            ("packages/agent-plugin/skills/contracko/SKILL.md", b"Changed package\n"),
+            ("packages/agent-plugin/skills/contracko/SKILL.md", None),
+            ("packages/agent-plugin/skills/extra/asset.bin", b"\x00\xff"),
+        )
+        for relative, content in cases:
+            with self.subTest(path=relative, content=content):
+                with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
+                    fixture = Path(temporary)
+                    for directory in ("scripts", "skills", "packaging", "packages/agent-plugin"):
+                        shutil.copytree(ROOT / directory, fixture / directory)
+                    shutil.copyfile(ROOT / "LICENSE", fixture / "LICENSE")
+                    target = fixture / relative
+                    if content is None:
+                        target.unlink()
+                    else:
+                        target.parent.mkdir(parents=True, exist_ok=True)
+                        target.write_bytes(content)
+                    before = {
+                        path.relative_to(fixture): path.read_bytes()
+                        for path in fixture.rglob("*") if path.is_file()
+                    }
+                    result = subprocess.run(
+                        ["python3", str(fixture / "scripts/build_release_artifacts.py"), "--check-directory"],
+                        cwd=fixture, capture_output=True, text=True,
+                    )
+                    self.assertEqual(result.returncode, 2, result.stderr)
+                    self.assertIn("drift", result.stderr)
+                    after = {
+                        path.relative_to(fixture): path.read_bytes()
+                        for path in fixture.rglob("*") if path.is_file()
+                    }
+                    self.assertEqual(after, before)
 
     def test_directory_check_rejects_release_version_mismatch(self) -> None:
         result = subprocess.run(

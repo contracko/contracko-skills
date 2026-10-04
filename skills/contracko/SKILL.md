@@ -48,7 +48,7 @@ The discovered tool list is authoritative. An existing current credential needs 
 
 ## Find the right tool
 
-A full connection lists 50 tools. `clm_search_tools` searches only the tools this connection lists and returns up to five, each with its purpose, required scopes, example arguments, related tools, and step-by-step sequences. Use it:
+A full connection lists 52 tools. `clm_search_tools` searches only the tools this connection lists and returns up to five, each with its purpose, required scopes, example arguments, related tools, and step-by-step sequences. Use it:
 
 - when you are unsure which tool does the job,
 - before a multi-step job, such as importing a batch, setting notifications, or finding renewals,
@@ -121,7 +121,14 @@ SaaS subscriptions, leases, permits, certificates, insurance policies, warrantie
 
 Confirm a proposed field set before creating it. Confirm a folder destination before moving a contract, and confirm every bulk change. Mutations can have partial outcomes. Read the returned per-item result and reconcile writes that do not have a clear success state.
 
-For import, choose the transfer path before reading bytes: inline base64 import for a small file when Contracko should extract it, a signed short-lived remote URL for a document Contracko can fetch, or upload then ingest when bytes must bypass the model context and the agent supplies extraction. [contracko-import](../contracko-import/SKILL.md) has the limits and reconciliation rules.
+For import, choose the transfer path before reading bytes. Where you run decides it:
+
+- **A shell with network access** (Claude Code, Codex, Cursor CLI, Claude's chat sandbox with `app.contracko.com` allowed): `clm_create_upload_url`, PUT the file to the returned `uploadUrl`, then `clm_import_contracts` with `kind: "upload"` so Contracko extracts, or `clm_ingest_contract` when you supply the fields.
+- **ChatGPT:** ask the user to attach the file, then `clm_import_files`. If that is unavailable or fails, use the upload link below.
+- **No network:** inline base64 into `clm_import_contracts` only for a tiny file (tens of KB). Otherwise call `clm_create_upload_session` and give the user its `uploadPageUrl` to add the files in their browser.
+- **Always:** upload only to the returned `uploadUrl`, never to a third-party host. If the upload is blocked, stop and tell the user.
+
+A signed short-lived remote URL works for a document Contracko can fetch. [contracko-import](../contracko-import/SKILL.md) has the limits and reconciliation rules.
 
 Never invent a tool signature. When a requested operation has no discovered tool, identify the available nearest step and hand the unavailable operation to the app.
 

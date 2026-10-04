@@ -2,7 +2,7 @@
 
 Use live discovery for tool names and schemas. This index records workflow rules that schemas do not express. [workflows.md](workflows.md) maps user jobs to these tools.
 
-This index lists all 50 tools a connection with every scope can see. A narrower connection sees fewer. When you are unsure which tool fits, call `clm_search_tools` instead of guessing from this page.
+This index lists all 52 tools a connection with every scope can see. A narrower connection sees fewer. When you are unsure which tool fits, call `clm_search_tools` instead of guessing from this page.
 
 ## Discovery and results
 
@@ -137,14 +137,16 @@ The reads are safe to call at any time. Apply only works in a client that can as
 
 | Tool | Scope | Use |
 |---|---|---|
-| `clm_import_contracts` | `contract:write` | Managed import from inline bytes or a remote URL. |
+| `clm_import_contracts` | `contract:write` | Managed import from a prepared upload (`kind: "upload"`), inline bytes, or a remote URL. Contracko extracts. |
+| `clm_import_files` | `contract:write` | Managed import of files attached in a ChatGPT chat. Contracko downloads them from ChatGPT's file service. |
+| `clm_create_upload_session` | `contract:write` | Create a one-hour upload link (`uploadPageUrl`) where the signed-in person adds files in their browser. The fallback when you cannot send the bytes. |
 | `clm_get_import_status` | `contract:read` | Poll import progress and honour `pollAfterMs`. |
-| `clm_create_upload_url` | `contract:write` | Create a short-lived upload destination for ingest. |
+| `clm_create_upload_url` | `contract:write` | Create a short-lived upload destination for import or ingest. `ifUploadUrlUnreachable` names the fallback. |
 | `clm_ingest_contract` | `contract:write` | File uploaded documents with agent-supplied metadata and analysis. |
 | `clm_add_contract_documents` | `contract:write` | Add draft or related documents, or replace the primary document. |
 | `clm_update_contract` | `contract:write` | Partially update one contract with its latest `updatedAt`. |
 | `clm_bulk_update_contracts` | `contract:write` | Independently update up to 100 contracts. Confirm the batch. |
-| `clm_add_contract_comment` | `contract:write` | Add a comment. After an unknown outcome, list comments before retrying. |
+| `clm_add_contract_comment` | `contract:write` | Add a comment. Contracko emails the contract's followers. After an unknown outcome, list comments before retrying. |
 | `clm_create_contract_type` / `clm_update_contract_type` | `contract:write` | Create types and fields, or replace a supplied field set. |
 | `clm_list_contract_types` / `clm_get_contract_type` | `contract:read` | Inspect types and fields. |
 | `clm_create_party` / `clm_update_party` | `contract:write` | Create or partially update parties. |
@@ -165,7 +167,7 @@ For a single local file in an empty workspace, `clm_search_tools` with "Add my f
 { "fileName": "acme-msa.pdf", "mimeType": "application/pdf", "fileSize": 182044 }
 ```
 
-Use inline base64 import only for a small local file when Contracko should extract it. Use a signed short-lived remote URL when Contracko can fetch the document. Use upload then ingest when bytes must bypass model context and the agent supplies the extraction. Never publish a confidential contract to make a remote URL work. [contracko-import](../../contracko-import/SKILL.md) defines these paths.
+After the PUT, `clm_import_contracts` with a `kind: "upload"` file lets Contracko extract instead of you. In ChatGPT, use `clm_import_files` for attached files. Without network access, send only a tiny file inline; otherwise create an upload link with `clm_create_upload_session`. Upload only to the returned `uploadUrl`, never to a third-party host. Never publish a confidential contract to make a remote URL work. [contracko-import](../../contracko-import/SKILL.md) defines these paths.
 
 ## Events, notifications, and document processing
 

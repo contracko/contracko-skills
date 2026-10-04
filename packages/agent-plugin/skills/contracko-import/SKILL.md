@@ -20,17 +20,27 @@ Do not publish a confidential file to a public URL so `remote` import works. A s
 
 ## Getting the bytes there
 
-MCP has no file transfer, so a document on the user's disk reaches Contracko one of three ways, and the choice is forced by where the file is and how big it is. Decide this first, before anything else.
+MCP has no file transfer, so where you run decides how a document reaches Contracko. Decide this first, before anything else.
 
-| The file is | Use | Why |
+| You are | Use | Why |
 |---|---|---|
-| small, and you want Contracko's own extraction | `clm_import_contracts` with `kind: "inline"` | base64 travels through your context: roughly 1.4x the file size in characters, so a 50 KB PDF costs around 17k tokens. Fine for one contract, ruinous for twenty. |
-| large, or a batch, or you have already read it | `clm_create_upload_url` → PUT → `clm_ingest_contract` | the bytes go machine-to-machine and never touch your context. You supply the metadata, and you can supply the analysis too. |
-| already behind a URL Contracko can fetch | `clm_import_contracts` with `kind: "remote"` | Contracko downloads it directly. Extraction runs, nothing passes through you. |
+| in a shell with network access | `clm_create_upload_url` → PUT → `clm_import_contracts` with `kind: "upload"` (Contracko extracts), or → `clm_ingest_contract` (you supply the fields) | the bytes go machine-to-machine and never touch your context |
+| in ChatGPT with the file attached | `clm_import_files` with the attached files | Contracko downloads them from ChatGPT's file service. Ask for an attachment if there is none. |
+| without network, and the file is tiny | `clm_import_contracts` with `kind: "inline"` | base64 travels through your context: roughly 1.4x the file size, so a 50 KB PDF costs around 17k tokens. The cap is 35 MiB per file, but clients manage only tens of KB in practice. |
+| unable to send the bytes at all | `clm_create_upload_session`, then give the user its `uploadPageUrl` | the user adds the files in their browser, signed in to Contracko, within the hour |
+| pointing at a URL Contracko can fetch | `clm_import_contracts` with `kind: "remote"` | Contracko downloads it directly. |
 
-**Never publish a contract to a public URL to make `remote` work.** A signed or authenticated link from the user's own document store is what that option is for. Putting a confidential agreement on a public host to save a step is a worse outcome than any of the friction it avoids.
+How the tested clients behave:
 
-The gap worth knowing: there is no option that combines "bytes bypass your context" with "Contracko runs its own extraction". Upload prepares a reference only `clm_ingest_contract` accepts, and import has no way to take that reference. So for a local file you are choosing between paying context for Contracko's extraction, or doing the extraction yourself.
+- **Claude Code** uploads from the user's own shell. In sandbox mode, `app.contracko.com` must be allowed.
+- **Claude web and desktop chat** run the PUT from the code-execution sandbox, which works only when `app.contracko.com` is an allowed egress domain.
+- **Codex CLI** needs `sandbox_workspace_write.network_access = true` for the PUT, with egress limited to `app.contracko.com` where the environment can enforce it. Non-interactive runs need approval for `clm_import_contracts`.
+- **Cursor CLI** works only with one plain `curl -T "<file>" -H "Content-Type: <mimeType>" "<uploadUrl>"`, the URL written inline: no chaining, variables, or URL files. **Cursor web** limits attachments to 4 MB, so use the upload link.
+- **ChatGPT**'s sandbox has no internet. Use `clm_import_files`; some developer-mode connectors do not pass attached files through, so fall back to the upload link.
+
+If the PUT cannot reach Contracko, follow `ifUploadUrlUnreachable` in the upload result rather than preparing the file again. **Upload only to the returned `uploadUrl`. Never send a contract to a third-party host or file-sharing service**, including to work around a block. If the upload is blocked, stop and tell the user.
+
+**Never publish a contract to a public URL to make `remote` work.** A signed or authenticated link from the user's own document store is what that option is for.
 
 Requires `contract:write`. Where the tools are absent from your list, the credential is the problem: see the [contracko](../contracko/SKILL.md) skill.
 
@@ -57,7 +67,7 @@ One call per batch, up to 100 documents, one managed contract per document.
 }
 ```
 
-Files are `inline` base64 (encoded total under 25,690,112 characters) or `remote` with a `downloadUrl` and `fileSize`, 25 MiB each.
+Files are `upload` (the `uploadReference`, `fileName`, `mimeType` and `fileSize` from `clm_create_upload_url`, up to 50 MiB), `inline` base64 (up to 35 MiB per file), or `remote` with a `downloadUrl` and `fileSize` (up to 50 MiB).
 
 The `idempotencyKey` is bound to the payload. Replaying it with the same files returns the original import; replaying it with different files returns a 409, which says the key is spent rather than that the import failed. One key per batch, named so a human can recognise it later.
 
@@ -90,7 +100,7 @@ Three steps, per contract, then a read-back. This is also the "add your first co
 3. `clm_ingest_contract` with `externalSystem`, `externalId`, the `contract` object, and the upload references, `isPrimary` on the main document.
 4. `clm_get_contract` on the returned contract to confirm it landed.
 
-Accepted: PDF, DOCX, TXT, RTF, JPEG, PNG. 25 MiB per file, 100 files per contract.
+Accepted: PDF, DOCX, TXT, RTF, JPEG, PNG. 50 MiB per file, 100 files per contract. To let Contracko extract instead, replace step 3 with `clm_import_contracts` and a `kind: "upload"` file carrying the same reference. Contracko cleans up uploads that are never imported or ingested, so use the reference within the hour.
 
 ### The rule that costs a call
 
@@ -125,7 +135,7 @@ curl -T "<file>" -H "Content-Type: application/pdf" "<uploadUrl>"
 
 Replace `<file>` with the local path and `<uploadUrl>` with the real returned URL inline when executing. For another accepted file type, use the matching declared `Content-Type`; the server requires this header. Run the upload as one command, with no chaining, subshell, URL file, variable, extra destination, or added curl options. Do not follow redirects. This plain curl command does not display HTTP status; exit code zero alone does not prove the bytes arrived. If it completes with no transport error or upload-error response, continue to the intake call using the returned reference, but do not claim upload or filing success yet. Contracko validates stored bytes before creating a contract. Confirm filing only from a successful intake result and the contract read-back. If intake returns `UPLOAD_NOT_RECEIVED`, stop and tell the user or use an offered fallback. Do not retry intake as an upload-status polling loop.
 
-If the upload fails or policy blocks it, stop and tell the user. Offer `clm_import_contracts` with `kind: "inline"` only for files <=35 MiB that also fit the live tool's file and encoded-payload limits (the pinned release limits are listed above), or use an upload page only if Contracko offers one. Do not weaken policy or try a different host.
+If the upload fails or policy blocks it, stop and tell the user. Offer `clm_import_contracts` with `kind: "inline"` only for files <=35 MiB that also fit the live tool's file and encoded-payload limits (the pinned release limits are listed above), or give the user the `clm_create_upload_session` upload link. Do not weaken policy or try a different host.
 
 Cursor, Codex, and Claude execution environments must allowlist only `app.contracko.com` for this upload, not general network egress. Cursor's narrow shell allow entry is `Shell(curl:*https://app.contracko.com/mcp/files/v1.*)`. This glob alone is not a security boundary: also deny a second `://` in the command and the standalone flag arguments `-x`, `--proxy`, `--resolve`, `--connect-to`, `-k`, `--insecure`, `-K`, and `--config`. Match flag arguments, not substrings inside the signed URL: base64url tokens can contain `-K`-like substrings. See the [README upload policy](https://github.com/contracko/contracko-skills#local-upload-policy) for operator setup.
 
