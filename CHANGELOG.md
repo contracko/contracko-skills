@@ -2,6 +2,10 @@
 
 User-facing changes to the Contracko skills and plugin packages. Client manifests (Claude, Codex, Cursor, Copilot, Gemini, MCP Registry) share one version; the Agent Plugins package and release bundles follow the `v*` release tag line.
 
+## 0.7.7, 2026-10-04
+
+- Cursor now has its own shorter plugin description, because the Cursor marketplace truncated the full one mid-sentence. Every other client keeps the full description.
+
 ## 0.7.6 (Agent Plugins 0.8.2), 2026-10-03
 
 - Added `clm_search_tools` guidance: use it when unsure which tool fits, before multi-step jobs, and for the first contract in an empty workspace.

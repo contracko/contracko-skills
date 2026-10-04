@@ -139,11 +139,11 @@ class ReleaseArtifactTests(unittest.TestCase):
                 "| [contracko-review](skills/contracko-review/SKILL.md) | Notice dates, notifications, comparisons, risk language, and what to look at next |",
             ),
             ".claude-plugin/plugin.json": (
-                '"version": "0.7.6",',
+                '"version": "0.7.7",',
                 '"description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",',
             ),
             ".codex-plugin/plugin.json": (
-                '"version": "0.7.6",',
+                '"version": "0.7.7",',
                 '"description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",',
             ),
         }
@@ -156,7 +156,7 @@ class ReleaseArtifactTests(unittest.TestCase):
 
         claude_plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
         claude_marketplace = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
-        self.assertEqual(claude_plugin["version"], "0.7.6")
+        self.assertEqual(claude_plugin["version"], "0.7.7")
         self.assertEqual(claude_marketplace["metadata"]["version"], claude_plugin["version"])
 
     def test_claude_connect_copy_is_directory_first(self) -> None:
@@ -230,6 +230,30 @@ class ReleaseArtifactTests(unittest.TestCase):
         for relative, version in versions.items():
             with self.subTest(path=relative):
                 self.assertEqual(version, expected)
+
+    def test_client_manifests_mirror_claude_plugin_description_except_cursor(self) -> None:
+        # Cursor's marketplace truncates long descriptions, so Cursor carries its own shorter one.
+        # server.json keeps its own MCP Registry description and is not checked here.
+        expected = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())["description"]
+        descriptions = {
+            ".codex-plugin/plugin.json": json.loads((ROOT / ".codex-plugin/plugin.json").read_text())["description"],
+            "gemini-extension.json": json.loads((ROOT / "gemini-extension.json").read_text())["description"],
+        }
+        for relative in (".claude-plugin/marketplace.json", ".github/plugin/marketplace.json"):
+            marketplace = json.loads((ROOT / relative).read_text())
+            for plugin in marketplace["plugins"]:
+                descriptions[f"{relative}:{plugin['name']}"] = plugin["description"]
+        for relative, description in descriptions.items():
+            with self.subTest(path=relative):
+                self.assertEqual(description, expected)
+
+        cursor = json.loads((ROOT / ".cursor-plugin/plugin.json").read_text())["description"]
+        self.assertEqual(
+            cursor,
+            "AI contract management: contract review and analysis, data extraction, automated reminders, "
+            "and renewal and notice deadline tracking.",
+        )
+        self.assertLess(len(cursor), len(expected))
 
     def test_committed_directory_package_exposes_canonical_skills(self) -> None:
         package = ROOT / "packages" / "agent-plugin"
