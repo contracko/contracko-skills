@@ -34,6 +34,30 @@ Contracko does not train models on your contracts. Analysis inside the product r
 
 Connecting this plugin is different: when Claude, ChatGPT, Codex, or another assistant calls Contracko, contract text is sent to *that* product. Contracko cannot control what they do with it. Turn off model training in that product before using real contracts.
 
+### Local upload policy
+
+Upload contract bytes **only to the `uploadUrl` returned by `clm_create_upload_url`**, unchanged, after checking HTTPS, the exact host `app.contracko.com`, and the `/mcp/files/v1.` path prefix. Never send a contract to a third-party host or file-sharing service to work around an upload failure or a policy block.
+
+For a PDF, the assistant must execute one literal command:
+
+```bash
+curl -T "<file>" -H "Content-Type: application/pdf" "<uploadUrl>"
+```
+
+At execution, substitute the local path and real returned URL directly inside the quotes. The `Content-Type` header is required by the server; use the declared MIME type for non-PDF files. Run it as one command, with no chaining, subshell, URL file, variable, extra destination, or added curl options. Do not follow redirects. This plain curl command does not display HTTP status, and exit code zero alone does not prove the bytes arrived. A completed command with no transport error or upload-error response permits the next intake call, not a success claim. Contracko validates the stored bytes at intake; confirm filing only from a successful tool result and read-back. If intake returns `UPLOAD_NOT_RECEIVED`, stop and tell the user or use an offered fallback.
+
+If curl fails or execution policy blocks it, stop and tell the user. Offer inline import only for files <=35 MiB that also fit the live tool's file and encoded-payload limits, or the `clm_create_upload_session` upload link. The [import skill](skills/contracko-import/SKILL.md#managed-import) lists the pinned release's smaller limits. Keep policy intact and do not try another host.
+
+For **Cursor**, allow only this shell entry:
+
+```text
+Shell(curl:*https://app.contracko.com/mcp/files/v1.*)
+```
+
+Pair it with network egress restricted to **`app.contracko.com` only** and command denials. Apply the same host-only network restriction and command validation in **Codex** and **Claude** execution environments where local uploads run. Do not enable general egress or broadly allow `curl`. If the client cannot enforce these restrictions, keep uploads approval-gated or use the fallback above.
+
+Deny commands containing a second `://`, even when one URL matches the allow entry. Deny the standalone flag arguments `-x`, `--proxy`, `--resolve`, `--connect-to`, `-k`, `--insecure`, `-K`, and `--config`. The one-command shape also excludes other options and attached option forms. Match flags as arguments, not as arbitrary substrings: base64url upload tokens can legitimately contain `-K`-like text. A host string inside a command is not proof of its destination; the shell glob must not stand alone as the security boundary.
+
 ## Install
 
 **Using Claude?** Add Contracko from Claude's connector directory: [claude.ai/directory/connectors/contracko](https://claude.ai/directory/connectors/contracko). Open the **Claude** or **Claude Code** section below for the details.
@@ -133,7 +157,7 @@ codex mcp add contracko --url https://app.contracko.com/mcp
 codex mcp login contracko
 ```
 
-Sign in in the browser that opens.
+Sign in in the browser that opens. For local uploads, apply the [host-only upload policy](#local-upload-policy) rather than enabling general network access.
 
 </details>
 
@@ -156,7 +180,7 @@ Then add this to `.cursor/mcp.json` in your project (create the file if it is no
 { "mcpServers": { "contracko": { "url": "https://app.contracko.com/mcp" } } }
 ```
 
-Restart Cursor if it does not pick up the connection, then sign in in the browser.
+Restart Cursor if it does not pick up the connection, then sign in in the browser. For local uploads, apply the [narrow shell allow entry and host-only upload policy](#local-upload-policy).
 
 </details>
 
@@ -280,8 +304,8 @@ Step-by-step recipes: [agent-setup/prompt.md](agent-setup/prompt.md).
 
 ### Adding contract files from Codex and Cursor
 
-- **Codex CLI:** the default sandbox has no network, so set `sandbox_workspace_write.network_access = true` for the upload. Non-interactive runs need approval for the import tool.
-- **Cursor CLI:** allow one plain `curl -T "<file>" "<uploadUrl>"` command and network access to `app.contracko.com`.
+- **Codex CLI:** the default sandbox has no network, so set `sandbox_workspace_write.network_access = true` for the upload, with egress limited to `app.contracko.com` where possible. Non-interactive runs need approval for the import tool.
+- **Cursor CLI:** allow one plain `curl -T "<file>" -H "Content-Type: <mimeType>" "<uploadUrl>"` command and network access to `app.contracko.com` only.
 - **Cursor web:** attachments are limited to 4 MB, so the assistant gives you an upload link instead.
 
 Contract files go only to Contracko's own upload address, never to a third-party host. If an upload is blocked, the assistant stops and tells you.

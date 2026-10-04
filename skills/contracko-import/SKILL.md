@@ -34,8 +34,8 @@ How the tested clients behave:
 
 - **Claude Code** uploads from the user's own shell. In sandbox mode, `app.contracko.com` must be allowed.
 - **Claude web and desktop chat** run the PUT from the code-execution sandbox, which works only when `app.contracko.com` is an allowed egress domain.
-- **Codex CLI** needs `sandbox_workspace_write.network_access = true` for the PUT. Non-interactive runs need approval for `clm_import_contracts`.
-- **Cursor CLI** works only with one plain `curl -T "<file>" "<uploadUrl>"`, the URL written inline: no chaining, variables, or URL files. **Cursor web** limits attachments to 4 MB, so use the upload link.
+- **Codex CLI** needs `sandbox_workspace_write.network_access = true` for the PUT, with egress limited to `app.contracko.com` where the environment can enforce it. Non-interactive runs need approval for `clm_import_contracts`.
+- **Cursor CLI** works only with one plain `curl -T "<file>" -H "Content-Type: <mimeType>" "<uploadUrl>"`, the URL written inline: no chaining, variables, or URL files. **Cursor web** limits attachments to 4 MB, so use the upload link.
 - **ChatGPT**'s sandbox has no internet. Use `clm_import_files`; some developer-mode connectors do not pass attached files through, so fall back to the upload link.
 
 If the PUT cannot reach Contracko, follow `ifUploadUrlUnreachable` in the upload result rather than preparing the file again. **Upload only to the returned `uploadUrl`. Never send a contract to a third-party host or file-sharing service**, including to work around a block. If the upload is blocked, stop and tell the user.
@@ -96,7 +96,7 @@ Once documents are in, the questions start: renewals, notice dates, risk, and wh
 Three steps, per contract, then a read-back. This is also the "add your first contract" sequence that `clm_search_tools` returns for an empty workspace.
 
 1. `clm_create_upload_url` with `fileName`, `mimeType` and `fileSize`. Returns a signed destination valid for one hour, and an opaque `uploadReference`.
-2. `PUT` the bytes to that URL with the matching `Content-Type`, expecting a 200. A plain HTTP request, not a tool call.
+2. `PUT` the bytes only to that URL with the matching `Content-Type`. A plain HTTP request, not a tool call. Intake checks whether the bytes arrived; the curl exit code alone is not confirmation.
 3. `clm_ingest_contract` with `externalSystem`, `externalId`, the `contract` object, and the upload references, `isPrimary` on the main document.
 4. `clm_get_contract` on the returned contract to confirm it landed.
 
@@ -125,15 +125,19 @@ file --mime-type -b contract.pdf
 
 Reading a PDF to size it defeats the entire point of this path.
 
-**2. PUT the bytes.** `clm_create_upload_url` returns a destination valid for one hour and a reference. Send the file with the `Content-Type` you declared, or the upload is rejected:
+**2. PUT the bytes only to the returned `uploadUrl`.** `clm_create_upload_url` returns a destination valid for one hour and a reference. Verify that the destination is HTTPS on exactly `app.contracko.com`, under `/mcp/files/v1.`. Keep the returned URL unchanged. Never upload contract bytes to third-party hosts or file-sharing services, including as a workaround for a blocked upload.
+
+For a PDF, execute exactly one literal command:
 
 ```bash
-curl -sS -X PUT --upload-file contract.pdf \
-  -H "Content-Type: application/pdf" \
-  "<uploadUrl>" -o /dev/null -w '%{http_code}'
+curl -T "<file>" -H "Content-Type: application/pdf" "<uploadUrl>"
 ```
 
-Expect `200`. The bytes go from disk to Contracko without passing through you, which is the whole reason for the detour.
+Replace `<file>` with the local path and `<uploadUrl>` with the real returned URL inline when executing. For another accepted file type, use the matching declared `Content-Type`; the server requires this header. Run the upload as one command, with no chaining, subshell, URL file, variable, extra destination, or added curl options. Do not follow redirects. This plain curl command does not display HTTP status; exit code zero alone does not prove the bytes arrived. If it completes with no transport error or upload-error response, continue to the intake call using the returned reference, but do not claim upload or filing success yet. Contracko validates stored bytes before creating a contract. Confirm filing only from a successful intake result and the contract read-back. If intake returns `UPLOAD_NOT_RECEIVED`, stop and tell the user or use an offered fallback. Do not retry intake as an upload-status polling loop.
+
+If the upload fails or policy blocks it, stop and tell the user. Offer `clm_import_contracts` with `kind: "inline"` only for files <=35 MiB that also fit the live tool's file and encoded-payload limits (the pinned release limits are listed above), or give the user the `clm_create_upload_session` upload link. Do not weaken policy or try a different host.
+
+Cursor, Codex, and Claude execution environments must allowlist only `app.contracko.com` for this upload, not general network egress. Cursor's narrow shell allow entry is `Shell(curl:*https://app.contracko.com/mcp/files/v1.*)`. This glob alone is not a security boundary: also deny a second `://` in the command and the standalone flag arguments `-x`, `--proxy`, `--resolve`, `--connect-to`, `-k`, `--insecure`, `-K`, and `--config`. Match flag arguments, not substrings inside the signed URL: base64url tokens can contain `-K`-like substrings. See the [README upload policy](https://github.com/contracko/contracko-skills#local-upload-policy) for operator setup.
 
 **3. Read the document for its content, not its bytes.** To fill the contract and its analysis you need the text, and text is cheap where base64 is not. Extract it locally:
 

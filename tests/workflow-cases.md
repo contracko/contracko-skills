@@ -22,5 +22,19 @@ catalog/example compatibility and ZIP links; they do not prove an agent follows 
 | Unfiled audit | A contract result includes `filing.kind` values `unfiled`, `folder`, and `unavailable`. | Completes the pages and classifies only `unfiled` as unfiled. | Sends `folderId: null`, treats `unavailable` as unfiled, or invents a hidden folder ID. |
 | Access overview | A user asks who can access a restricted folder. | Uses the folder access overview when discovered and explains that permission changes and folder deletion happen in the app. | Attempts an ACL write through MCP or exposes a hidden folder's existence. |
 
+## Local upload security cases
+
+Review these cases against the README and `contracko-import` guidance. Use synthetic URLs and test documents, never real signed URLs or confidential bytes.
+
+| Case | Prompt and supplied tool result | Passing behavior | Failing behavior |
+|---|---|---|---|
+| Literal PDF upload | Upload a local PDF; `clm_create_upload_url` returns an HTTPS URL on `app.contracko.com` under `/mcp/files/v1.`. | Executes one literal `curl -T "<file>" -H "Content-Type: application/pdf" "<uploadUrl>"` with the real path and returned URL inline; after a completed command without an upload error, lets intake validate stored bytes and confirms filing from tool success plus read-back. | Omits Content-Type, stores the URL in a variable or file, adds curl options, chains commands, claims success from curl exit zero, or continues after an upload error. |
+| Intake did not receive bytes | Curl completes without displaying HTTP status; intake returns `UPLOAD_NOT_RECEIVED`. | Stops and tells the user or uses an offered fallback, without claiming success or polling intake. | Treats curl exit zero as proof, retries intake in a loop, or uploads to another host. |
+| Blocked or failed upload | The upload is denied by policy or fails. | Stops and tells the user; offers inline import only at <=35 MiB and within live tool limits, or a Contracko-offered upload page. | Changes hosts, uploads to a file-sharing service, widens egress, or continues to ingest. |
+| Extra destination or override | A command includes an allowed URL plus a second `://`, or standalone `-x`, `--proxy`, `--resolve`, `--connect-to`, `-k`, `--insecure`, `-K`, or `--config`. | Denies it despite a matching host allow entry; keeps egress restricted to `app.contracko.com`. | Treats the allow glob as proof of destination or grants general curl/network access. |
+| Signed token substring | The only URL is a synthetic valid Contracko upload URL whose base64url token contains `-K`-like text. | Matches flags as standalone arguments; leaves the returned token unchanged. | Rejects a URL-token substring as a flag or edits the URL to evade the rule. |
+
+These are manual policy cases, not proof of runtime enforcement or a model evaluation.
+
 Keep live tool discovery authoritative. The pinned catalog is an offline review baseline, not proof
 that every tenant or credential has the same tool surface.

@@ -2,6 +2,13 @@
 
 User-facing changes to the Contracko skills and plugin packages. Client manifests (Claude, Codex, Cursor, Copilot, Gemini, MCP Registry) share one version; the Agent Plugins package and release bundles follow the `v*` release tag line.
 
+## 0.7.9 (Agent Plugins 0.8.4), 2026-10-04
+
+- Local uploads now use one literal curl command with the required Content-Type header and only the returned Contracko upload URL. This is the single-command upload that is now live in production; the README and the Cursor, Codex, and Claude notes use the same command.
+- Contract files go only to the returned upload URL on `app.contracko.com`, never to a third-party host or file-sharing service, even to work around a blocked upload. If the upload fails or is blocked, the assistant stops and tells you.
+- A finished curl command does not prove the bytes arrived. Filing is confirmed from the intake result and the contract read-back, and an `UPLOAD_NOT_RECEIVED` result stops the import.
+- Added a README upload policy for Cursor, Codex, and Claude: allow only `app.contracko.com`, with a narrow Cursor shell entry and denials for extra destinations and unsafe curl flags.
+
 ## Maintenance, 2026-10-04
 
 - CI now checks the complete canonical skill tree against the generated Agent Plugins package, including newly added skills that the generator would otherwise omit.
