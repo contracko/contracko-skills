@@ -139,11 +139,11 @@ class ReleaseArtifactTests(unittest.TestCase):
                 "| [contracko-review](skills/contracko-review/SKILL.md) | Notice dates, notifications, comparisons, risk language, and what to look at next |",
             ),
             ".claude-plugin/plugin.json": (
-                '"version": "0.7.7",',
+                '"version": "0.7.8",',
                 '"description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",',
             ),
             ".codex-plugin/plugin.json": (
-                '"version": "0.7.7",',
+                '"version": "0.7.8",',
                 '"description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",',
             ),
         }
@@ -156,7 +156,7 @@ class ReleaseArtifactTests(unittest.TestCase):
 
         claude_plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
         claude_marketplace = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
-        self.assertEqual(claude_plugin["version"], "0.7.7")
+        self.assertEqual(claude_plugin["version"], "0.7.8")
         self.assertEqual(claude_marketplace["metadata"]["version"], claude_plugin["version"])
 
     def test_claude_connect_copy_is_directory_first(self) -> None:
@@ -188,9 +188,9 @@ class ReleaseArtifactTests(unittest.TestCase):
     def test_skills_cover_tool_search_and_full_catalog(self) -> None:
         catalog = json.loads((ROOT / "tests/fixtures/mcp-contract.json").read_text())
         names = {tool["name"] for tool in catalog["tools"]}
-        self.assertEqual(len(names), 50)
+        self.assertEqual(len(names), 52)
         index = (ROOT / "skills/contracko/references/tool-index.md").read_text()
-        self.assertIn("all 50 tools", index)
+        self.assertIn("all 52 tools", index)
         self.assertEqual({name for name in names if f"`{name}`" not in index}, set())
 
         skill = (ROOT / "skills/contracko/SKILL.md").read_text()
