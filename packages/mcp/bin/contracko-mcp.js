@@ -6,6 +6,18 @@ import path from 'node:path'
 /** Canonical hosted MCP endpoint. Keep in sync with server.json remotes. */
 export const MCP_URL = 'https://app.contracko.com/mcp'
 
+if (process.argv.includes('--help') || process.argv.includes('-h')) {
+	console.log(`Usage: contracko-mcp [mcp-remote options]
+
+Connect a local stdio client to ${MCP_URL} with OAuth.
+CLM (clm_*): add, import and manage contracts without Parser credits.
+Contracko Parser (parser_*): separate bulk document processing; uses Parser credits;
+not needed to add contracts to your contract register.
+
+--help, -h  Show this help without connecting.`)
+	process.exit(0)
+}
+
 const require = createRequire(import.meta.url)
 const remoteRoot = path.dirname(require.resolve('mcp-remote/package.json'))
 const proxy = path.join(remoteRoot, 'dist', 'proxy.js')

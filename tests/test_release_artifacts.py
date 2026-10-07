@@ -99,10 +99,10 @@ class ReleaseArtifactTests(unittest.TestCase):
     def test_canonical_skills_use_approved_product_vocabulary(self) -> None:
         expected_lines = {
             "skills/contracko/SKILL.md": (
-                "| `parser:compute` | document-processing tools |",
+                "| `parser:compute` | separate Contracko Parser bulk processing using Parser credits, not contract intake |",
                 "| `contract:write` | contract and folder changes, import and ingest, documents, comments, events, notifications, types, and parties |",
                 "| notice dates, notifications, comparisons, risk, priorities, or gaps | [contracko-review](../contracko-review/SKILL.md) |",
-                "| extraction without a managed contract | document-processing tools in [references/tool-index.md](references/tool-index.md) |",
+                "| standalone bulk extraction without a managed contract | Contracko Parser, using Parser credits, in [references/tool-index.md](references/tool-index.md) |",
                 "### Notifications and registers",
                 "A notification hangs from a contract event. [contracko-review](../contracko-review/SKILL.md) owns date queries and notification writes. Renewal notifications use the existing `end` system event.",
                 "SaaS subscriptions, leases, permits, certificates, insurance policies, warranties, and domains use the same pattern: a type, countable fields, native renewal dates, and a notification. Use supported filters first, then complete the required pages before local filtering.",
@@ -121,14 +121,14 @@ class ReleaseArtifactTests(unittest.TestCase):
                 "**Custom events** (a review meeting, an option window, an insurance expiry) are created with `clm_create_contract_events`: `title`, `date` as `YYYY-MM-DD`, optional recurrence (`recurrenceInterval` and `recurrenceUnit` together), optional nested `reminders` (max 25 per event). Batches are max 100 events or notifications, each item independent.",
                 "A notification needs `offsetValue`, `offsetUnit` (`days` | `weeks` | `months` | `quarters` | `years`), `offsetDirection` (`before` | `on` | `after`), and `recipient` (`{ \"type\": \"contract_owner\" }` or `{ \"type\": \"user\", \"userId\" }`). `on` requires `offsetValue: 0`. Optional `message`.",
                 "Mutations need `idempotencyKey` (8–128 characters). Update and delete need `expectedUpdatedAt` as a UTC timestamp ending in `Z`. Changing notifications on a custom event advances that event's version: relist before you replace its notification set. Deleting an event deletes its notifications; deleting a notification leaves the event.",
-                "**Two files not in Contracko.** Import them (or use document processing if the user does not want them filed), then compare. A vendor A/B belongs as two contracts, not one.",
+                "**Two files not in Contracko.** Import them with CLM without Parser credits, then compare. If the user explicitly wants standalone bulk processing instead of filing, Contracko Parser uses Parser credits. A vendor A/B belongs as two contracts, not one.",
             ),
             "skills/contracko/references/tool-index.md": (
-                "## Events, notifications, and document processing",
+                "## CLM events and notifications",
                 "Events and notifications need `contract:read` to list and `contract:write` to change. List before a change, use the latest `expectedUpdatedAt` for updates or deletes, and confirm a bulk write. Renewal notifications attach to the existing `end` system event.",
                 "| `clm_list_contract_events` | `contract:read` | List custom and supported system events with notifications. |",
                 "| `clm_create_event_reminders`, `clm_update_event_reminders`, `clm_delete_event_reminders` | `contract:write` | Manage notifications on events. |",
-                "Document-processing jobs spend credits. Preflight before creating one, and retrieve exports before their retention window ends.",
+                "Preflight before starting a Parser job, confirm the estimated Parser credit cost, and retrieve exports before their retention window ends. Parser credit refusals affect this product, not CLM contract intake.",
             ),
             "skills/contracko/references/workflows.md": (
                 "Get today's date from the environment. Use inclusive end-date or notice-date filters for dated candidates and complete every returned page. `autoRenewing` identifies a renewal; a date window alone does not. For contracts ending OR needing notice, run separate complete queries and deduplicate by contract ID. Use existing system events for renewal or notice notifications. [contracko-review](../../contracko-review/SKILL.md) owns the calendar.",
@@ -140,12 +140,12 @@ class ReleaseArtifactTests(unittest.TestCase):
                 "| [contracko-review](skills/contracko-review/SKILL.md) | Notice dates, notifications, comparisons, risk language, and what to look at next |",
             ),
             ".claude-plugin/plugin.json": (
-                '"version": "0.7.9",',
-                '"description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",',
+                '"version": "0.7.10",',
+                '"description": "CLM: add, import, review and manage contracts without Parser credits. Separate Contracko Parser: bulk document processing using Parser credits, not needed to add contracts.",',
             ),
             ".codex-plugin/plugin.json": (
-                '"version": "0.7.9",',
-                '"description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",',
+                '"version": "0.7.10",',
+                '"description": "CLM: add, import, review and manage contracts without Parser credits. Separate Contracko Parser: bulk document processing using Parser credits, not needed to add contracts.",',
             ),
         }
 
@@ -157,7 +157,7 @@ class ReleaseArtifactTests(unittest.TestCase):
 
         claude_plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
         claude_marketplace = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
-        self.assertEqual(claude_plugin["version"], "0.7.9")
+        self.assertEqual(claude_plugin["version"], "0.7.10")
         self.assertEqual(claude_marketplace["metadata"]["version"], claude_plugin["version"])
 
     def test_claude_connect_copy_is_directory_first(self) -> None:
@@ -251,8 +251,8 @@ class ReleaseArtifactTests(unittest.TestCase):
         cursor = json.loads((ROOT / ".cursor-plugin/plugin.json").read_text())["description"]
         self.assertEqual(
             cursor,
-            "AI contract management: contract review and analysis, data extraction, automated reminders, "
-            "and renewal and notice deadline tracking.",
+            "CLM manages contracts without Parser credits. Separate Parser bulk processing uses credits, "
+            "not needed to add contracts.",
         )
         self.assertLess(len(cursor), len(expected))
 

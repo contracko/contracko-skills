@@ -23,6 +23,8 @@ Use `clm_search_tools` when the right tool is unclear, before a multi-step job, 
 { "query": "set renewal reminders", "toolset": "events" }
 ```
 
+CLM tools (`clm_*`) add, import and manage contracts without Parser credits. Parser tools (`parser_*`) are separate Contracko Parser bulk document processing, use Parser credits and are not needed to add contracts to your contract register.
+
 ## Contracts and folders
 
 | Tool | Scope | Use |
@@ -169,7 +171,7 @@ For a single local file in an empty workspace, `clm_search_tools` with "Add my f
 
 After the PUT, `clm_import_contracts` with a `kind: "upload"` file lets Contracko extract instead of you. In ChatGPT, use `clm_import_files` for attached files. Without network access, send only a tiny file inline; otherwise create an upload link with `clm_create_upload_session`. Upload only to the returned `uploadUrl`, never to a third-party host. Never publish a confidential contract to make a remote URL work. [contracko-import](../../contracko-import/SKILL.md) defines these paths.
 
-## Events, notifications, and document processing
+## CLM events and notifications
 
 Events and notifications need `contract:read` to list and `contract:write` to change. List before a change, use the latest `expectedUpdatedAt` for updates or deletes, and confirm a bulk write. Renewal notifications attach to the existing `end` system event.
 
@@ -180,6 +182,18 @@ Contracko emails each notification to its recipient when it falls due. Creating 
 | `clm_list_contract_events` | `contract:read` | List custom and supported system events with notifications. |
 | `clm_create_contract_events`, `clm_update_contract_events`, `clm_delete_contract_events` | `contract:write` | Manage custom events. |
 | `clm_create_event_reminders`, `clm_update_event_reminders`, `clm_delete_event_reminders` | `contract:write` | Manage notifications on events. |
-| `parser_get_credits`, `parser_preflight`, `parser_create_upload_url`, `parser_create_job`, `parser_get_job`, `parser_list_jobs` | `parser:compute` | Extract or review documents without filing them as contracts. |
 
-Document-processing jobs spend credits. Preflight before creating one, and retrieve exports before their retention window ends.
+## Contracko Parser: separate bulk document processing
+
+Uses Parser credits; not needed to add contracts to your contract register. Only use this workflow for requested standalone processing, not contract intake or a CLM plan refusal.
+
+| Tool | Scope | Use |
+|---|---|---|
+| `parser_get_credits` | `parser:compute` | Check Parser balance and availability; spends no credits. |
+| `parser_preflight` | `parser:compute` | Estimate Parser credits and validate files; spends no credits. |
+| `parser_create_upload_url` | `parser:compute` | Prepare a document for a Parser job; spends no credits. |
+| `parser_create_job` | `parser:compute` | Start bulk document processing; spends Parser credits. |
+| `parser_get_job` | `parser:compute` | Read a Parser job and retrieve results; spends no additional credits. |
+| `parser_list_jobs` | `parser:compute` | List Parser jobs; spends no additional credits. |
+
+Preflight before starting a Parser job, confirm the estimated Parser credit cost, and retrieve exports before their retention window ends. Parser credit refusals affect this product, not CLM contract intake.

@@ -5,6 +5,8 @@ description: Reviews Contracko contracts. Use for notice dates, end dates, annua
 
 # Answering contract questions from Contracko
 
+This is CLM contract review with `clm_*` tools, without Parser credits. Standalone bulk processing with `parser_*` belongs to the separate Contracko Parser product, uses Parser credits and is not needed to add contracts.
+
 Requires `contract:read`. Compare, audit and report stay read-only. Setting notifications needs `contract:write`. Where the tools are missing from your tool list, the credential is narrower than the user thinks: see [contracko](../contracko/SKILL.md), which also covers connecting and reading Contracko's errors.
 
 Jobs this skill owns: calendar, compare, audit, report. Playbooks for those jobs: [workflows](../contracko/references/workflows.md). Unsure which tool fits a question? `clm_search_tools` returns the listed tools and step sequences for a short task description, such as "find renewals" or "set reminders".
@@ -89,7 +91,7 @@ There is no playbook tool and no redline-diff tool. Comparison is a table you as
 
 **Two contracts already in Contracko.** Get both records and both analyses. Search each for the contested terms (price, term, notice, liability, termination, data, IP). Table: term | A | B | who is better off, with an `evidenceQuote` on anything that decides the deal.
 
-**Two files not in Contracko.** Import them (or use document processing if the user does not want them filed), then compare. A vendor A/B belongs as two contracts, not one.
+**Two files not in Contracko.** Import them with CLM without Parser credits, then compare. If the user explicitly wants standalone bulk processing instead of filing, Contracko Parser uses Parser credits. A vendor A/B belongs as two contracts, not one.
 
 **Redline vs previous draft.** If the user says these are versions of one agreement, keep them as documents on *one* contract (`clm_add_contract_documents` is a write: send them to [contracko-import](../contracko-import/SKILL.md) if they are not attached yet). Read both texts. Analysis is per document, not a diff — you still have to line the clauses up.
 

@@ -2,6 +2,8 @@
 
 Use live tool discovery first. These are user jobs, not a substitute for discovered schemas. Mechanics live in the named skill. When a job needs several tools and the order is unclear, `clm_search_tools` returns the listed tools and their step sequences for that task.
 
+Contract-register workflows use CLM (`clm_*`) and never need Parser credits, including bulk imports. Contracko Parser (`parser_*`) is separate bulk document processing using Parser credits, not a step to add contracts to your register.
+
 ## Add your first contract
 
 **They say:** I just signed up, the workspace is empty, add this contract, try it with one file.

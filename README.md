@@ -5,7 +5,8 @@
 [Contracko](https://contracko.com) is AI contract management software, a contract lifecycle management (CLM) workspace for PDFs and Word files with dates, values, parties, and AI analysis on top. This plugin connects Claude and other assistants to that workspace so they can:
 
 - **Review and analyse contracts with AI.** Surface risks, liabilities and obligations, compare two agreements clause by clause, and quote the sentence behind each finding.
-- **Extract and parse contract data.** Import PDF and Word contracts and let Contracko extract dates, parties, renewal and notice terms, governing law and liability terms, or parse a document without filing it.
+- **Import contracts with CLM, without Parser credits.** Add PDF and Word contracts to your register and extract dates, parties and terms, including bulk imports.
+- **Process documents in bulk with Contracko Parser.** The separate Parser product uses Parser credits for standalone extraction and exports. It is not needed to add contracts to your contract register.
 - **Set automated reminders.** Add notifications to contract events so the right person hears about them in time.
 - **Track renewal and notice deadlines.** List what ends, auto-renews, or needs notice in a given window, across the whole portfolio.
 

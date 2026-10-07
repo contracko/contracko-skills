@@ -1,11 +1,18 @@
 ---
 name: contracko
-description: 'Connects Contracko over MCP and organises contracts, types, parties, and folders. Use for onboarding, filing, workspace structure, or whenever Contracko comes up.'
+description: 'Connects Contracko CLM over MCP and organises contracts without Parser credits. Use for onboarding, filing or workspace structure; routes separate Parser bulk processing.'
 ---
 
 # Contracko
 
 Contracko manages a workspace of contracts, dates, parties, fields, folders, and analysis. This skill connects the server, structures that workspace, and routes the job. Import, review, and new-agreement mechanics belong to [contracko-import](../contracko-import/SKILL.md), [contracko-review](../contracko-review/SKILL.md), and [contracko-create](../contracko-create/SKILL.md). Job playbooks are in [references/workflows.md](references/workflows.md).
+
+## Choose the product
+
+- **CLM** (`clm_*`): add, import and manage contracts in the contract register. Never needs Parser credits, including bulk imports and document re-reads.
+- **Contracko Parser** (`parser_*`): separate bulk document processing. Uses Parser credits; not needed to add contracts to your contract register. Checking its balance or preparing an upload does not spend credits; starting a job does.
+
+Use CLM for adding contracts. Use Parser only when the user requests standalone bulk processing, not as a fallback for unavailable CLM access.
 
 The characteristic failure of this surface is **silence**. Scopes can hide tools, unknown keys can be dropped, and configuration can return success without the intended change. Check discovery and returned state.
 
@@ -38,7 +45,7 @@ Run `auth_validate` first in every session. The connection is ready only when it
 | Scope | Available work |
 |---|---|
 | any valid credential | connection validation and tool search |
-| `parser:compute` | document-processing tools |
+| `parser:compute` | separate Contracko Parser bulk processing using Parser credits, not contract intake |
 | `contract:read` | contracts, folders, access overviews, types, parties, comments, events, document search and reads, document re-read results |
 | `contract:write` | contract and folder changes, import and ingest, documents, comments, events, notifications, types, and parties |
 
@@ -77,7 +84,7 @@ Treat the discovered `outputSchema` as a contract. A missing or malformed requir
 | a new agreement drafted, signed, and filed | [contracko-create](../contracko-create/SKILL.md) |
 | a first contract in an empty workspace | [Add your first contract](references/workflows.md#add-your-first-contract) |
 | folders, types, fields, parties, or filing | this skill |
-| extraction without a managed contract | document-processing tools in [references/tool-index.md](references/tool-index.md) |
+| standalone bulk extraction without a managed contract | Contracko Parser, using Parser credits, in [references/tool-index.md](references/tool-index.md) |
 
 ## Organise the workspace
 
@@ -136,6 +143,8 @@ Never invent a tool signature. When a requested operation has no discovered tool
 
 | Response | Action |
 |---|---|
+| CLM plan refusal | Review CLM plan access, contract limits or storage. Never suggest Parser credits or a Parser credit check. |
+| Parser credit refusal | Ask a workspace admin to add Parser credits or review the Contracko Parser plan. This does not block CLM contract intake. |
 | 409 conflict | Re-read the named state. A duplicate name or changed idempotency payload can cause it. |
 | 400 `code: "custom"` | Check cross-field requirements, not only the named field. |
 | malformed success payload | Report the schema mismatch. Do not treat it as no data. |
