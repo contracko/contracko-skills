@@ -32,8 +32,8 @@ MCP has no file transfer, so where you run decides how a document reaches Contra
 
 How the tested clients behave:
 
-- **Claude Code** uploads from the user's own shell. In sandbox mode, `app.contracko.com` must be allowed.
-- **Claude web and desktop chat** run the PUT from the code-execution sandbox, which works only when `app.contracko.com` is an allowed egress domain.
+- **Claude Code** uploads from the user's own shell and only needs the command approved. If a strict sandbox blocks network access, the user allows `app.contracko.com` in its sandbox or network settings. The same holds for Cursor and Codex CLI.
+- **Claude in claude.ai, Claude Desktop chat, Cowork and mobile** run the PUT from the code-execution sandbox, which blocks outbound hosts by default. Before the first upload, ask the user to open **Settings > Capabilities > Code execution and file creation**, add `app.contracko.com` under **Additional allowed domains**, and retry. On Team and Enterprise, an organization Owner can allow it once for all members. Claude then uploads the attached file itself through the prepared upload URL. Until it is allowed, use the upload link or, for a tiny file, inline import.
 - **Codex CLI** needs `sandbox_workspace_write.network_access = true` for the PUT, with egress limited to `app.contracko.com` where the environment can enforce it. Non-interactive runs need approval for `clm_import_contracts`.
 - **Cursor CLI** works only with one plain `curl -T "<file>" -H "Content-Type: <mimeType>" "<uploadUrl>"`, the URL written inline: no chaining, variables, or URL files. **Cursor web** limits attachments to 4 MB, so use the upload link.
 - **ChatGPT**'s sandbox has no internet. Use `clm_import_files`; some developer-mode connectors do not pass attached files through, so fall back to the upload link.

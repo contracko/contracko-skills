@@ -2,6 +2,12 @@
 
 User-facing changes to the Contracko skills and plugin packages. Client manifests (Claude, Codex, Cursor, Copilot, Gemini, MCP Registry) share one version; the Agent Plugins package and release bundles follow the `v*` release tag line.
 
+## 0.7.10 (Agent Plugins 0.8.5), 2026-10-07
+
+- Claude chat surfaces (claude.ai, Claude Desktop chat, Cowork, mobile) block outbound hosts in the code-execution sandbox by default. The README and import skill now give the exact step: add `app.contracko.com` under Settings > Capabilities > Code execution and file creation > Additional allowed domains. Claude then uploads attached contracts itself.
+- On Team and Enterprise, an organization Owner can allow `app.contracko.com` once for all members.
+- Local agents (Claude Code, Cursor, Codex CLI) upload from your own shell and only need the command approved. If a strict sandbox blocks network access, allow `app.contracko.com` in its sandbox or network settings. ChatGPT needs no setting.
+
 ## 0.7.9 (Agent Plugins 0.8.4), 2026-10-04
 
 - Local uploads now use one literal curl command with the required Content-Type header and only the returned Contracko upload URL. This is the single-command upload that is now live in production; the README and the Cursor, Codex, and Claude notes use the same command.
