@@ -134,7 +134,8 @@ A re-read runs AI extraction on one contract document again and compares the res
 | `clm_get_contract_reconciliation` | `contract:read` | Read the per-field differences a completed re-read found. Reading never applies or dismisses a finding. |
 | `clm_apply_contract_reconciliation` | `contract:write` | Write selected findings onto the contract after a person approves that exact selection. |
 
-The reads are safe to call at any time. Apply only works in a client that can ask the person to approve; otherwise send the user to the review in Contracko. A re-read uses the same extraction allowance as an import.
+The reads are safe to call at any time. Apply only works in a client that can ask the person to approve; otherwise send the user to the review in Contracko. A re-read uses the same extraction allowance as an import. During a free trial that allowance is capped; see [CLM trial limits](../SKILL.md#clm-trial-limits).
+
 ## Import and contract writes
 
 | Tool | Scope | Use |
@@ -195,5 +196,7 @@ Uses Parser credits; not needed to add contracts to your contract register. Only
 | `parser_create_job` | `parser:compute` | Start bulk document processing; spends Parser credits. |
 | `parser_get_job` | `parser:compute` | Read a Parser job and retrieve results; spends no additional credits. |
 | `parser_list_jobs` | `parser:compute` | List Parser jobs; spends no additional credits. |
+
+A workspace without an eligible Parser subscription gets 20 free Parser credits once. That is 20 credits, not 20 extractions: each document costs 1 to 5 credits (one per 10 estimated pages, or one per 2 MiB when pages cannot be estimated), and review doubles the cost. Beyond the free credits, jobs need paid Parser credits. Check `parser_get_credits` and `parser_preflight` before quoting how much a balance covers.
 
 Preflight before starting a Parser job, confirm the estimated Parser credit cost, and retrieve exports before their retention window ends. Parser credit refusals affect this product, not CLM contract intake.

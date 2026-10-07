@@ -14,6 +14,12 @@ CLM (clm_*): add, import and manage contracts without Parser credits.
 Contracko Parser (parser_*): separate bulk document processing; uses Parser credits;
 not needed to add contracts to your contract register.
 
+CLM 7-day free trial: 3 AI extractions, 10 Clara messages and 1 signature
+request in total. At a limit, subscribe to lift it; do not retry.
+Parser credits do not lift CLM trial limits.
+Parser: 20 free credits once, not 20 extractions; a document costs 1-5
+credits, and review doubles that.
+
 --help, -h  Show this help without connecting.`)
 	process.exit(0)
 }

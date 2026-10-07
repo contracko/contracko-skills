@@ -14,6 +14,10 @@ These skills teach the assistant how to import, review, organise, and file that 
 
 **No account yet?** Start a [7-day free trial](https://contracko.com) (no credit card). You can also create the trial account on the OAuth screen the first time you connect the server.
 
+The trial includes 3 AI extractions (imports and document re-reads count), 10 Clara messages and 1 signature request in total, not per day. When you reach a limit, Contracko shows a plan notice rather than an error: work already accepted is kept, and the assistant stops retrying. Subscribing with a payment method lifts these limits straight away; your free end date stays the same. Parser credits do not lift CLM trial limits.
+
+Contracko Parser gives a workspace without a Parser subscription 20 free Parser credits once. Credits are not extractions: a document costs 1 to 5 credits depending on its size, and review doubles that.
+
 ## Usage
 
 Once connected, talk to the assistant the way you would a colleague. These are the jobs people actually run:

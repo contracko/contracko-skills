@@ -3,6 +3,8 @@ name: contracko
 description: 'Connects Contracko CLM over MCP and organises contracts without Parser credits. Use for onboarding, filing or workspace structure; routes separate Parser bulk processing.'
 ---
 
+Upstream: none (homegrown).
+
 # Contracko
 
 Contracko manages a workspace of contracts, dates, parties, fields, folders, and analysis. This skill connects the server, structures that workspace, and routes the job. Import, review, and new-agreement mechanics belong to [contracko-import](../contracko-import/SKILL.md), [contracko-review](../contracko-review/SKILL.md), and [contracko-create](../contracko-create/SKILL.md). Job playbooks are in [references/workflows.md](references/workflows.md).
@@ -13,6 +15,14 @@ Contracko manages a workspace of contracts, dates, parties, fields, folders, and
 - **Contracko Parser** (`parser_*`): separate bulk document processing. Uses Parser credits; not needed to add contracts to your contract register. Checking its balance or preparing an upload does not spend credits; starting a job does.
 
 Use CLM for adding contracts. Use Parser only when the user requests standalone bulk processing, not as a fallback for unavailable CLM access.
+
+### CLM trial limits
+
+The 7-day free trial includes 3 AI extractions, 10 Clara messages and 1 signature request for the whole trial, not per day. Imports and document re-reads share the extraction limit. The limits apply while the trial has no payment method, or has cancel at period end turned on. Subscribing with a payment method and renewal on lifts them straight away; the original free end date stays, and the paid plan's contract, storage and signature allowances still apply.
+
+At any limit, the underlying API reason is `data.billingGate.reason` `TRIAL_USAGE_LIMIT_REACHED`. MCP does not pass that field on: it maps the reason to a refusal with code `PAYMENT_REQUIRED`, the notice "This workspace has reached its free CLM trial limit. Subscribe to lift the trial caps." and a no-retry hint. Read the code and hint; the user sees only the notice. The app shows its own copy for the extraction limit, "You've used your 3 free AI extractions" and "Subscribe now to lift these limits today"; that wording covers only the extraction limit, not every limit. Relay the notice as a plan notice, not a technical error: keep the work already accepted, stop retrying, and point to subscribing. Parser credits never lift CLM trial limits.
+
+Reserving a signature can be refused separately at the source with `FORBIDDEN`, `cause.reason` `SIGNATURE_TRIAL_CAP_REACHED` and "You've used your free trial signature. Subscribe to keep sending." Treat it as the same plan notice and do not retry.
 
 The characteristic failure of this surface is **silence**. Scopes can hide tools, unknown keys can be dropped, and configuration can return success without the intended change. Check discovery and returned state.
 
@@ -143,6 +153,7 @@ Never invent a tool signature. When a requested operation has no discovered tool
 
 | Response | Action |
 |---|---|
+| CLM trial limit notice | Follow [CLM trial limits](#clm-trial-limits): explain the plan notice, keep accepted work, do not retry, point to subscribing. |
 | CLM plan refusal | Review CLM plan access, contract limits or storage. Never suggest Parser credits or a Parser credit check. |
 | Parser credit refusal | Ask a workspace admin to add Parser credits or review the Contracko Parser plan. This does not block CLM contract intake. |
 | 409 conflict | Re-read the named state. A duplicate name or changed idempotency payload can cause it. |
