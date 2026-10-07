@@ -123,9 +123,11 @@ Confirm a proposed field set before creating it. Confirm a folder destination be
 
 For import, choose the transfer path before reading bytes. Where you run decides it:
 
-- **A shell with network access** (Claude Code, Codex, Cursor CLI, Claude's chat sandbox once the user adds `app.contracko.com` under Settings > Capabilities > Code execution and file creation > Additional allowed domains): `clm_create_upload_url`, PUT the file to the returned `uploadUrl`, then `clm_import_contracts` with `kind: "upload"` so Contracko extracts, or `clm_ingest_contract` when you supply the fields.
+- **A shell with network access** (Claude Code, Codex, Cursor CLI, Claude's chat sandbox once the user allows `app.contracko.com` under Settings > Capabilities > Code execution and file creation > Additional allowed domains): `clm_create_upload_url`, PUT the file to the returned `uploadUrl`, then `clm_import_contracts` with `kind: "upload"` so Contracko extracts, or `clm_ingest_contract` when you supply the fields.
+- **Claude chat (web or desktop):** ask permission, then upload the attached sandbox file with one `curl -T` and import it with `kind: "upload"`. If the network is blocked, send the same file inline. Only if neither works, give the upload link.
 - **ChatGPT:** ask the user to attach the file, then `clm_import_files`. If that is unavailable or fails, use the upload link below.
 - **No network:** inline base64 into `clm_import_contracts` only for a tiny file (tens of KB). Otherwise call `clm_create_upload_session` and give the user its `uploadPageUrl` to add the files in their browser.
+- **After any accepted import:** tell the user Contracko received the contract and is reading it now before checking status. `clm_get_import_status` with `processing.jobId` is a snapshot by default; `wait: true` waits at most 25 seconds. [contracko-import](../contracko-import/SKILL.md#after-intake-is-accepted) has the steps and the upload errors.
 - **Always:** upload only to the returned `uploadUrl`, never to a third-party host. If the upload is blocked, stop and tell the user.
 
 A signed short-lived remote URL works for a document Contracko can fetch. [contracko-import](../contracko-import/SKILL.md) has the limits and reconciliation rules.

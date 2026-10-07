@@ -2,11 +2,23 @@
 
 User-facing changes to the Contracko skills and plugin packages. Client manifests (Claude, Codex, Cursor, Copilot, Gemini, MCP Registry) share one version; the Agent Plugins package and release bundles follow the `v*` release tag line.
 
+## 0.7.11 (Agent Plugins 0.8.6), 2026-10-07
+
+- Claude chat (claude.ai, Claude Desktop chat, Cowork, mobile) blocks outbound hosts in the code-execution sandbox by default. The README and import skill now match what Contracko tells Claude users: if available, open Settings > Capabilities > Code execution and file creation, allow network egress, and add `app.contracko.com` under Additional allowed domains.
+- On Team and Enterprise, an organization Owner allows it once for everyone under Organization settings > Capabilities > Package managers + specific domains, adding `app.contracko.com`.
+- Local agents (Claude Code, Cursor, Codex CLI) upload from your own shell and only need the command approved. If a strict sandbox blocks network access, allow `app.contracko.com` in its sandbox or network settings. ChatGPT needs no setting.
+
 ## 0.7.10 (Agent Plugins 0.8.5), 2026-10-07
 
-- Claude chat surfaces (claude.ai, Claude Desktop chat, Cowork, mobile) block outbound hosts in the code-execution sandbox by default. The README and import skill now give the exact step: add `app.contracko.com` under Settings > Capabilities > Code execution and file creation > Additional allowed domains. Claude then uploads attached contracts itself.
-- On Team and Enterprise, an organization Owner can allow `app.contracko.com` once for all members.
-- Local agents (Claude Code, Cursor, Codex CLI) upload from your own shell and only need the command approved. If a strict sandbox blocks network access, allow `app.contracko.com` in its sandbox or network settings. ChatGPT needs no setting.
+Matches the Contracko MCP behaviour live in production on 2026-10-07. Agents see no new tools.
+
+- First contract: the skills describe the server's first-contract invitation (attach the file or give its path, ask permission before reading or uploading, use the person's own document).
+- After an import or ingest is accepted, tell the user Contracko received their contract and is reading it now before any status check or wait. For several files, say how many were received.
+- `clm_get_import_status` takes `processing.jobId` and returns a snapshot by default. `wait: true` waits at most 25 seconds. Still-reading results show elapsed time, with singular or plural wording and a count of contracts read for several files.
+- Upload errors have recovery steps: `UPLOAD_NOT_RECEIVED` (run the upload again, or send a tiny file inline), `UPLOAD_EXPIRED` (prepare again) and `INVALID_FILE_CONTENT` (ask for the file again).
+- Claude chat (web and desktop) order: upload from the sandbox with one `curl -T`, then inline base64 if the network is blocked, and the upload link only if neither works.
+- Contracko serves MCP protocol 2026-07-28 alongside the earlier versions. No skill change is needed.
+- The README now says to open a skills-bundle sync PR after each MCP release reaches production.
 
 ## 0.7.9 (Agent Plugins 0.8.4), 2026-10-04
 

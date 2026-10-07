@@ -94,10 +94,10 @@ Added Contracko as a custom connector before? Remove that one, or you will see e
 To add a contract in claude.ai, Claude Desktop chat, Cowork, or the mobile app, attach the file to the chat. It lands in Claude's code-execution sandbox, which blocks outbound hosts by default, so allow Contracko once:
 
 1. Open **Settings > Capabilities**.
-2. Under **Code execution and file creation**, find **Additional allowed domains**.
-3. Add `app.contracko.com`.
+2. Under **Code execution and file creation**, allow network egress, if available.
+3. Add `app.contracko.com` under **Additional allowed domains**.
 
-Claude then uploads the attached contract itself through Contracko's prepared upload URL. On Team and Enterprise, an organization Owner can allow `app.contracko.com` once for all members. Without it, Claude sends only a tiny file inline, or gives you an upload link to add the file in your browser.
+Claude then uploads the attached contract itself through Contracko's prepared upload URL. On Team and Enterprise, an Owner opens **Organization settings > Capabilities > Package managers + specific domains** and adds `app.contracko.com` once for all members. Without it, Claude sends only a tiny file inline, or gives you an upload link to add the file in your browser.
 
 On the Free plan you can still add the skills by hand: download them from [Releases](https://github.com/contracko/contracko-skills/releases/latest) and upload each one under **Customize, Skills**.
 
@@ -339,5 +339,9 @@ Have a question about these skills, a suggestion, or an improvement? [Open a Git
 
 Before publishing skill changes, run `python3 -m unittest discover -s tests -v`.
 See [validation and catalog refresh](tests/README.md) and the [workflow regression cases](tests/workflow-cases.md).
+
+### Release sync
+
+After each Contracko MCP release reaches production, open a skills-bundle sync PR for that release's agent-facing changes. Check what is live on the app's `main` (not staging or open PRs), update the skills to match, bump the version, add a changelog entry, and run the checks above. The checklist step on the app side is tracked in CTD-5544.
 
 MIT licensed.
