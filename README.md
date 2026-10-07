@@ -334,4 +334,8 @@ Have a question about these skills, a suggestion, or an improvement? [Open a Git
 Before publishing skill changes, run `python3 -m unittest discover -s tests -v`.
 See [validation and catalog refresh](tests/README.md) and the [workflow regression cases](tests/workflow-cases.md).
 
+### Release sync
+
+After each Contracko MCP release reaches production, open a skills-bundle sync PR for that release's agent-facing changes. Check what is live on the app's `main` (not staging or open PRs), update the skills to match, bump the version, add a changelog entry, and run the checks above. The checklist step on the app side is tracked in CTD-5544.
+
 MIT licensed.

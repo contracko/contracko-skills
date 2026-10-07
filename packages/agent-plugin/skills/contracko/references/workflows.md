@@ -6,6 +6,8 @@ Use live tool discovery first. These are user jobs, not a substitute for discove
 
 **They say:** I just signed up, the workspace is empty, add this contract, try it with one file.
 
+Contracko's server instructions open with this invitation for a new workspace: ask the user to attach the file or give its path, say you will upload it so Contracko can extract the dates and terms, and ask permission before reading or uploading anything. Connecting imports nothing, and examples are not the user's own contracts; use their own document. Parser credits are not needed to add a contract.
+
 Run `auth_validate`, then `clm_search_tools` with "Add my first contract" to confirm the steps this connection can run. For one local file, prepare, upload, and ingest:
 
 1. `clm_create_upload_url` with the file's `fileName`, `mimeType`, and `fileSize`. Measure the file; do not read it to size it.
@@ -15,11 +17,14 @@ Run `auth_validate`, then `clm_search_tools` with "Add my first contract" to con
 
 To let Contracko extract instead, replace step 3 with `clm_import_contracts` and a `kind: "upload"` file carrying the same `uploadReference`.
 
+After intake is accepted, first tell the user Contracko received their contract and is reading it now; longer contracts take a little while. Send this before any status check. Then call `clm_get_import_status` with `processing.jobId`: it returns a snapshot, and `wait: true` waits at most 25 seconds, so repeat while it is still being read and show the elapsed time. Specific upload errors (`UPLOAD_NOT_RECEIVED`, `INVALID_FILE_CONTENT`) and their recovery are in [contracko-import](../../contracko-import/SKILL.md#upload-errors).
+
 Where you run decides the upload:
 
 | You are in | Do |
 |---|---|
 | a shell with network access (Claude Code, Codex with network on, Cursor CLI, Claude chat with `app.contracko.com` allowed) | the steps above |
+| Claude chat (web or desktop) | ask permission, then the sandbox upload; if the network is blocked, inline base64; only if neither works, the upload link |
 | ChatGPT | ask for the file as an attachment, then `clm_import_files`; otherwise the upload link |
 | an environment with no network | inline import only for a tiny file; otherwise `clm_create_upload_session` and give the user its `uploadPageUrl` |
 

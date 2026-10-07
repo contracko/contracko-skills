@@ -26,6 +26,7 @@ MCP has no file transfer, so where you run decides how a document reaches Contra
 |---|---|---|
 | in a shell with network access | `clm_create_upload_url` → PUT → `clm_import_contracts` with `kind: "upload"` (Contracko extracts), or → `clm_ingest_contract` (you supply the fields) | the bytes go machine-to-machine and never touch your context |
 | in ChatGPT with the file attached | `clm_import_files` with the attached files | Contracko downloads them from ChatGPT's file service. Ask for an attachment if there is none. |
+| in Claude chat (web or desktop) with the file attached | the sandbox upload first (`clm_create_upload_url`, one `curl -T` from the sandbox, then `clm_import_contracts` with `kind: "upload"`). If network access is blocked, base64 the same file in the sandbox and send `kind: "inline"`. Only if neither transfer works, `clm_create_upload_session` | ask permission before reading or uploading the attached file (usually under `/mnt/user-data/uploads/`). Inline is up to 35 MiB per file and within the client's tool-argument limit. |
 | without network, and the file is tiny | `clm_import_contracts` with `kind: "inline"` | base64 travels through your context: roughly 1.4x the file size, so a 50 KB PDF costs around 17k tokens. The cap is 35 MiB per file, but clients manage only tens of KB in practice. |
 | unable to send the bytes at all | `clm_create_upload_session`, then give the user its `uploadPageUrl` | the user adds the files in their browser, signed in to Contracko, within the hour |
 | pointing at a URL Contracko can fetch | `clm_import_contracts` with `kind: "remote"` | Contracko downloads it directly. |
@@ -71,7 +72,22 @@ Files are `upload` (the `uploadReference`, `fileName`, `mimeType` and `fileSize`
 
 The `idempotencyKey` is bound to the payload. Replaying it with the same files returns the original import; replaying it with different files returns a 409, which says the key is spent rather than that the import failed. One key per batch, named so a human can recognise it later.
 
-Then poll `clm_get_import_status` with the returned `importId`, waiting `pollAfterMs` between calls. Extraction takes minutes rather than seconds, and scales with the batch. Report progress while `status` is `processing`, and hold the success message until the documents are actually filed.
+### After intake is accepted
+
+1. **Say it first.** Before any status check or wait, tell the user Contracko received their contract and is reading it now. For several files, say how many contracts were received. Longer contracts can take a little while; do not promise a duration. Send this message even when the files arrived through an upload link.
+2. **Check with the job id.** Pass `processing.jobId` from the import or ingest result to `clm_get_import_status`. A legacy `importId` or an upload link's `uploadSessionId` also works; supply exactly one handle.
+3. **Snapshot or wait.** A plain call returns an immediate snapshot. `wait: true` waits until the job finishes or at most 25 seconds, so use it only after the message in step 1. No call can wait longer.
+4. **Report progress.** If the result says the contract is still being read, tell the user, show the elapsed time (and, for several files, how many are read), and check again. Repeat until it finishes. Hold the success message until the documents are actually filed, then summarize the extracted fields in the same conversation.
+
+The wording follows the count: one contract reads "Your contract is still being read", several read "Your contracts are still being read" with "N of M contracts read". Read each item's `intakeOutcome`.
+
+### Upload errors
+
+| Code | Meaning | Do |
+|---|---|---|
+| `UPLOAD_NOT_RECEIVED` | The file never reached the prepared destination. | Run the upload command from `clm_create_upload_url` again and retry the intake, or send a tiny file inline. Do not poll intake as an upload check. If the upload keeps failing, give the user the upload link. |
+| `UPLOAD_EXPIRED` | The prepared upload passed its hour. | Prepare the file again, upload to the new URL, and use the new reference. |
+| `INVALID_FILE_CONTENT` | The content is not valid base64 or not a supported document. | Ask the user for the file again. Do not resend the same bytes. |
 
 Per document you get `status`, a `contractId` as soon as the record exists, and on failure an `errorCode` with a `retryable` flag. Retry what is marked retryable, under a new key, and treat the rest as documents that need a human.
 

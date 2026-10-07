@@ -2,6 +2,18 @@
 
 User-facing changes to the Contracko skills and plugin packages. Client manifests (Claude, Codex, Cursor, Copilot, Gemini, MCP Registry) share one version; the Agent Plugins package and release bundles follow the `v*` release tag line.
 
+## 0.7.10 (Agent Plugins 0.8.5), 2026-10-07
+
+Matches the Contracko MCP behaviour live in production on 2026-10-07. Agents see no new tools.
+
+- First contract: the skills describe the server's first-contract invitation (attach the file or give its path, ask permission before reading or uploading, use the person's own document).
+- After an import or ingest is accepted, tell the user Contracko received their contract and is reading it now before any status check or wait. For several files, say how many were received.
+- `clm_get_import_status` takes `processing.jobId` and returns a snapshot by default. `wait: true` waits at most 25 seconds. Still-reading results show elapsed time, with singular or plural wording and a count of contracts read for several files.
+- Upload errors have recovery steps: `UPLOAD_NOT_RECEIVED` (run the upload again, or send a tiny file inline), `UPLOAD_EXPIRED` (prepare again) and `INVALID_FILE_CONTENT` (ask for the file again).
+- Claude chat (web and desktop) order: upload from the sandbox with one `curl -T`, then inline base64 if the network is blocked, and the upload link only if neither works.
+- Contracko serves MCP protocol 2026-07-28 alongside the earlier versions. No skill change is needed.
+- The README now says to open a skills-bundle sync PR after each MCP release reaches production.
+
 ## 0.7.9 (Agent Plugins 0.8.4), 2026-10-04
 
 - Local uploads now use one literal curl command with the required Content-Type header and only the returned Contracko upload URL. This is the single-command upload that is now live in production; the README and the Cursor, Codex, and Claude notes use the same command.
