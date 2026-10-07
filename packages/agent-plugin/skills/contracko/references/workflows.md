@@ -23,7 +23,7 @@ Where you run decides the upload:
 
 | You are in | Do |
 |---|---|
-| a shell with network access (Claude Code, Codex with network on, Cursor CLI, Claude chat with `app.contracko.com` allowed) | the steps above |
+| a shell with network access (Claude Code, Codex with network on, Cursor CLI, Claude chat with `app.contracko.com` added under Settings > Capabilities > Code execution and file creation > Additional allowed domains) | the steps above |
 | Claude chat (web or desktop) | ask permission, then the sandbox upload; if the network is blocked, inline base64; only if neither works, the upload link |
 | ChatGPT | ask for the file as an attachment, then `clm_import_files`; otherwise the upload link |
 | an environment with no network | inline import only for a tiny file; otherwise `clm_create_upload_session` and give the user its `uploadPageUrl` |

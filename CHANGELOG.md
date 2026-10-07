@@ -2,6 +2,12 @@
 
 User-facing changes to the Contracko skills and plugin packages. Client manifests (Claude, Codex, Cursor, Copilot, Gemini, MCP Registry) share one version; the Agent Plugins package and release bundles follow the `v*` release tag line.
 
+## 0.7.11 (Agent Plugins 0.8.6), 2026-10-07
+
+- Claude chat (claude.ai, Claude Desktop chat, Cowork, mobile) blocks outbound hosts in the code-execution sandbox by default. The README and import skill now match what Contracko tells Claude users: if available, open Settings > Capabilities > Code execution and file creation, allow network egress, and add `app.contracko.com` under Additional allowed domains.
+- On Team and Enterprise, an organization Owner allows it once for everyone under Organization settings > Capabilities > Package managers + specific domains, adding `app.contracko.com`.
+- Local agents (Claude Code, Cursor, Codex CLI) upload from your own shell and only need the command approved. If a strict sandbox blocks network access, allow `app.contracko.com` in its sandbox or network settings. ChatGPT needs no setting.
+
 ## 0.7.10 (Agent Plugins 0.8.5), 2026-10-07
 
 Matches the Contracko MCP behaviour live in production on 2026-10-07. Agents see no new tools.
