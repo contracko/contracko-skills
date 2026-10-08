@@ -5,13 +5,18 @@
 [Contracko](https://contracko.com) is AI contract management software, a contract lifecycle management (CLM) workspace for PDFs and Word files with dates, values, parties, and AI analysis on top. This plugin connects Claude and other assistants to that workspace so they can:
 
 - **Review and analyse contracts with AI.** Surface risks, liabilities and obligations, compare two agreements clause by clause, and quote the sentence behind each finding.
-- **Extract and parse contract data.** Import PDF and Word contracts and let Contracko extract dates, parties, renewal and notice terms, governing law and liability terms, or parse a document without filing it.
+- **Import contracts with CLM, without Parser credits.** Add PDF and Word contracts to your register and extract dates, parties and terms, including bulk imports.
+- **Process documents in bulk with Contracko Parser.** The separate Parser product uses Parser credits for standalone extraction and exports. It is not needed to add contracts to your contract register.
 - **Set automated reminders.** Add notifications to contract events so the right person hears about them in time.
 - **Track renewal and notice deadlines.** List what ends, auto-renews, or needs notice in a given window, across the whole portfolio.
 
 These skills teach the assistant how to import, review, organise, and file that work. The MCP server is the live connection to your workspace.
 
 **No account yet?** Start a [7-day free trial](https://contracko.com) (no credit card). You can also create the trial account on the OAuth screen the first time you connect the server.
+
+The trial includes 3 AI extractions (imports and document re-reads count), 10 Clara messages and 1 signature request in total, not per day. When you reach a limit, Contracko shows a plan notice rather than an error: work already accepted is kept, and the assistant stops retrying. Subscribing with a payment method lifts these limits straight away; your free end date stays the same. Parser credits do not lift CLM trial limits.
+
+Contracko Parser gives a workspace without a Parser subscription 20 free Parser credits once. Credits are not extractions: a document costs 1 to 5 credits depending on its size, and review doubles that.
 
 ## Usage
 

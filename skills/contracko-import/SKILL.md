@@ -5,6 +5,8 @@ description: Imports contracts into Contracko from disk, Google Drive, SharePoin
 
 # Importing contracts into Contracko
 
+This is CLM contract intake with `clm_*` tools. Adding, importing and managing contracts never needs Parser credits, even for bulk imports. `parser_*` tools belong to the separate Contracko Parser product: bulk document processing using Parser credits, not a step to add contracts to your contract register.
+
 Onboarding is this skill plus types in [contracko](../contracko/SKILL.md). Find and file here. Shape types after extraction, not before.
 
 ## Find the files first

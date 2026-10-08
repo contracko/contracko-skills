@@ -8,4 +8,6 @@ It covers skill installation, client configuration, OAuth sign-in, dedicated MCP
 
 For Cline, also use the explicit Streamable HTTP configuration in [README.md](../README.md).
 
+CLM (`clm_*`) adds, imports and manages contracts without Parser credits. Contracko Parser (`parser_*`) is separate bulk document processing that uses Parser credits, not needed to add contracts to your contract register.
+
 After setup, follow the installed `contracko` skill for operational workflows and the connection's live MCP discovery for tool names and input/output schemas. Do not build or start a local MCP server; Contracko hosts it remotely.

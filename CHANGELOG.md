@@ -2,6 +2,13 @@
 
 User-facing changes to the Contracko skills and plugin packages. Client manifests (Claude, Codex, Cursor, Copilot, Gemini, MCP Registry) share one version; the Agent Plugins package and release bundles follow the `v*` release tag line.
 
+## 0.7.12 (Agent Plugins 0.8.7), 2026-10-08
+
+- CLM and Contracko Parser are described as separate products. Adding, importing and managing contracts (`clm_*`), including bulk imports, never needs Parser credits. `parser_*` is separate bulk document processing that uses Parser credits.
+- The 7-day CLM free trial is documented with its whole-trial caps: 3 AI extractions (imports and document re-reads count), 10 Clara messages and 1 signature request. At a cap, tell the user it is a plan notice, keep accepted work and do not retry. Subscribing lifts the caps and keeps the original free end date. Parser credits do not lift them.
+- Parser's free allowance is 20 credits once per workspace without an eligible Parser subscription, not 20 extractions. An extraction costs 1 to 5 credits per document, and review doubles the cost.
+- `npx -y @contracko/mcp --help` prints this guidance without connecting.
+
 ## 0.7.11 (Agent Plugins 0.8.6), 2026-10-07
 
 - Claude chat (claude.ai, Claude Desktop chat, Cowork, mobile) blocks outbound hosts in the code-execution sandbox by default. The README and import skill now match what Contracko tells Claude users: if available, open Settings > Capabilities > Code execution and file creation, allow network egress, and add `app.contracko.com` under Additional allowed domains.

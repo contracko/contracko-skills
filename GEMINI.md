@@ -2,6 +2,8 @@
 
 Contracko is contract management: a repository of contracts (PDF and Word) with extracted dates, values, parties and AI analysis on top. This extension connects the Contracko MCP server at `https://app.contracko.com/mcp`.
 
+CLM tools (`clm_*`) add, import and manage contracts without Parser credits. Contracko Parser (`parser_*`) is separate bulk document processing using Parser credits, not needed to add contracts to your contract register.
+
 On first use a browser opens for OAuth sign-in. A 7-day free trial can be started on that screen (no credit card). Users choose Read and optionally Write scope at consent; Write is required to import or change contracts, Read is enough to answer questions.
 
 Detailed guidance lives in the skills under `skills/`:

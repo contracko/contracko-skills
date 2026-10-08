@@ -2,8 +2,8 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "com.contracko/contracko",
   "title": "Contracko",
-  "description": "AI contract management (CLM): contract review, data extraction, reminders and renewal deadlines.",
-  "version": "0.7.11",
+  "description": "CLM needs no Parser credits. Separate Parser bulk processing uses credits, not for adding contracts.",
+  "version": "0.7.12",
   "websiteUrl": "https://contracko.com/mcp/contract-management",
   "icons": [
     {

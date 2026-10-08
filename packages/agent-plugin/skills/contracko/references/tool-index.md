@@ -23,6 +23,8 @@ Use `clm_search_tools` when the right tool is unclear, before a multi-step job, 
 { "query": "set renewal reminders", "toolset": "events" }
 ```
 
+CLM tools (`clm_*`) add, import and manage contracts without Parser credits. Parser tools (`parser_*`) are separate Contracko Parser bulk document processing, use Parser credits and are not needed to add contracts to your contract register.
+
 ## Contracts and folders
 
 | Tool | Scope | Use |
@@ -132,7 +134,8 @@ A re-read runs AI extraction on one contract document again and compares the res
 | `clm_get_contract_reconciliation` | `contract:read` | Read the per-field differences a completed re-read found. Reading never applies or dismisses a finding. |
 | `clm_apply_contract_reconciliation` | `contract:write` | Write selected findings onto the contract after a person approves that exact selection. |
 
-The reads are safe to call at any time. Apply only works in a client that can ask the person to approve; otherwise send the user to the review in Contracko. A re-read uses the same extraction allowance as an import.
+The reads are safe to call at any time. Apply only works in a client that can ask the person to approve; otherwise send the user to the review in Contracko. A re-read uses the same extraction allowance as an import. During a free trial that allowance is capped; see [CLM trial limits](../SKILL.md#clm-trial-limits).
+
 ## Import and contract writes
 
 | Tool | Scope | Use |
@@ -169,7 +172,7 @@ For a single local file in an empty workspace, `clm_search_tools` with "Add my f
 
 After the PUT, `clm_import_contracts` with a `kind: "upload"` file lets Contracko extract instead of you. In ChatGPT, use `clm_import_files` for attached files. Without network access, send only a tiny file inline; otherwise create an upload link with `clm_create_upload_session`. Upload only to the returned `uploadUrl`, never to a third-party host. Never publish a confidential contract to make a remote URL work. [contracko-import](../../contracko-import/SKILL.md) defines these paths.
 
-## Events, notifications, and document processing
+## CLM events and notifications
 
 Events and notifications need `contract:read` to list and `contract:write` to change. List before a change, use the latest `expectedUpdatedAt` for updates or deletes, and confirm a bulk write. Renewal notifications attach to the existing `end` system event.
 
@@ -180,6 +183,20 @@ Contracko emails each notification to its recipient when it falls due. Creating 
 | `clm_list_contract_events` | `contract:read` | List custom and supported system events with notifications. |
 | `clm_create_contract_events`, `clm_update_contract_events`, `clm_delete_contract_events` | `contract:write` | Manage custom events. |
 | `clm_create_event_reminders`, `clm_update_event_reminders`, `clm_delete_event_reminders` | `contract:write` | Manage notifications on events. |
-| `parser_get_credits`, `parser_preflight`, `parser_create_upload_url`, `parser_create_job`, `parser_get_job`, `parser_list_jobs` | `parser:compute` | Extract or review documents without filing them as contracts. |
 
-Document-processing jobs spend credits. Preflight before creating one, and retrieve exports before their retention window ends.
+## Contracko Parser: separate bulk document processing
+
+Uses Parser credits; not needed to add contracts to your contract register. Only use this workflow for requested standalone processing, not contract intake or a CLM plan refusal.
+
+| Tool | Scope | Use |
+|---|---|---|
+| `parser_get_credits` | `parser:compute` | Check Parser balance and availability; spends no credits. |
+| `parser_preflight` | `parser:compute` | Estimate Parser credits and validate files; spends no credits. |
+| `parser_create_upload_url` | `parser:compute` | Prepare a document for a Parser job; spends no credits. |
+| `parser_create_job` | `parser:compute` | Start bulk document processing; spends Parser credits. |
+| `parser_get_job` | `parser:compute` | Read a Parser job and retrieve results; spends no additional credits. |
+| `parser_list_jobs` | `parser:compute` | List Parser jobs; spends no additional credits. |
+
+A workspace without an eligible Parser subscription gets 20 free Parser credits once. That is 20 credits, not 20 extractions: each document costs 1 to 5 credits (one per 10 estimated pages, or one per 2 MiB when pages cannot be estimated), and review doubles the cost. Beyond the free credits, jobs need paid Parser credits. Check `parser_get_credits` and `parser_preflight` before quoting how much a balance covers.
+
+Preflight before starting a Parser job, confirm the estimated Parser credit cost, and retrieve exports before their retention window ends. Parser credit refusals affect this product, not CLM contract intake.

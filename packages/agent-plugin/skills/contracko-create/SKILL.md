@@ -5,6 +5,8 @@ description: Takes a new contract from questionnaire to drafted, signed and file
 
 # Creating a contract and getting it signed
 
+Adding and managing the resulting contract is CLM (`clm_*`), without Parser credits. `parser_*` is separate Contracko Parser bulk document processing, uses Parser credits and is not needed to add contracts.
+
 The forward half of the lifecycle: nothing exists yet, and the job is to end with a signed agreement added to Contracko.
 
 Most of this flow is app work today. The tail of it, filing the executed copy, is a tool call, and it is the step that decides whether the contract is findable in a year. Run the whole flow with the user rather than stopping at the first step you cannot execute.
