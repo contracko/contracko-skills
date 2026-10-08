@@ -143,7 +143,7 @@ The reads are safe to call at any time. Apply only works in a client that can as
 | `clm_import_contracts` | `contract:write` | Managed import from a prepared upload (`kind: "upload"`), inline bytes, or a remote URL. Contracko extracts. |
 | `clm_import_files` | `contract:write` | Managed import of files attached in a ChatGPT chat. Contracko downloads them from ChatGPT's file service. |
 | `clm_create_upload_session` | `contract:write` | Create a one-hour upload link (`uploadPageUrl`) where the signed-in person adds files in their browser. The fallback when you cannot send the bytes. |
-| `clm_get_import_status` | `contract:read` | Poll import progress and honour `pollAfterMs`. |
+| `clm_get_import_status` | `contract:read` | Check import or ingest progress with `processing.jobId`. Returns a snapshot by default; `wait: true` waits at most 25 seconds. Send the "received, reading now" message first. |
 | `clm_create_upload_url` | `contract:write` | Create a short-lived upload destination for import or ingest. `ifUploadUrlUnreachable` names the fallback. |
 | `clm_ingest_contract` | `contract:write` | File uploaded documents with agent-supplied metadata and analysis. |
 | `clm_add_contract_documents` | `contract:write` | Add draft or related documents, or replace the primary document. |

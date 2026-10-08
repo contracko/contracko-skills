@@ -140,11 +140,11 @@ class ReleaseArtifactTests(unittest.TestCase):
                 "| [contracko-review](skills/contracko-review/SKILL.md) | Notice dates, notifications, comparisons, risk language, and what to look at next |",
             ),
             ".claude-plugin/plugin.json": (
-                '"version": "0.7.10",',
+                '"version": "0.7.12",',
                 '"description": "CLM: add, import, review and manage contracts without Parser credits. Separate Contracko Parser: bulk document processing using Parser credits, not needed to add contracts.",',
             ),
             ".codex-plugin/plugin.json": (
-                '"version": "0.7.10",',
+                '"version": "0.7.12",',
                 '"description": "CLM: add, import, review and manage contracts without Parser credits. Separate Contracko Parser: bulk document processing using Parser credits, not needed to add contracts.",',
             ),
         }
@@ -157,7 +157,7 @@ class ReleaseArtifactTests(unittest.TestCase):
 
         claude_plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
         claude_marketplace = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
-        self.assertEqual(claude_plugin["version"], "0.7.10")
+        self.assertEqual(claude_plugin["version"], "0.7.12")
         self.assertEqual(claude_marketplace["metadata"]["version"], claude_plugin["version"])
 
     def test_claude_connect_copy_is_directory_first(self) -> None:
