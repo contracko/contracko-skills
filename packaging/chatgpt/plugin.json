@@ -1,0 +1,24 @@
+{
+  "author": {
+    "name": "Budi Voogt"
+  },
+  "description": "Contracko is where you keep the contracts that run the business. Use it from ChatGPT to extract key data (dates, values, counterparties), review risks and liabilities, and set reminders for renewal and notice deadlines. Import PDFs and Word files, search the source text, and answer what you actually signed. You choose read or write access when you connect, and changes go through ChatGPT's approval step before they run.",
+  "interface": {
+    "capabilities": [],
+    "category": "Business & Operations",
+    "defaultPrompt": [
+      "Review the risks and liabilities in my contracts",
+      "What renewals and notice dates are coming up?",
+      "Search my contracts for termination terms"
+    ],
+    "developerName": "Budi Voogt",
+    "displayName": "Contracko",
+    "longDescription": "Contracko is where you keep the contracts that run the business. Use it from ChatGPT to extract key data (dates, values, counterparties), review risks and liabilities, and set reminders for renewal and notice deadlines. Import PDFs and Word files, search the source text, and answer what you actually signed. You choose read or write access when you connect, and changes go through ChatGPT's approval step before they run.",
+    "privacyPolicyURL": "https://contracko.com/privacy-policy",
+    "shortDescription": "AI contract management",
+    "supportURL": "https://contracko.com/docs",
+    "termsOfServiceURL": "https://contracko.com/terms-of-service",
+    "websiteURL": "https://contracko.com"
+  },
+  "skills": "./skills"
+}
