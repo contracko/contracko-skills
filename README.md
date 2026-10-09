@@ -177,7 +177,7 @@ Sign in in the browser that opens. For local uploads, apply the [host-only uploa
 
 This repository includes a Cursor plugin manifest at `.cursor-plugin/plugin.json`. It bundles the four existing skills and the MCP connection in `mcp.json`; no API key is included. The plugin is not yet listed in the public Cursor Marketplace.
 
-To test the plugin locally, clone this repository into `~/.cursor/plugins/local/contracko-skills`, reload Cursor, and check **Customize** for the skills and MCP server. Connect Contracko and complete OAuth in the browser. Approve **Read** by default and **Write** only when needed. If you already added the same server manually, use one connection rather than enabling both.
+To test the plugin locally, clone this repository into `~/.cursor/plugins/local/contracko-skills`, reload Cursor, and check **Customize** for the skills and MCP server. Connect Contracko and complete OAuth in the browser. The consent screen requests read and write access by default; review it before you approve. If you already added the same server manually, use one connection rather than enabling both.
 
 For manual installation without the plugin:
 
