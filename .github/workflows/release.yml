@@ -15,6 +15,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Check unified public version against release tag
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python3 scripts/check_versions.py --tag "$RELEASE_TAG"
       - name: Validate tool contracts and packaged links
         run: python3 -m unittest discover -s tests -v
       - name: Build deterministic release archives

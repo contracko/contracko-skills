@@ -13,12 +13,12 @@ The bundle is a GitHub repo with one folder per skill, `SKILL.md` at each folder
 | Claude Desktop / claude.ai chat | directory connector first; one zip per skill, uploaded by hand, as the Free-plan skills path | zips build on release |
 | Claude Connectors Directory | remote MCP listing in Claude.ai | live (Community) at [claude.ai/directory/connectors/contracko](https://claude.ai/directory/connectors/contracko); the primary path on every Claude surface |
 | Claude plugin directory (Cowork + Claude Code) | public GitHub plugin, `claude plugin validate` then Anthropic form | listed; tracks `main`, so a merge to `main` auto-publishes. Paid plans only |
-| Codex / ChatGPT workspace import | `.agents/plugins/marketplace.json` + `.codex-plugin/plugin.json` | ready for workspace import; public Plugin Directory needs OpenAI review |
+| Codex / ChatGPT | `.agents/plugins/marketplace.json` + `.codex-plugin/plugin.json` for workspace import; `contracko-agent-plugin.zip` for ChatGPT submission | workspace import ready; public Plugin Directory needs OpenAI review |
 | GitHub Copilot CLI | `.github/plugin/marketplace.json` | ready for `copilot plugin marketplace add contracko/contracko-skills` |
 | Gemini CLI | install skills from the public GitHub repo | no third-party marketplace; GitHub install only |
 | OpenClaw | generated Agent Plugins v1 content bundle | release artifact; native MCP registration and OAuth remain user-owned |
 | Hermes | generated Agent Plugins v1 content bundle | release artifact; native MCP registration and OAuth remain user-owned |
-| Agent Plugins Directory | `packages/agent-plugin/plugin.json` in the public Git tree | canonical skills-only package; nested manifest is crawler-discoverable; native MCP registration and OAuth remain user-owned |
+| Agent Plugins Directory | `packages/agent-plugin/plugin.json` in the public Git tree | canonical package with skills and an MCP descriptor; nested manifest is crawler-discoverable; native MCP registration and OAuth remain user-owned |
 | Other coding agents | `npx skills add https://contracko.com` | ready once production serves `/.well-known/skills/index.json` (site PR [contracko/contracko-site#693](https://github.com/contracko/contracko-site/pull/693) merged) |
 | Goose and other stdio MCP clients | `npx -y @contracko/mcp` | launcher in `packages/mcp`; publishes to the public npm registry, not GitHub Packages. Proxies stdio to `https://app.contracko.com/mcp`. Not a second MCP server. First version is a local `npm publish`; later versions `npm stage publish` from `release.yml` (OIDC), then a maintainer `npm stage approve` with 2FA. |
 
@@ -61,7 +61,11 @@ Same constraint on frontmatter: claude.ai, the Skills API and `package_skill.py`
 
 ## Versioning
 
-`plugin.json` carries a `version`, and it has to be bumped on every change users should receive: the plugin cache is keyed on that string, and an unchanged version means an unchanged install. Omitting the field does not make installs track the latest commit for a directory-sourced marketplace; it pins them permanently instead. Tried that, reverted it.
+Starting with **1.1.0**, every public Contracko skills, plugin, extension, MCP Registry and npm package version uses one value. [`packaging/manifest.json`](packaging/manifest.json) is the source of truth. Dependency pins and schema/protocol versions keep their own versions. Historical releases used separate version lines.
+
+For each release, bump only the source version, copy that value into every public manifest and the npm lockfile's root package fields, then regenerate `packages/agent-plugin/` with `python3 scripts/build_release_artifacts.py --write-directory`. These mirrors have no independent version counters. Run `python3 scripts/check_versions.py --tag vX.Y.Z`: it fails on any public version drift or a mismatched tag. Validation CI, release CI and `build-zips.sh` enforce the rule.
+
+Type the ChatGPT and Claude developer portal version as exactly this value, for example `1.1.0`, without a `v` prefix. The Git release tag is `v1.1.0`. Portal values are manual and cannot be checked by repository CI. The plugin cache is keyed on the version, so bump it for changes users should receive.
 
 ## What Contracko has to do server-side
 
@@ -87,16 +91,17 @@ Three standards now cover nearly everything, so a vendor shipping from one repo 
 - **Agent Skills / `SKILL.md`** became an open standard, and is now read by Codex (`.agents/skills/`), Copilot and VS Code (`.github/skills/`, `.claude/skills/`, `.agents/skills/`), Gemini CLI, Cursor, Cline and Zed. The format here is already the portable one.
 - **Agent Plugins 1.0**, announced August 2026 by Amazon, Cursor, Microsoft, OpenAI, Vercel and Google: one directory with `plugin.json` + `skills/` + `mcp.json`, launching in ChatGPT, Codex, Cursor, Copilot, VS Code and Kiro. Anthropic is not a member, so it does not replace the Claude plugin format.
 
-**Agent Plugins v1 is used for the canonical directory package and the OpenClaw/Hermes release bundles.** The directory package at `packages/agent-plugin/` contains a standard `plugin.json` and the four canonical skills as generated files. It is the public Git-tree package for the directory crawler, which records its nested manifest path. The release bundles use the same generated content. All Agent Plugins packages intentionally omit `mcp.json`: the portable format has no OAuth field, and an unauthenticated duplicate server would be misleading. Existing Claude, Codex, Cursor, Gemini, and other client manifests remain unchanged for compatibility.
+**Agent Plugins v1 is used for the canonical directory package and the OpenClaw/Hermes release bundles.** The generated directory package at `packages/agent-plugin/` contains a standard `plugin.json`, the four canonical skills and `mcp.json` copied from the repository root. It is the public Git-tree package for the directory crawler, which records its nested manifest path. `contracko-agent-plugin.zip` packages this directory for ChatGPT submission, with the manifest, skills and MCP descriptor at the archive root. It adds release metadata but contains no `.codex-plugin` metadata. OpenClaw/Hermes bundles remain skills-only and omit MCP descriptors. The host owns native MCP registration, OAuth and user consent on every path.
 
-The release builder renders the directory package and both bundles from `skills/` and `packaging/manifest.json`. It records the source commit in bundle `RELEASE-METADATA.json`, fixes archive ordering and timestamps, and runs in the existing release workflow. No host software, OAuth client, credential store, or background updater is shipped.
+The release builder renders the directory package and bundles from `skills/` and `packaging/manifest.json`. It records the source commit in `RELEASE-METADATA.json`, fixes archive ordering and timestamps, and runs in the existing release workflow. The ChatGPT submission ZIP is deterministic for identical files, version and source commit. A different source commit changes its hash because the metadata pins that commit. A local candidate is for review; the official `v1.1.0` package is built by the release workflow from the merged main commit. No host software, OAuth client, credential store, or background updater is shipped.
 
-The committed directory package is not hand-maintained. `skills/` is the source of truth; `packages/agent-plugin/skills/` must contain the same relative files and bytes, except `.DS_Store` files. Regenerate it with `python3 scripts/build_release_artifacts.py --write-directory`; CI and `build-zips.sh` run `--check-directory` and fail on missing, extra, or changed files. The generator also rejects canonical files outside its configured skill list, so a new skill cannot be silently omitted. Add new skill names to `SKILLS` in `scripts/build_release_artifacts.py` before regenerating. The check does not modify either tree. Keep the repository-root `mcp.json` and `.mcp.json` outside this package because they serve existing client integrations, including Cursor's format.
+The committed directory package is not hand-maintained. `skills/` is the source of truth; `packages/agent-plugin/skills/` must contain the same relative files and bytes, except `.DS_Store` files. Regenerate it with `python3 scripts/build_release_artifacts.py --write-directory`; CI and `build-zips.sh` run `--check-directory` and fail on missing, extra, or changed files, including MCP descriptor drift. The generator also rejects canonical files outside its configured skill list, so a new skill cannot be silently omitted. Add new skill names to `SKILLS` in `scripts/build_release_artifacts.py` before regenerating. The check does not modify either tree. The repository-root `mcp.json` is the descriptor source; `.mcp.json` serves the Claude integration and stays outside this package.
 
 The generated manifest follows the [Agent Plugins v1 specification](https://agent-plugins.org/specification/). The host flows follow [OpenClaw bundle mapping](https://github.com/openclaw/openclaw/blob/2f8cd215e92320703237b8def415b691f15f3b56/docs/plugins/bundles.md) and [Hermes portable package guidance](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins).
 
 Release assets:
 
+- `https://github.com/contracko/contracko-skills/releases/latest/download/contracko-agent-plugin.zip` (ChatGPT submission)
 - `https://github.com/contracko/contracko-skills/releases/latest/download/contracko-openclaw.zip`
 - `https://github.com/contracko/contracko-skills/releases/latest/download/contracko-hermes.zip`
 
@@ -115,7 +120,7 @@ The plugin cache is keyed on `plugin.json`'s `version`. Editing a skill in the s
 
 Removing `version` does not fix this. It makes the cache pin permanent, since there is no new string to compare against.
 
-So during development, either bump `version` and reinstall, or run `claude --plugin-dir .` for a session that reads the working tree live. Verify with:
+So during development, either follow [Versioning](#versioning) and reinstall, or run `claude --plugin-dir .` for a session that reads the working tree live. Verify with:
 
 ```bash
 diff -rq skills ~/.claude/plugins/cache/contracko/contracko/<version>/skills

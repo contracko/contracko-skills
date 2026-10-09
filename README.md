@@ -347,6 +347,6 @@ See [validation and catalog refresh](tests/README.md) and the [workflow regressi
 
 ### Release sync
 
-After each Contracko MCP release reaches production, open a skills-bundle sync PR for that release's agent-facing changes. Check what is live on the app's `main` (not staging or open PRs), update the skills to match, bump the version, add a changelog entry, and run the checks above. The checklist step on the app side is tracked in CTD-5544.
+After each Contracko MCP release reaches production, open a skills-bundle sync PR for that release's agent-facing changes. Check what is live on the app's `main` (not staging or open PRs), update the skills to match, follow the [single public version rule](DISTRIBUTION.md#versioning), add [release notes](CHANGELOG.md), and run the checks above. The 1.1.0 baseline uses `packaging/manifest.json` for every public version, including the manually entered ChatGPT and Claude portal values. The checklist step on the app side is tracked in CTD-5544.
 
 MIT licensed.

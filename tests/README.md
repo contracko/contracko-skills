@@ -6,18 +6,20 @@ Run from the repository root (Python 3.10+ and `zip`; no Python dependencies):
 python3 -m unittest discover -s tests -v
 ```
 
-The checks verify tool names across skill Markdown, annotated MCP examples, selected obsolete
+The checks verify unified public versions and release tags, tool names across skill Markdown, annotated MCP examples, selected obsolete
 claims, and links inside the merged chat ZIP. Example arguments are checked against the pinned input
 schemas, including types, enums, bounds, string patterns, nullable branches, and date windows. This
 is a targeted documentation check, not a general JSON Schema validator or a live MCP integration test.
 The release tests also build the OpenClaw and Hermes bundles from the canonical skill directories,
 check the Agent Plugins v1 manifest boundary, compare skill bytes, and verify reproducibility. They
-do not install or run OpenClaw or Hermes.
+do not install or run OpenClaw or Hermes. The ChatGPT submission archive `contracko-agent-plugin.zip`
+contains the generated directory package plus metadata pinning its source commit; its test checks
+package bytes, deterministic output, and a changed hash for a different source commit.
 
 Build the same release artifacts locally with:
 
 ```bash
-SOURCE_COMMIT=$(git rev-parse HEAD) VERSION=1.2.3 ./build-zips.sh
+SOURCE_COMMIT=$(git rev-parse HEAD) VERSION=1.1.0 ./build-zips.sh
 ```
 
 The public Agent Plugins Directory package is generated from the same canonical skills:
@@ -28,7 +30,7 @@ python3 scripts/build_release_artifacts.py --check-directory
 ```
 
 Do not edit `packages/agent-plugin/` by hand. The check fails on drift and keeps the nested
-`plugin.json` plus immediate `skills/<name>/SKILL.md` files aligned with `skills/`.
+`plugin.json`, the root MCP descriptor, and immediate `skills/<name>/SKILL.md` files aligned with their sources.
 
 Tag releases supply the tag version and GitHub commit SHA through the release workflow. The generated
 platform archives contain setup guidance only; native MCP registration and OAuth remain host-owned.
@@ -39,7 +41,7 @@ dates come from the user's requested window.
 
 ## Refresh the release baseline
 
-`fixtures/mcp-contract.json` contains released tool names, capability versions, and the input schemas
+`fixtures/mcp-contract.json` contains released tool names, capability versions, annotations, effects, and the input schemas
 needed to validate the documented examples. Its revision pins the reviewed app release. It contains no user data.
 When an app release changes MCP, export `docs/mcp-tool-catalog.json` from that exact release commit
 in an authorized app checkout, then run:

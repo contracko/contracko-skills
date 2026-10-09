@@ -12,7 +12,7 @@ Contracko manages a workspace of contracts, dates, parties, fields, folders, and
 ## Choose the product
 
 - **CLM** (`clm_*`): add, import and manage contracts in the contract register. Never needs Parser credits, including bulk imports and document re-reads.
-- **Contracko Parser** (`parser_*`): separate bulk document processing. Uses Parser credits; not needed to add contracts to your contract register. Checking its balance or preparing an upload does not spend credits; starting a job does.
+- **Contracko Parser** (`parser_*`): separate bulk document processing. Uses Parser credits; not needed to add contracts to your contract register. Checking its balance or preparing an upload does not spend credits; completed processing does. Balance checks and preflight can initialize a missing workspace credit ledger, so they are annotated as writes.
 
 Use CLM for adding contracts. Use Parser only when the user requests standalone bulk processing, not as a fallback for unavailable CLM access.
 
@@ -60,6 +60,8 @@ Run `auth_validate` first in every session. The connection is ready only when it
 | `contract:write` | contract and folder changes, import and ingest, documents, comments, events, notifications, types, and parties |
 
 Starting a document re-read, or applying its findings, also needs `contract:write`.
+
+Scopes do not guarantee read-only behavior. `clm_get_contract_reprocess_run` and `clm_get_contract_reconciliation` require `contract:read` but change saved processing or review state. Follow live annotations and the [document re-read rules](references/tool-index.md#document-re-reads) before using them.
 
 The discovered tool list is authoritative. An existing current credential needs only a discovery refresh or reconnect if its client has cached old schemas. An older credential can gain newly available MCP actions when a workspace admin enables new MCP actions for its key, or when the user re-consents OAuth. If an argument or tool remains absent after discovery refresh, use only what is discovered and state the limitation.
 
@@ -117,7 +119,7 @@ Folder paths contain visible ancestors only. A folder omitted from a list, or a 
 For a requested filing change:
 
 1. Inspect the intended folder with `clm_get_folder` or select it from the visible list.
-2. State the visible destination path and the contracts or folders that will change. Confirm the destination and every bulk change before writing.
+2. State the visible destination path and the contracts or folders that will change. Explain that moves can remove inherited access and reassign scheduled email notifications to the contract owner. A folder moved to root loses limited access; moving it back needs current permissions and does not restore that setting. Confirm the destination and every bulk change before writing.
 3. Create a root or child folder with `clm_create_folder`, rename it with `clm_rename_folder`, or move it with `clm_move_folder` when the user asks.
 4. File a contract with `clm_move_contract`. Send its visible destination UUID as `folderId`. Send `folderId: null` only when the user asks to unfile it.
 5. Read back the changed folder or contract before claiming completion.

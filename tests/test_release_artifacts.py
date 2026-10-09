@@ -17,10 +17,14 @@ ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ("contracko", "contracko-create", "contracko-import", "contracko-review")
 PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 CLAUDE_DIRECTORY_URL = "https://claude.ai/directory/connectors/contracko"
+VERSION = json.loads((ROOT / "packaging/manifest.json").read_text())["version"]
 
 
 class ReleaseArtifactTests(unittest.TestCase):
-    def build(self, output: Path, version: str = "1.2.3") -> None:
+    def build(
+        self, output: Path, version: str = VERSION,
+        source_commit: str = "0123456789abcdef0123456789abcdef01234567",
+    ) -> None:
         subprocess.run(
             [
                 "python3",
@@ -30,7 +34,7 @@ class ReleaseArtifactTests(unittest.TestCase):
                 "--version",
                 version,
                 "--source-commit",
-                "0123456789abcdef0123456789abcdef01234567",
+                source_commit,
             ],
             check=True,
             cwd=ROOT,
@@ -65,7 +69,7 @@ class ReleaseArtifactTests(unittest.TestCase):
                     manifest = json.loads(archive.read("plugin.json"))
                     self.assertEqual(manifest["$schema"], PLUGIN_SCHEMA)
                     self.assertEqual(manifest["name"], "contracko")
-                    self.assertEqual(manifest["version"], "1.2.3")
+                    self.assertEqual(manifest["version"], VERSION)
                     self.assertEqual(
                         set(manifest),
                         {
@@ -87,7 +91,7 @@ class ReleaseArtifactTests(unittest.TestCase):
                         metadata["source_commit"],
                         "0123456789abcdef0123456789abcdef01234567",
                     )
-                    self.assertEqual(metadata["version"], "1.2.3")
+                    self.assertEqual(metadata["version"], VERSION)
                     self.assertEqual(metadata["skills"], list(SKILLS))
 
                     for skill in SKILLS:
@@ -140,11 +144,9 @@ class ReleaseArtifactTests(unittest.TestCase):
                 "| [contracko-review](skills/contracko-review/SKILL.md) | Notice dates, notifications, comparisons, risk language, and what to look at next |",
             ),
             ".claude-plugin/plugin.json": (
-                '"version": "0.7.12",',
                 '"description": "CLM: add, import, review and manage contracts without Parser credits. Separate Contracko Parser: bulk document processing using Parser credits, not needed to add contracts.",',
             ),
             ".codex-plugin/plugin.json": (
-                '"version": "0.7.12",',
                 '"description": "CLM: add, import, review and manage contracts without Parser credits. Separate Contracko Parser: bulk document processing using Parser credits, not needed to add contracts.",',
             ),
         }
@@ -157,7 +159,7 @@ class ReleaseArtifactTests(unittest.TestCase):
 
         claude_plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
         claude_marketplace = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
-        self.assertEqual(claude_plugin["version"], "0.7.12")
+        self.assertEqual(claude_plugin["version"], VERSION)
         self.assertEqual(claude_marketplace["metadata"]["version"], claude_plugin["version"])
 
     def test_claude_connect_copy_is_directory_first(self) -> None:
@@ -217,7 +219,6 @@ class ReleaseArtifactTests(unittest.TestCase):
                     self.assertNotIn(phrase, text)
 
     def test_client_manifests_mirror_claude_plugin_version(self) -> None:
-        # packaging/manifest.json and packages/agent-plugin follow the v* release tag line instead.
         expected = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())["version"]
         versions = {
             ".codex-plugin/plugin.json": json.loads((ROOT / ".codex-plugin/plugin.json").read_text())["version"],
@@ -262,7 +263,7 @@ class ReleaseArtifactTests(unittest.TestCase):
         self.assertTrue((package / "README.md").is_file())
         self.assertTrue((package / "LICENSE").is_file())
         self.assertTrue((package / "NOTICE.md").is_file())
-        self.assertNotIn("mcp.json", {path.name for path in package.rglob("*")})
+        self.assertEqual((package / "mcp.json").read_bytes(), (ROOT / "mcp.json").read_bytes())
         self.assertNotIn(".mcp.json", {path.name for path in package.rglob("*")})
 
         manifest = json.loads((package / "plugin.json").read_text())
@@ -322,6 +323,7 @@ class ReleaseArtifactTests(unittest.TestCase):
                     for directory in ("scripts", "skills", "packaging", "packages/agent-plugin"):
                         shutil.copytree(ROOT / directory, fixture / directory)
                     shutil.copyfile(ROOT / "LICENSE", fixture / "LICENSE")
+                    shutil.copyfile(ROOT / "mcp.json", fixture / "mcp.json")
                     target = fixture / relative
                     if content is None:
                         target.unlink()
@@ -434,13 +436,43 @@ class ReleaseArtifactTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("full 40-character commit SHA", result.stderr)
 
-    def test_release_build_accepts_prerelease_and_build_metadata(self) -> None:
+    def test_release_build_rejects_different_prerelease_version(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "dist"
-            self.build(output, version="1.2.3-rc.1+build.5")
-            with zipfile.ZipFile(output / "contracko-openclaw.zip") as archive:
-                manifest = json.loads(archive.read("plugin.json"))
-            self.assertEqual(manifest["version"], "1.2.3-rc.1+build.5")
+            result = subprocess.run(
+                ["python3", str(ROOT / "scripts/build_release_artifacts.py"),
+                 "--output", str(output), "--version", "1.2.3-rc.1+build.5"],
+                cwd=ROOT, capture_output=True, text=True,
+            )
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("does not match requested release version", result.stderr)
+            self.assertFalse(output.exists())
+
+    def test_chatgpt_submission_archive_matches_directory_package_and_is_deterministic(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            first = Path(temporary) / "first"
+            second = Path(temporary) / "second"
+            self.build(first)
+            self.build(second)
+            first_zip = first / "contracko-agent-plugin.zip"
+            self.assertEqual(first_zip.read_bytes(), (second / first_zip.name).read_bytes())
+            package = ROOT / "packages/agent-plugin"
+            expected = {
+                path.relative_to(package).as_posix(): path.read_bytes()
+                for path in package.rglob("*") if path.is_file()
+            }
+            with zipfile.ZipFile(first_zip) as archive:
+                self.assertEqual(set(archive.namelist()), set(expected) | {"RELEASE-METADATA.json"})
+                for name, content in expected.items():
+                    self.assertEqual(archive.read(name), content)
+                self.assertEqual(json.loads(archive.read("plugin.json"))["version"], VERSION)
+                self.assertIn("mcp.json", archive.namelist())
+                metadata = json.loads(archive.read("RELEASE-METADATA.json"))
+                self.assertEqual(metadata["version"], VERSION)
+                self.assertEqual(metadata["source_commit"], "0123456789abcdef0123456789abcdef01234567")
+            third = Path(temporary) / "third"
+            self.build(third, source_commit="abcdef0123456789abcdef0123456789abcdef01")
+            self.assertNotEqual(first_zip.read_bytes(), (third / first_zip.name).read_bytes())
 
     def test_release_build_rejects_repository_output_paths(self) -> None:
         result = subprocess.run(

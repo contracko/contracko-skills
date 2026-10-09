@@ -1,6 +1,12 @@
 # Changelog
 
-User-facing changes to the Contracko skills and plugin packages. Client manifests (Claude, Codex, Cursor, Copilot, Gemini, MCP Registry) share one version; the Agent Plugins package and release bundles follow the `v*` release tag line.
+User-facing changes to the Contracko skills and plugin packages. From 1.1.0, every public package and client manifest shares the [single version](DISTRIBUTION.md#versioning) in `packaging/manifest.json`.
+
+## 1.1.0, 2026-10-09
+
+- All public plugin, extension, MCP Registry and npm package versions now use 1.1.0. Release tags and manually entered ChatGPT and Claude portal versions use that same value.
+- Added the deterministic `contracko-agent-plugin.zip` ChatGPT submission package with canonical skills, an MCP descriptor and metadata pinning the source commit.
+- Skills match Contracko production catalog `4cc991bb3`: reprocess and reconciliation checks can change saved state, filing moves can remove inherited access and reassign notifications, and Parser balance/preflight can initialize the credit ledger. Document search and extraction guidance identifies external AI processing.
 
 ## 0.7.12 (Agent Plugins 0.8.7), 2026-10-08
 

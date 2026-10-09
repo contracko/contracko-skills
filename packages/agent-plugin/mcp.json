@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "contracko": {
+      "type": "http",
+      "url": "https://app.contracko.com/mcp"
+    }
+  }
+}
