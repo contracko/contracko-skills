@@ -1,0 +1,30 @@
+{
+  "schema": "salvage-provenance/v1",
+  "host": "m1",
+  "worktree": "/Users/openclaw/.paseo/worktrees/1e9bjqm9/ctd-5194-claude-upload-surfaces",
+  "branch": "ctd-5194-claude-upload-surfaces",
+  "baseSha": "f1579214cbfcee7d262a56d0c89c386afc593e2c",
+  "headSha": "33861a8f57947e6ef3329fe05f9af982b37a0011",
+  "lastActivityAt": "2026-10-04T05:44:19.000Z",
+  "sessions": [],
+  "linearTickets": [
+    "CTD-5194"
+  ],
+  "pullRequests": [
+    {
+      "number": 27,
+      "url": "https://github.com/contracko/contracko-skills/pull/27",
+      "state": "CLOSED"
+    }
+  ],
+  "reason": "pr-closed",
+  "evidence": [],
+  "droppedEvidence": [
+    {
+      "worktree": "/Users/openclaw/.paseo/worktrees/1e9bjqm9/ctd-5194-claude-upload-surfaces",
+      "path": "tests/",
+      "reason": "regenerable-ignored-output",
+      "count": 4
+    }
+  ]
+}
