@@ -193,6 +193,21 @@ def load_chatgpt_listing(root: Path) -> dict[str, str]:
     return listing
 
 
+def load_chatgpt_manifest(root: Path, version: str) -> dict[str, object]:
+    relative = "packaging/chatgpt/plugin.json"
+    manifest = json.loads((root / relative).read_text())
+    if not isinstance(manifest, dict):
+        raise ValueError(f"{relative}: ChatGPT template must be an object")
+    listing = load_chatgpt_listing(root)
+    for field, expected in (("name", listing["pluginName"]), ("version", version)):
+        if field in manifest and manifest[field] != expected:
+            raise ValueError(f"{relative}: {field} is {manifest[field]!r}, expected {expected}")
+        manifest[field] = expected
+    if manifest.get("skills") != "./skills":
+        raise ValueError(f"{relative}: skills must be ./skills")
+    return manifest
+
+
 def build_platform_bundle(output: Path, platform: str, version: str, source_commit: str) -> None:
     package = output / platform
     if package.exists():
@@ -333,20 +348,19 @@ def default_source_commit() -> str:
 
 
 def build_agent_plugin_archive(output: Path, version: str, source_commit: str) -> None:
-    listing = load_chatgpt_listing(ROOT)
+    chatgpt_manifest = load_chatgpt_manifest(ROOT, version)
     with tempfile.TemporaryDirectory() as temporary:
         package = Path(temporary) / "agent-plugin"
         copy_tree(DIRECTORY_PACKAGE, package)
         write_release_metadata(package, "agent-plugin", version, source_commit)
         zip_tree(package, output / "contracko-agent-plugin.zip")
-        manifest = json.loads((package / "plugin.json").read_text())
-        manifest["name"] = listing["pluginName"]
-        write_bytes(package / "plugin.json", (json.dumps(manifest, indent=2) + "\n").encode())
-        write_release_metadata(
-            package, "chatgpt", version, source_commit,
-            artifact="contracko-agent-plugin-chatgpt",
+        chatgpt_package = Path(temporary) / "chatgpt-plugin"
+        write_bytes(
+            chatgpt_package / ".codex-plugin" / "plugin.json",
+            (json.dumps(chatgpt_manifest, indent=2) + "\n").encode(),
         )
-        zip_tree(package, output / "contracko-agent-plugin-chatgpt.zip")
+        copy_tree(DIRECTORY_PACKAGE / "skills", chatgpt_package / "skills")
+        zip_tree(chatgpt_package, output / "contracko-agent-plugin-chatgpt.zip")
 
 
 def validate_output_path(output: Path) -> Path:

@@ -120,8 +120,51 @@ class PublicVersionTests(unittest.TestCase):
             document = json.loads(path.read_text())
             document["chatgpt"]["version"] = "9.9.9"
             path.write_text(json.dumps(document))
+            template = root / "packaging/chatgpt/plugin.json"
+            document = json.loads(template.read_text())
+            document["interface"]["version"] = "9.9.9"
+            template.write_text(json.dumps(document))
             result = self.check(root)
             self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_rejects_missing_and_malformed_chatgpt_template(self):
+        with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
+            root = Path(temporary)
+            self.fixture(root)
+            path = root / "packaging/chatgpt/plugin.json"
+            original = json.loads(path.read_text())
+            for content in ("{", "null", "[]", "{}", json.dumps({**original, "skills": "skills"})):
+                with self.subTest(content=content):
+                    path.write_text(content)
+                    result = self.check(root)
+                    self.assertNotEqual(result.returncode, 0)
+            path.unlink()
+            result = self.check(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("packaging/chatgpt/plugin.json", result.stderr)
+
+    def test_chatgpt_template_identity_must_agree_when_stored(self):
+        with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
+            root = Path(temporary)
+            self.fixture(root)
+            path = root / "packaging/chatgpt/plugin.json"
+            template = json.loads(path.read_text())
+            listing = json.loads((root / "packaging/directory-listings.json").read_text())["chatgpt"]
+            version = json.loads((root / "packaging/manifest.json").read_text())["version"]
+            for field, correct, incorrect in (
+                ("name", listing["pluginName"], "contracko"),
+                ("version", version, "9.9.9"),
+            ):
+                with self.subTest(field=field):
+                    path.write_text(json.dumps({**template, field: correct}))
+                    result = self.check(root)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    for value in (incorrect, None, 123):
+                        path.write_text(json.dumps({**template, field: value}))
+                        result = self.check(root)
+                        self.assertNotEqual(result.returncode, 0)
+                        self.assertIn("packaging/chatgpt/plugin.json", result.stderr)
+                        self.assertIn(field, result.stderr)
 
     def test_checks_new_top_level_public_fields_but_not_lockfile_dependencies(self):
         with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
@@ -144,6 +187,14 @@ class PublicVersionTests(unittest.TestCase):
             result = self.check(root)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("packaging/new-client.json", result.stderr)
+
+    def test_ignores_local_git_reference_manifests(self):
+        with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
+            root = Path(temporary)
+            self.fixture(root)
+            (root / ".git-ref-chatgpt-plugin.json").write_text('{"version": "1.0.1"}')
+            result = self.check(root)
+            self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_rejects_missing_public_versions_and_invalid_source(self):
         with tempfile.TemporaryDirectory(dir=ROOT) as temporary:

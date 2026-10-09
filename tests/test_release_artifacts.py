@@ -485,39 +485,42 @@ class ReleaseArtifactTests(unittest.TestCase):
                 self.assertEqual(metadata["artifact"], "contracko-agent-plugin")
                 self.assertEqual(metadata["platform"], "agent-plugin")
                 with zipfile.ZipFile(chatgpt_zip) as chatgpt:
-                    self.assertEqual(chatgpt.namelist(), archive.namelist())
-                    changed = {
-                        name for name in archive.namelist()
-                        if chatgpt.read(name) != archive.read(name)
-                    }
-                    self.assertEqual(changed, {"plugin.json", "RELEASE-METADATA.json"})
-                    listing = json.loads((ROOT / "packaging/directory-listings.json").read_text())["chatgpt"]
-                    generic_manifest = json.loads(archive.read("plugin.json"))
-                    chatgpt_manifest = json.loads(chatgpt.read("plugin.json"))
-                    self.assertEqual(generic_manifest["name"], "contracko")
-                    self.assertEqual(chatgpt_manifest.pop("name"), listing["pluginName"])
-                    generic_manifest.pop("name")
-                    self.assertEqual(chatgpt_manifest, generic_manifest)
-                    self.assertEqual(chatgpt_manifest["version"], VERSION)
-                    chatgpt_metadata = json.loads(chatgpt.read("RELEASE-METADATA.json"))
-                    self.assertEqual(chatgpt_metadata["version"], VERSION)
-                    self.assertEqual(chatgpt_metadata.pop("artifact"), "contracko-agent-plugin-chatgpt")
-                    self.assertEqual(chatgpt_metadata.pop("platform"), "chatgpt")
+                    skill_files = {name: content for name, content in expected.items() if name.startswith("skills/")}
                     self.assertEqual(
-                        chatgpt_metadata,
-                        {key: value for key, value in metadata.items() if key not in ("artifact", "platform")},
+                        chatgpt.namelist(),
+                        sorted({".codex-plugin/plugin.json"} | set(skill_files)),
                     )
+                    self.assertNotIn("mcp.json", chatgpt.namelist())
+                    self.assertNotIn("plugin.json", chatgpt.namelist())
+                    listing = json.loads((ROOT / "packaging/directory-listings.json").read_text())["chatgpt"]
+                    chatgpt_manifest = json.loads(chatgpt.read(".codex-plugin/plugin.json"))
+                    self.assertEqual(chatgpt_manifest["name"], listing["pluginName"])
+                    self.assertEqual(chatgpt_manifest["version"], VERSION)
+                    self.assertEqual(chatgpt_manifest["skills"], "./skills")
+                    self.assertEqual(
+                        set(chatgpt_manifest),
+                        {"author", "description", "interface", "name", "skills", "version"},
+                    )
+                    template = json.loads((ROOT / "packaging/chatgpt/plugin.json").read_text())
+                    self.assertNotIn("name", template)
+                    self.assertNotIn("version", template)
+                    self.assertEqual(
+                        chatgpt_manifest,
+                        {**template, "name": listing["pluginName"], "version": VERSION},
+                    )
+                    for name, content in skill_files.items():
+                        self.assertEqual(chatgpt.read(name), content)
+                        self.assertEqual(chatgpt.read(name), archive.read(name))
                     for entry in chatgpt.infolist():
                         with self.subTest(entry=entry.filename):
-                            generic_entry = archive.getinfo(entry.filename)
                             self.assertEqual(entry.date_time, (1980, 1, 1, 0, 0, 0))
                             self.assertEqual(entry.compress_type, zipfile.ZIP_STORED)
-                            self.assertEqual(entry.create_system, generic_entry.create_system)
-                            self.assertEqual(entry.external_attr, generic_entry.external_attr)
+                            self.assertEqual(entry.create_system, 3)
+                            self.assertEqual(entry.external_attr, 0o100644 << 16)
             third = Path(temporary) / "third"
             self.build(third, source_commit="abcdef0123456789abcdef0123456789abcdef01")
             self.assertNotEqual(first_zip.read_bytes(), (third / first_zip.name).read_bytes())
-            self.assertNotEqual(chatgpt_zip.read_bytes(), (third / chatgpt_zip.name).read_bytes())
+            self.assertEqual(chatgpt_zip.read_bytes(), (third / chatgpt_zip.name).read_bytes())
 
     def test_release_build_rejects_repository_output_paths(self) -> None:
         result = subprocess.run(

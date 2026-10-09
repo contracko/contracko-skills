@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 import sys
 
-from build_release_artifacts import VERSION_PATTERN, load_chatgpt_listing
+from build_release_artifacts import VERSION_PATTERN, load_chatgpt_manifest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -52,8 +52,8 @@ def check(root: Path, tag: str | None = None) -> str:
     version = json.loads((root / SOURCE).read_text()).get("version")
     if not isinstance(version, str) or not VERSION_PATTERN.fullmatch(version):
         raise ValueError(f"{SOURCE}: version must be a concrete semantic version")
-    load_chatgpt_listing(root)
-    paths = set(root.glob("*.json"))
+    load_chatgpt_manifest(root, version)
+    paths = {path for path in root.glob("*.json") if not path.name.startswith(".git-ref-")}
     paths.update(root / relative for relative in REQUIRED)
     paths.update(root / relative for relative in (
         ".claude-plugin/marketplace.json", ".agents/plugins/marketplace.json",

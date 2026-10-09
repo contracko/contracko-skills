@@ -4,7 +4,7 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
-- Added `contracko-agent-plugin-chatgpt.zip` with the plugin name required by the existing ChatGPT portal listing. The generic `contracko-agent-plugin.zip` and other directories keep `contracko`; both archives use the unified public version.
+- Added `contracko-agent-plugin-chatgpt.zip` in the live portal layout: only `.codex-plugin/plugin.json` and the four release skills with their references. The MCP connection is configured in the portal, not in the ZIP. Approved listing copy lives in `packaging/chatgpt/plugin.json`; the builder inserts the listing name and unified public version. The generic `contracko-agent-plugin.zip` and other directories keep `contracko` and their existing layout.
 
 ## 1.1.0, 2026-10-09
 
