@@ -16,6 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SKILLS = ("contracko", "contracko-create", "contracko-import", "contracko-review")
 PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
 CLAUDE_DIRECTORY_URL = "https://claude.ai/directory/connectors/contracko"
 VERSION = json.loads((ROOT / "packaging/manifest.json").read_text())["version"]
 
@@ -118,7 +119,7 @@ class ReleaseArtifactTests(unittest.TestCase):
             ),
             "skills/contracko-review/SKILL.md": (
                 "description: Reviews Contracko contracts. Use for notice dates, end dates, annual review, notifications (reminders), risk audits, comparing proposals or redlines, or portfolio priorities and gaps.",
-                "Requires `contract:read`. Compare, audit and report stay read-only. Setting notifications needs `contract:write`. Where the tools are missing from your tool list, the credential is narrower than the user thinks: see [contracko](../contracko/SKILL.md), which also covers connecting and reading Contracko's errors.",
+                "Requires `contract:read`. Compare, audit and report can use read-only tools. Reprocess and reconciliation `get` helpers change saved state despite that scope; explain the change and get approval, or use the list-only view. Setting notifications needs `contract:write`. Where the tools are missing from your tool list, the credential is narrower than the user thinks: see [contracko](../contracko/SKILL.md), which also covers connecting and reading Contracko's errors.",
                 "## Events and notifications",
                 "A notification hangs off an event. List first: `clm_list_contract_events`.",
                 "**System events** (`notice`, `end`, `open_ended_review`) already exist. You do not create them. Renewal alerts target `end`. Attach a notification with `clm_create_event_reminders`, `anchorType: \"system\"`, and that `systemType`.",
@@ -263,7 +264,10 @@ class ReleaseArtifactTests(unittest.TestCase):
         self.assertTrue((package / "README.md").is_file())
         self.assertTrue((package / "LICENSE").is_file())
         self.assertTrue((package / "NOTICE.md").is_file())
-        self.assertEqual((package / "mcp.json").read_bytes(), (ROOT / "mcp.json").read_bytes())
+        descriptor = json.loads((package / "mcp.json").read_text())
+        self.assertEqual(descriptor["$schema"], MCP_SCHEMA)
+        self.assertEqual(descriptor["mcpServers"]["contracko"]["type"], "streamable-http")
+        self.assertEqual(descriptor["mcpServers"]["contracko"]["url"], "https://app.contracko.com/mcp")
         self.assertNotIn(".mcp.json", {path.name for path in package.rglob("*")})
 
         manifest = json.loads((package / "plugin.json").read_text())
@@ -315,6 +319,8 @@ class ReleaseArtifactTests(unittest.TestCase):
             ("packages/agent-plugin/skills/contracko/SKILL.md", b"Changed package\n"),
             ("packages/agent-plugin/skills/contracko/SKILL.md", None),
             ("packages/agent-plugin/skills/extra/asset.bin", b"\x00\xff"),
+            ("packages/agent-plugin/mcp.json", (ROOT / "mcp.json").read_bytes()),
+            ("mcp.json", b'{"mcpServers":{"contracko":{"type":"http","url":"https://example.com/mcp"}}}'),
         )
         for relative, content in cases:
             with self.subTest(path=relative, content=content):
@@ -467,6 +473,10 @@ class ReleaseArtifactTests(unittest.TestCase):
                     self.assertEqual(archive.read(name), content)
                 self.assertEqual(json.loads(archive.read("plugin.json"))["version"], VERSION)
                 self.assertIn("mcp.json", archive.namelist())
+                descriptor = json.loads(archive.read("mcp.json"))
+                self.assertEqual(descriptor["$schema"], MCP_SCHEMA)
+                self.assertEqual(descriptor["mcpServers"]["contracko"]["type"], "streamable-http")
+                self.assertEqual(descriptor["mcpServers"]["contracko"]["url"], "https://app.contracko.com/mcp")
                 metadata = json.loads(archive.read("RELEASE-METADATA.json"))
                 self.assertEqual(metadata["version"], VERSION)
                 self.assertEqual(metadata["source_commit"], "0123456789abcdef0123456789abcdef01234567")

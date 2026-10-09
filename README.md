@@ -82,7 +82,7 @@ On the consent screen, tick **Read** so it can answer questions. Tick **Write** 
 
 Once connected, the assistant can see up to 52 Contracko tools, depending on what you approved. It can search them itself, so you do not need to know any tool names. Most assistants stay signed in; if one asks you to sign in again, repeat the browser step.
 
-The canonical Agent Plugins v1 skills package is generated at [`packages/agent-plugin/`](packages/agent-plugin/). It is skills-only. Connect `https://app.contracko.com/mcp` through the host client's native MCP and OAuth flow.
+The canonical Agent Plugins v1 package at [`packages/agent-plugin/`](packages/agent-plugin/) bundles skills plus an MCP descriptor. Check for an existing Contracko connection before manually registering `https://app.contracko.com/mcp` through the host client's native MCP and OAuth flow, to avoid duplicate connections.
 
 Open the section for the product you use.
 

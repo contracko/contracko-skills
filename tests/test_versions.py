@@ -7,6 +7,22 @@ import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+PUBLIC_VERSION_FIELDS = (
+    ("packages/agent-plugin/plugin.json", ("version",)),
+    (".claude-plugin/plugin.json", ("version",)),
+    (".claude-plugin/marketplace.json", ("metadata", "version")),
+    (".claude-plugin/marketplace.json", ("plugins", 0, "version")),
+    (".agents/plugins/marketplace.json", ("plugins", 0, "version")),
+    (".codex-plugin/plugin.json", ("version",)),
+    (".cursor-plugin/plugin.json", ("version",)),
+    (".github/plugin/marketplace.json", ("plugins", 0, "version")),
+    ("gemini-extension.json", ("version",)),
+    ("server.json", ("version",)),
+    ("server.json", ("packages", 0, "version")),
+    ("packages/mcp/package.json", ("version",)),
+    ("packages/mcp/package-lock.json", ("version",)),
+    ("packages/mcp/package-lock.json", ("packages", "", "version")),
+)
 
 
 class PublicVersionTests(unittest.TestCase):
@@ -30,24 +46,10 @@ class PublicVersionTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_every_public_surface_rejects_drift(self):
-        fields = (
-            ("packages/agent-plugin/plugin.json", ("version",)),
-            (".claude-plugin/plugin.json", ("version",)),
-            (".claude-plugin/marketplace.json", ("metadata", "version")),
-            (".codex-plugin/plugin.json", ("version",)),
-            (".cursor-plugin/plugin.json", ("version",)),
-            (".github/plugin/marketplace.json", ("plugins", 0, "version")),
-            ("gemini-extension.json", ("version",)),
-            ("server.json", ("version",)),
-            ("server.json", ("packages", 0, "version")),
-            ("packages/mcp/package.json", ("version",)),
-            ("packages/mcp/package-lock.json", ("version",)),
-            ("packages/mcp/package-lock.json", ("packages", "", "version")),
-        )
         with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
             root = Path(temporary)
             self.fixture(root)
-            for relative, location in fields:
+            for relative, location in PUBLIC_VERSION_FIELDS:
                 with self.subTest(path=relative, field=location):
                     path = root / relative
                     original = path.read_bytes()
@@ -69,7 +71,22 @@ class PublicVersionTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn("release tag", result.stderr)
 
-    def test_checks_new_public_fields_but_not_dependency_versions(self):
+    def test_ignores_unrelated_nested_versions_on_public_surfaces(self):
+        with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
+            root = Path(temporary)
+            self.fixture(root)
+            for relative in sorted({relative for relative, location in PUBLIC_VERSION_FIELDS}):
+                path = root / relative
+                document = json.loads(path.read_text())
+                document["dependencies"] = {"example": {"version": "9.9.9"}}
+                document["protocol"] = {"schema": {"version": "2.0.0"}}
+                if "plugins" in document:
+                    document["plugins"][0]["config"] = {"version": "3.0.0"}
+                path.write_text(json.dumps(document))
+            result = self.check(root)
+            self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_checks_new_top_level_public_fields_but_not_lockfile_dependencies(self):
         with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
             root = Path(temporary)
             self.fixture(root)
@@ -95,16 +112,23 @@ class PublicVersionTests(unittest.TestCase):
         with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
             root = Path(temporary)
             self.fixture(root)
-            for relative in ("packages/mcp/package.json", "server.json", "packaging/manifest.json"):
-                path = root / relative
-                original = path.read_bytes()
-                document = json.loads(original)
-                del document["version"]
-                path.write_text(json.dumps(document))
-                result = self.check(root)
-                self.assertNotEqual(result.returncode, 0)
-                self.assertIn(relative, result.stderr)
-                path.write_bytes(original)
+            fields = (("packaging/manifest.json", ("version",)),) + PUBLIC_VERSION_FIELDS
+            for relative, location in fields:
+                with self.subTest(path=relative, field=location):
+                    path = root / relative
+                    original = path.read_bytes()
+                    document = json.loads(original)
+                    target = document
+                    for key in location[:-1]:
+                        target = target[key]
+                    if location[-1] not in target:
+                        continue
+                    del target[location[-1]]
+                    path.write_text(json.dumps(document))
+                    result = self.check(root)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn(relative, result.stderr)
+                    path.write_bytes(original)
             source = root / "packaging/manifest.json"
             document = json.loads(source.read_text())
             document["version"] = "{{VERSION}}"

@@ -20,6 +20,7 @@ SKILLS = ("contracko", "contracko-create", "contracko-import", "contracko-review
 PLATFORMS = ("openclaw", "hermes")
 DIRECTORY_PACKAGE = ROOT / "packages" / "agent-plugin"
 PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
 VERSION_PATTERN = re.compile(
     r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)"
     r"(?:-(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)"
@@ -223,7 +224,12 @@ def populate_directory_package(destination: Path, manifest: dict[str, object]) -
     copy_tree(source, destination)
     write_bytes(destination / "LICENSE", (ROOT / "LICENSE").read_bytes())
     write_bytes(destination / "NOTICE.md", (ROOT / "packaging" / "NOTICE.md").read_bytes())
-    write_bytes(destination / "mcp.json", (ROOT / "mcp.json").read_bytes())
+    server_url = json.loads((ROOT / "mcp.json").read_text())["mcpServers"]["contracko"]["url"]
+    descriptor = {
+        "$schema": MCP_SCHEMA,
+        "mcpServers": {"contracko": {"type": "streamable-http", "url": server_url}},
+    }
+    write_bytes(destination / "mcp.json", (json.dumps(descriptor, indent=2) + "\n").encode())
     for skill in SKILLS:
         skill_source = ROOT / "skills" / skill
         reject_symlink_entries(skill_source, label=f"canonical skill source {skill}")

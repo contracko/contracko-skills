@@ -29,16 +29,23 @@ PUBLIC_DIRECTORIES = (
 )
 
 
-def version_fields(value, location=()):
-    if isinstance(value, dict):
-        for key, child in sorted(value.items()):
-            if key == "version":
-                yield location + (key,), child
-            else:
-                yield from version_fields(child, location + (key,))
-    elif isinstance(value, list):
-        for index, child in enumerate(value):
-            yield from version_fields(child, location + (str(index),))
+def version_locations(relative, document):
+    if relative in REQUIRED or "version" in document:
+        yield ("version",)
+    if relative == "packages/mcp/package-lock.json":
+        yield ("packages", "", "version")
+    if relative == "server.json":
+        for index, package in enumerate(document.get("packages", [])):
+            yield ("packages", index, "version")
+    if relative == ".claude-plugin/marketplace.json":
+        yield ("metadata", "version")
+    if relative in (
+        ".claude-plugin/marketplace.json", ".agents/plugins/marketplace.json",
+        ".github/plugin/marketplace.json",
+    ):
+        for index, plugin in enumerate(document.get("plugins", [])):
+            if relative == ".github/plugin/marketplace.json" or "version" in plugin:
+                yield ("plugins", index, "version")
 
 
 def check(root: Path, tag: str | None = None) -> str:
@@ -57,26 +64,17 @@ def check(root: Path, tag: str | None = None) -> str:
     for path in sorted(paths):
         relative = path.relative_to(root).as_posix()
         document = json.loads(path.read_text())
-        if relative in REQUIRED and "version" not in document:
-            failures.append(f"{relative}: missing public version")
-        if relative == "packages/mcp/package-lock.json":
-            package = document.get("packages", {}).get("", {})
-            if "version" not in package:
-                failures.append(f"{relative}: missing packages..version")
-            document = {"version": document.get("version"), "packages": {"": package}}
-        if relative == "server.json":
-            for index, package in enumerate(document.get("packages", [])):
-                if "version" not in package:
-                    failures.append(f"{relative}: missing packages.{index}.version")
-        if relative == ".claude-plugin/marketplace.json" and "version" not in document.get("metadata", {}):
-            failures.append(f"{relative}: missing metadata.version")
-        if relative == ".github/plugin/marketplace.json":
-            for index, plugin in enumerate(document.get("plugins", [])):
-                if "version" not in plugin:
-                    failures.append(f"{relative}: missing plugins.{index}.version")
-        for location, actual in version_fields(document):
+        for location in version_locations(relative, document):
+            field = ".".join(map(str, location))
+            actual = document
+            try:
+                for key in location:
+                    actual = actual[key]
+            except (KeyError, IndexError, TypeError):
+                failures.append(f"{relative}: missing {field}")
+                continue
             if actual != version:
-                failures.append(f"{relative}:{'.'.join(location)} is {actual!r}, expected {version}")
+                failures.append(f"{relative}:{field} is {actual!r}, expected {version}")
     if tag is not None and tag != f"v{version}":
         failures.append(f"release tag {tag!r} does not match v{version}")
     if failures:
