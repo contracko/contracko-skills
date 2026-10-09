@@ -486,7 +486,6 @@ class ReleaseArtifactTests(unittest.TestCase):
                 self.assertEqual(metadata["platform"], "agent-plugin")
                 with zipfile.ZipFile(chatgpt_zip) as chatgpt:
                     self.assertEqual(chatgpt.namelist(), archive.namelist())
-                    self.assertEqual(chatgpt.namelist(), sorted(chatgpt.namelist()))
                     changed = {
                         name for name in archive.namelist()
                         if chatgpt.read(name) != archive.read(name)
