@@ -487,8 +487,12 @@ class ReleaseArtifactTests(unittest.TestCase):
                 with zipfile.ZipFile(chatgpt_zip) as chatgpt:
                     skill_files = {name: content for name, content in expected.items() if name.startswith("skills/")}
                     self.assertEqual(
-                        chatgpt.namelist(),
-                        sorted({".codex-plugin/plugin.json"} | set(skill_files)),
+                        set(chatgpt.namelist()),
+                        {".codex-plugin/plugin.json"} | set(skill_files),
+                    )
+                    self.assertEqual(
+                        [name for name in chatgpt.namelist() if name.startswith("skills/")],
+                        [name for name in archive.namelist() if name.startswith("skills/")],
                     )
                     self.assertNotIn("mcp.json", chatgpt.namelist())
                     self.assertNotIn("plugin.json", chatgpt.namelist())
