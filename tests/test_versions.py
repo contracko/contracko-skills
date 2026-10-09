@@ -188,14 +188,6 @@ class PublicVersionTests(unittest.TestCase):
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("packaging/new-client.json", result.stderr)
 
-    def test_ignores_local_git_reference_manifests(self):
-        with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
-            root = Path(temporary)
-            self.fixture(root)
-            (root / ".git-ref-chatgpt-plugin.json").write_text('{"version": "1.0.1"}')
-            result = self.check(root)
-            self.assertEqual(result.returncode, 0, result.stderr)
-
     def test_rejects_missing_public_versions_and_invalid_source(self):
         with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
             root = Path(temporary)

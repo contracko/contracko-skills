@@ -53,7 +53,7 @@ def check(root: Path, tag: str | None = None) -> str:
     if not isinstance(version, str) or not VERSION_PATTERN.fullmatch(version):
         raise ValueError(f"{SOURCE}: version must be a concrete semantic version")
     load_chatgpt_manifest(root, version)
-    paths = {path for path in root.glob("*.json") if not path.name.startswith(".git-ref-")}
+    paths = set(root.glob("*.json"))
     paths.update(root / relative for relative in REQUIRED)
     paths.update(root / relative for relative in (
         ".claude-plugin/marketplace.json", ".agents/plugins/marketplace.json",
