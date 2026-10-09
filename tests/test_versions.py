@@ -71,6 +71,39 @@ class PublicVersionTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0)
                 self.assertIn("release tag", result.stderr)
 
+    def test_rejects_missing_and_malformed_chatgpt_mapping(self):
+        with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
+            root = Path(temporary)
+            self.fixture(root)
+            path = root / "packaging/directory-listings.json"
+            original = json.loads(path.read_text())
+            listing = original["chatgpt"]
+            cases = (
+                None,
+                [],
+                {},
+                {"chatgpt": None},
+                {"chatgpt": {}},
+                {"chatgpt": {"listingId": listing["listingId"]}},
+                {"chatgpt": {"pluginName": listing["pluginName"]}},
+                {"chatgpt": {**listing, "listingId": 123}},
+                {"chatgpt": {**listing, "listingId": "plugin_asdk_app_"}},
+                {"chatgpt": {**listing, "listingId": "other_" + "a" * 32}},
+                {"chatgpt": {**listing, "pluginName": 123}},
+                {"chatgpt": {**listing, "pluginName": "contracko"}},
+                {"chatgpt": {**listing, "pluginName": "app-" + "a" * 32}},
+            )
+            for document in cases:
+                with self.subTest(mapping=document):
+                    path.write_text(json.dumps(document))
+                    result = self.check(root)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("packaging/directory-listings.json", result.stderr)
+            path.unlink()
+            result = self.check(root)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn("packaging/directory-listings.json", result.stderr)
+
     def test_ignores_unrelated_nested_versions_on_public_surfaces(self):
         with tempfile.TemporaryDirectory(dir=ROOT) as temporary:
             root = Path(temporary)
@@ -83,6 +116,10 @@ class PublicVersionTests(unittest.TestCase):
                 if "plugins" in document:
                     document["plugins"][0]["config"] = {"version": "3.0.0"}
                 path.write_text(json.dumps(document))
+            path = root / "packaging/directory-listings.json"
+            document = json.loads(path.read_text())
+            document["chatgpt"]["version"] = "9.9.9"
+            path.write_text(json.dumps(document))
             result = self.check(root)
             self.assertEqual(result.returncode, 0, result.stderr)
 

@@ -2,6 +2,10 @@
 
 User-facing changes to the Contracko skills and plugin packages. From 1.1.0, every public package and client manifest shares the [single version](DISTRIBUTION.md#versioning) in `packaging/manifest.json`.
 
+## Unreleased
+
+- Added `contracko-agent-plugin-chatgpt.zip` with the plugin name required by the existing ChatGPT portal listing. The generic `contracko-agent-plugin.zip` and other directories keep `contracko`; both archives use the unified public version.
+
 ## 1.1.0, 2026-10-09
 
 - All public plugin, extension, MCP Registry and npm package versions now use 1.1.0. Release tags and manually entered ChatGPT and Claude portal versions use that same value.

@@ -178,6 +178,21 @@ def load_manifest(version: str | None = None) -> dict[str, object]:
     return manifest
 
 
+def load_chatgpt_listing(root: Path) -> dict[str, str]:
+    relative = "packaging/directory-listings.json"
+    listings = json.loads((root / relative).read_text())
+    listing = listings.get("chatgpt") if isinstance(listings, dict) else None
+    if not isinstance(listing, dict):
+        raise ValueError(f"{relative}: missing or malformed ChatGPT mapping")
+    listing_id = listing.get("listingId")
+    prefix = "plugin_asdk_app_"
+    if not isinstance(listing_id, str) or not re.fullmatch(prefix + r"[a-f0-9]{32}", listing_id):
+        raise ValueError(f"{relative}: malformed ChatGPT listingId")
+    if listing.get("pluginName") != "app-" + listing_id[len(prefix):]:
+        raise ValueError(f"{relative}: ChatGPT pluginName must match listingId")
+    return listing
+
+
 def build_platform_bundle(output: Path, platform: str, version: str, source_commit: str) -> None:
     package = output / platform
     if package.exists():
@@ -200,9 +215,12 @@ def build_platform_bundle(output: Path, platform: str, version: str, source_comm
     zip_tree(package, output / f"contracko-{platform}.zip")
 
 
-def write_release_metadata(package: Path, platform: str, version: str, source_commit: str) -> None:
+def write_release_metadata(
+    package: Path, platform: str, version: str, source_commit: str,
+    *, artifact: str = "contracko-agent-plugin",
+) -> None:
     metadata = {
-        "artifact": "contracko-agent-plugin",
+        "artifact": artifact,
         "platform": platform,
         "format": "agent-plugins-1.0.0",
         "version": version,
@@ -315,11 +333,20 @@ def default_source_commit() -> str:
 
 
 def build_agent_plugin_archive(output: Path, version: str, source_commit: str) -> None:
+    listing = load_chatgpt_listing(ROOT)
     with tempfile.TemporaryDirectory() as temporary:
         package = Path(temporary) / "agent-plugin"
         copy_tree(DIRECTORY_PACKAGE, package)
         write_release_metadata(package, "agent-plugin", version, source_commit)
         zip_tree(package, output / "contracko-agent-plugin.zip")
+        manifest = json.loads((package / "plugin.json").read_text())
+        manifest["name"] = listing["pluginName"]
+        write_bytes(package / "plugin.json", (json.dumps(manifest, indent=2) + "\n").encode())
+        write_release_metadata(
+            package, "chatgpt", version, source_commit,
+            artifact="contracko-agent-plugin-chatgpt",
+        )
+        zip_tree(package, output / "contracko-agent-plugin-chatgpt.zip")
 
 
 def validate_output_path(output: Path) -> Path:

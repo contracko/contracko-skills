@@ -13,7 +13,7 @@ The bundle is a GitHub repo with one folder per skill, `SKILL.md` at each folder
 | Claude Desktop / claude.ai chat | directory connector first; one zip per skill, uploaded by hand, as the Free-plan skills path | zips build on release |
 | Claude Connectors Directory | remote MCP listing in Claude.ai | live (Community) at [claude.ai/directory/connectors/contracko](https://claude.ai/directory/connectors/contracko); the primary path on every Claude surface |
 | Claude plugin directory (Cowork + Claude Code) | public GitHub plugin, `claude plugin validate` then Anthropic form | listed; tracks `main`, so a merge to `main` auto-publishes. Paid plans only |
-| Codex / ChatGPT | `.agents/plugins/marketplace.json` + `.codex-plugin/plugin.json` for workspace import; `contracko-agent-plugin.zip` for ChatGPT submission | workspace import ready; public Plugin Directory needs OpenAI review |
+| Codex / ChatGPT | `.agents/plugins/marketplace.json` + `.codex-plugin/plugin.json` for workspace import; `contracko-agent-plugin-chatgpt.zip` for ChatGPT portal upload | workspace import ready; public Plugin Directory needs OpenAI review |
 | GitHub Copilot CLI | `.github/plugin/marketplace.json` | ready for `copilot plugin marketplace add contracko/contracko-skills` |
 | Gemini CLI | install skills from the public GitHub repo | no third-party marketplace; GitHub install only |
 | OpenClaw | generated Agent Plugins v1 content bundle | release artifact; native MCP registration and OAuth remain user-owned |
@@ -67,6 +67,8 @@ For each release, bump only the source version, copy that value into every publi
 
 Type the ChatGPT and Claude developer portal version as exactly this value, for example `1.1.0`, without a `v` prefix. The Git release tag is `v1.1.0`. Portal values are manual and cannot be checked by repository CI. The plugin cache is keyed on the version, so bump it for changes users should receive.
 
+The ChatGPT listing `plugin_asdk_app_6a9e97994d248191b2dcb1714454bb2f` requires `plugin.json` name `app-6a9e97994d248191b2dcb1714454bb2f`. The mapping lives in [`packaging/directory-listings.json`](packaging/directory-listings.json), separate from the standard manifest so it does not enter other packages. The builder reads this config, and `check_versions.py` rejects missing or malformed mappings. Upload `contracko-agent-plugin-chatgpt.zip` to that portal listing with the unified version. Use `contracko-agent-plugin.zip` for every other directory, where the name remains `contracko`.
+
 ## What Contracko has to do server-side
 
 None of this is in this repo, and all of it gates the good distribution paths.
@@ -91,9 +93,9 @@ Three standards now cover nearly everything, so a vendor shipping from one repo 
 - **Agent Skills / `SKILL.md`** became an open standard, and is now read by Codex (`.agents/skills/`), Copilot and VS Code (`.github/skills/`, `.claude/skills/`, `.agents/skills/`), Gemini CLI, Cursor, Cline and Zed. The format here is already the portable one.
 - **Agent Plugins 1.0**, announced August 2026 by Amazon, Cursor, Microsoft, OpenAI, Vercel and Google: one directory with `plugin.json` + `skills/` + `mcp.json`, launching in ChatGPT, Codex, Cursor, Copilot, VS Code and Kiro. Anthropic is not a member, so it does not replace the Claude plugin format.
 
-**Agent Plugins v1 is used for the canonical directory package and the OpenClaw/Hermes release bundles.** The generated directory package at `packages/agent-plugin/` contains a standard `plugin.json`, the four canonical skills and `mcp.json` copied from the repository root. It is the public Git-tree package for the directory crawler, which records its nested manifest path. `contracko-agent-plugin.zip` packages this directory for ChatGPT submission, with the manifest, skills and MCP descriptor at the archive root. It adds release metadata but contains no `.codex-plugin` metadata. OpenClaw/Hermes bundles remain skills-only and omit MCP descriptors. The host owns native MCP registration, OAuth and user consent on every path.
+**Agent Plugins v1 is used for the canonical directory package and the OpenClaw/Hermes release bundles.** The generated directory package at `packages/agent-plugin/` contains a standard `plugin.json`, the four canonical skills and `mcp.json` copied from the repository root. It is the public Git-tree package for the directory crawler, which records its nested manifest path. `contracko-agent-plugin.zip` packages this directory for every directory other than ChatGPT, with the manifest, skills and MCP descriptor at the archive root. It adds release metadata but contains no `.codex-plugin` metadata. `contracko-agent-plugin-chatgpt.zip` contains the same files and bytes except for the required ChatGPT manifest name and metadata identifying the ChatGPT artifact. OpenClaw/Hermes bundles remain skills-only and omit MCP descriptors. The host owns native MCP registration, OAuth and user consent on every path.
 
-The release builder renders the directory package and bundles from `skills/` and `packaging/manifest.json`. It records the source commit in `RELEASE-METADATA.json`, fixes archive ordering and timestamps, and runs in the existing release workflow. The ChatGPT submission ZIP is deterministic for identical files, version and source commit. A different source commit changes its hash because the metadata pins that commit. A local candidate is for review; the official `v1.1.0` package is built by the release workflow from the merged main commit. No host software, OAuth client, credential store, or background updater is shipped.
+The release builder renders the directory package and bundles from `skills/` and `packaging/manifest.json`, using `packaging/directory-listings.json` for the ChatGPT name. It records the source commit in `RELEASE-METADATA.json`, fixes archive ordering and timestamps, stores entries without compression, and runs in the existing release workflow. Both Agent Plugins ZIPs are deterministic for identical files, config, version and source commit. A different source commit changes their hashes because the metadata pins that commit. A local candidate is for review; official packages are built by the release workflow from the tagged main commit. The workflow attaches `dist/*.zip`, including both Agent Plugins assets. No host software, OAuth client, credential store, or background updater is shipped.
 
 The committed directory package is not hand-maintained. `skills/` is the source of truth; `packages/agent-plugin/skills/` must contain the same relative files and bytes, except `.DS_Store` files. Regenerate it with `python3 scripts/build_release_artifacts.py --write-directory`; CI and `build-zips.sh` run `--check-directory` and fail on missing, extra, or changed files, including MCP descriptor drift. The generator also rejects canonical files outside its configured skill list, so a new skill cannot be silently omitted. Add new skill names to `SKILLS` in `scripts/build_release_artifacts.py` before regenerating. The check does not modify either tree. The repository-root `mcp.json` is the descriptor source; `.mcp.json` serves the Claude integration and stays outside this package.
 
@@ -101,7 +103,8 @@ The generated manifest follows the [Agent Plugins v1 specification](https://agen
 
 Release assets:
 
-- `https://github.com/contracko/contracko-skills/releases/latest/download/contracko-agent-plugin.zip` (ChatGPT submission)
+- `https://github.com/contracko/contracko-skills/releases/latest/download/contracko-agent-plugin-chatgpt.zip` (ChatGPT portal upload)
+- `https://github.com/contracko/contracko-skills/releases/latest/download/contracko-agent-plugin.zip` (every other directory)
 - `https://github.com/contracko/contracko-skills/releases/latest/download/contracko-openclaw.zip`
 - `https://github.com/contracko/contracko-skills/releases/latest/download/contracko-hermes.zip`
 

@@ -454,7 +454,7 @@ class ReleaseArtifactTests(unittest.TestCase):
             self.assertIn("does not match requested release version", result.stderr)
             self.assertFalse(output.exists())
 
-    def test_chatgpt_submission_archive_matches_directory_package_and_is_deterministic(self) -> None:
+    def test_agent_plugin_archives_preserve_directory_content_and_are_deterministic(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             first = Path(temporary) / "first"
             second = Path(temporary) / "second"
@@ -462,6 +462,8 @@ class ReleaseArtifactTests(unittest.TestCase):
             self.build(second)
             first_zip = first / "contracko-agent-plugin.zip"
             self.assertEqual(first_zip.read_bytes(), (second / first_zip.name).read_bytes())
+            chatgpt_zip = first / "contracko-agent-plugin-chatgpt.zip"
+            self.assertEqual(chatgpt_zip.read_bytes(), (second / chatgpt_zip.name).read_bytes())
             package = ROOT / "packages/agent-plugin"
             expected = {
                 path.relative_to(package).as_posix(): path.read_bytes()
@@ -480,9 +482,43 @@ class ReleaseArtifactTests(unittest.TestCase):
                 metadata = json.loads(archive.read("RELEASE-METADATA.json"))
                 self.assertEqual(metadata["version"], VERSION)
                 self.assertEqual(metadata["source_commit"], "0123456789abcdef0123456789abcdef01234567")
+                self.assertEqual(metadata["artifact"], "contracko-agent-plugin")
+                self.assertEqual(metadata["platform"], "agent-plugin")
+                with zipfile.ZipFile(chatgpt_zip) as chatgpt:
+                    self.assertEqual(chatgpt.namelist(), archive.namelist())
+                    self.assertEqual(chatgpt.namelist(), sorted(chatgpt.namelist()))
+                    changed = {
+                        name for name in archive.namelist()
+                        if chatgpt.read(name) != archive.read(name)
+                    }
+                    self.assertEqual(changed, {"plugin.json", "RELEASE-METADATA.json"})
+                    listing = json.loads((ROOT / "packaging/directory-listings.json").read_text())["chatgpt"]
+                    generic_manifest = json.loads(archive.read("plugin.json"))
+                    chatgpt_manifest = json.loads(chatgpt.read("plugin.json"))
+                    self.assertEqual(generic_manifest["name"], "contracko")
+                    self.assertEqual(chatgpt_manifest.pop("name"), listing["pluginName"])
+                    generic_manifest.pop("name")
+                    self.assertEqual(chatgpt_manifest, generic_manifest)
+                    self.assertEqual(chatgpt_manifest["version"], VERSION)
+                    chatgpt_metadata = json.loads(chatgpt.read("RELEASE-METADATA.json"))
+                    self.assertEqual(chatgpt_metadata["version"], VERSION)
+                    self.assertEqual(chatgpt_metadata.pop("artifact"), "contracko-agent-plugin-chatgpt")
+                    self.assertEqual(chatgpt_metadata.pop("platform"), "chatgpt")
+                    self.assertEqual(
+                        chatgpt_metadata,
+                        {key: value for key, value in metadata.items() if key not in ("artifact", "platform")},
+                    )
+                    for entry in chatgpt.infolist():
+                        with self.subTest(entry=entry.filename):
+                            generic_entry = archive.getinfo(entry.filename)
+                            self.assertEqual(entry.date_time, (1980, 1, 1, 0, 0, 0))
+                            self.assertEqual(entry.compress_type, zipfile.ZIP_STORED)
+                            self.assertEqual(entry.create_system, generic_entry.create_system)
+                            self.assertEqual(entry.external_attr, generic_entry.external_attr)
             third = Path(temporary) / "third"
             self.build(third, source_commit="abcdef0123456789abcdef0123456789abcdef01")
             self.assertNotEqual(first_zip.read_bytes(), (third / first_zip.name).read_bytes())
+            self.assertNotEqual(chatgpt_zip.read_bytes(), (third / chatgpt_zip.name).read_bytes())
 
     def test_release_build_rejects_repository_output_paths(self) -> None:
         result = subprocess.run(
