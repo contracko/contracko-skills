@@ -25,6 +25,8 @@ def refresh(source, revision):
         "tools": [
             {"name": tool["name"],
              "introducedInCapabilityPolicyVersion": tool["introducedInCapabilityPolicyVersion"],
+             "annotations": tool["annotations"],
+             "effect": tool["effect"],
              **({"inputSchema": tool["inputSchema"]} if tool["name"] in selected else {})}
             for tool in catalog["tools"]
         ],

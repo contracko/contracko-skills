@@ -82,7 +82,7 @@ On the consent screen, tick **Read** so it can answer questions. Tick **Write** 
 
 Once connected, the assistant can see up to 52 Contracko tools, depending on what you approved. It can search them itself, so you do not need to know any tool names. Most assistants stay signed in; if one asks you to sign in again, repeat the browser step.
 
-The canonical Agent Plugins v1 skills package is generated at [`packages/agent-plugin/`](packages/agent-plugin/). It is skills-only. Connect `https://app.contracko.com/mcp` through the host client's native MCP and OAuth flow.
+The canonical Agent Plugins v1 package at [`packages/agent-plugin/`](packages/agent-plugin/) bundles skills plus an MCP descriptor. Check for an existing Contracko connection before manually registering `https://app.contracko.com/mcp` through the host client's native MCP and OAuth flow, to avoid duplicate connections.
 
 Open the section for the product you use.
 
@@ -177,7 +177,7 @@ Sign in in the browser that opens. For local uploads, apply the [host-only uploa
 
 This repository includes a Cursor plugin manifest at `.cursor-plugin/plugin.json`. It bundles the four existing skills and the MCP connection in `mcp.json`; no API key is included. The plugin is not yet listed in the public Cursor Marketplace.
 
-To test the plugin locally, clone this repository into `~/.cursor/plugins/local/contracko-skills`, reload Cursor, and check **Customize** for the skills and MCP server. Connect Contracko and complete OAuth in the browser. Approve **Read** by default and **Write** only when needed. If you already added the same server manually, use one connection rather than enabling both.
+To test the plugin locally, clone this repository into `~/.cursor/plugins/local/contracko-skills`, reload Cursor, and check **Customize** for the skills and MCP server. Connect Contracko and complete OAuth in the browser. The consent screen requests read and write access by default; review it before you approve. If you already added the same server manually, use one connection rather than enabling both.
 
 For manual installation without the plugin:
 
@@ -347,6 +347,6 @@ See [validation and catalog refresh](tests/README.md) and the [workflow regressi
 
 ### Release sync
 
-After each Contracko MCP release reaches production, open a skills-bundle sync PR for that release's agent-facing changes. Check what is live on the app's `main` (not staging or open PRs), update the skills to match, bump the version, add a changelog entry, and run the checks above. The checklist step on the app side is tracked in CTD-5544.
+After each Contracko MCP release reaches production, open a skills-bundle sync PR for that release's agent-facing changes. Check what is live on the app's `main` (not staging or open PRs), update the skills to match, follow the [single public version rule](DISTRIBUTION.md#versioning), add [release notes](CHANGELOG.md), and run the checks above. The 1.1.0 baseline uses `packaging/manifest.json` for every public version, including the manually entered ChatGPT and Claude portal values. The checklist step on the app side is tracked in CTD-5544.
 
 MIT licensed.

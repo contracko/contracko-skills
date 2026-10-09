@@ -64,7 +64,7 @@ Get both records, analyses, and cited document text for disputed terms. Compare 
 
 **They say:** risks, liability, caps, indemnity, or what could hurt us.
 
-Complete the relevant portfolio page set before opening hot contracts. Use `clm_get_contract_analysis`, contract liability fields, and cited clauses. A null analysis field does not prove no risk. Where a saved value looks wrong, read any completed document re-read with `clm_list_contract_reconciliations` and `clm_get_contract_reconciliation`; reading changes nothing. [contracko-review](../../contracko-review/SKILL.md) owns audit.
+Complete the relevant portfolio page set before opening hot contracts. Use `clm_get_contract_analysis`, contract liability fields, and cited clauses. A null analysis field does not prove no risk. Where a saved value looks wrong, list completed re-reads with `clm_list_contract_reconciliations`. Explain and get approval before `clm_get_contract_reconciliation`, which persists the review list and refreshes saved comparison values and the approval version without applying findings. [contracko-review](../../contracko-review/SKILL.md) owns audit.
 
 **Done when:** every material finding has a quote, a severity, and a clear extraction-review status.
 
@@ -72,7 +72,7 @@ Complete the relevant portfolio page set before opening hot contracts. Use `clm_
 
 **They say:** organise, folders, contract types, custom fields, or filing.
 
-Import before designing a new workspace. Use types and custom fields for the questions the user asks, then propose and confirm any changes. List visible folders with `clm_list_folders`, inspect a chosen destination, confirm the destination and bulk changes, then use the discovered folder and contract move tools. `folderId: null` unfiles only when the user asks. Access reads are informational; access changes and folder deletion are in the app.
+Import before designing a new workspace. Use types and custom fields for the questions the user asks, then propose and confirm any changes. List visible folders with `clm_list_folders`, inspect a chosen destination, explain the access and notification effects in the [filing rules](../SKILL.md#folders-and-filing), confirm the destination and bulk changes, then use the discovered folder and contract move tools. `folderId: null` unfiles only when the user asks. Access reads are informational; direct access changes and folder deletion are in the app.
 
 To find unfiled contracts, complete the relevant contract pages and inspect `filing.kind`. Do not send `folderId: null` as a list filter. `unavailable` does not identify an unfiled contract or a hidden folder.
 

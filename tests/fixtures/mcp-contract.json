@@ -1,46 +1,158 @@
 {
   "source": "Contracko released MCP catalog",
-  "revision": "6e6fcd61bbb0f4aee1354ff7fbf0b75435fa31bd",
+  "revision": "4cc991bb32927d5d585632568b417f0fd1aabb34",
   "tools": [
     {
       "name": "auth_validate",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Confirm connection"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
     },
     {
       "name": "clm_add_contract_comment",
-      "introducedInCapabilityPolicyVersion": 3
+      "introducedInCapabilityPolicyVersion": 3,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Add contract comment"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "irreversible": true,
+        "kind": "create",
+        "retry": "none"
+      }
     },
     {
       "name": "clm_add_contract_documents",
-      "introducedInCapabilityPolicyVersion": 3
+      "introducedInCapabilityPolicyVersion": 3,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": false,
+        "title": "Add contract documents"
+      },
+      "effect": {
+        "boundary": "public-url",
+        "kind": "update",
+        "retry": "key"
+      }
     },
     {
       "name": "clm_apply_contract_reconciliation",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Apply contract reconciliation"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "key"
+      }
     },
     {
       "name": "clm_bulk_update_contracts",
-      "introducedInCapabilityPolicyVersion": 4
+      "introducedInCapabilityPolicyVersion": 4,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Update contracts in bulk"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "version"
+      }
     },
     {
       "name": "clm_create_contract_events",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Create contract events"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "irreversible": true,
+        "kind": "create",
+        "retry": "key"
+      }
     },
     {
       "name": "clm_create_contract_type",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Create contract type"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "create",
+        "retry": "none"
+      }
     },
     {
       "name": "clm_create_event_reminders",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Create event notifications"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "irreversible": true,
+        "kind": "create",
+        "retry": "key"
+      }
     },
     {
       "name": "clm_create_folder",
       "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Create folder"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "create",
+        "retry": "none"
+      },
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "name": {
+            "description": "Record name.",
             "maxLength": 255,
             "minLength": 1,
             "type": "string"
@@ -54,7 +166,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Parent folder ID; null selects root."
           }
         },
         "required": [
@@ -65,15 +178,51 @@
     },
     {
       "name": "clm_create_party",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Create party"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "create",
+        "retry": "none"
+      }
     },
     {
       "name": "clm_create_upload_session",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Create upload link"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "create",
+        "retry": "none"
+      }
     },
     {
       "name": "clm_create_upload_url",
       "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Prepare contract document"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "create",
+        "retry": "none"
+      },
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
@@ -111,19 +260,67 @@
     },
     {
       "name": "clm_delete_contract_events",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Delete contract events"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "delete",
+        "retry": "key"
+      }
     },
     {
       "name": "clm_delete_event_reminders",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Delete event notifications"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "delete",
+        "retry": "key"
+      }
     },
     {
       "name": "clm_get_contract",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Get contract"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
     },
     {
       "name": "clm_get_contract_access",
       "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Get contract access"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      },
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
@@ -141,27 +338,99 @@
     },
     {
       "name": "clm_get_contract_analysis",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Get contract analysis"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
     },
     {
       "name": "clm_get_contract_document_download_url",
-      "introducedInCapabilityPolicyVersion": 4
+      "introducedInCapabilityPolicyVersion": 4,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Get document download URL"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
     },
     {
       "name": "clm_get_contract_reconciliation",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Get contract reconciliation"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "none"
+      }
     },
     {
       "name": "clm_get_contract_reprocess_run",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Get contract reprocess run"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "settled"
+      }
     },
     {
       "name": "clm_get_contract_type",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Get contract type"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
     },
     {
       "name": "clm_get_folder",
       "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Get folder"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      },
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
@@ -179,43 +448,163 @@
     },
     {
       "name": "clm_get_import_status",
-      "introducedInCapabilityPolicyVersion": 2
+      "introducedInCapabilityPolicyVersion": 2,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Get import status"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
     },
     {
       "name": "clm_get_party",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Get party"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
     },
     {
       "name": "clm_import_contracts",
-      "introducedInCapabilityPolicyVersion": 2
+      "introducedInCapabilityPolicyVersion": 2,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": false,
+        "title": "Import contracts"
+      },
+      "effect": {
+        "boundary": "public-url",
+        "kind": "create",
+        "retry": "key"
+      }
     },
     {
       "name": "clm_import_files",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": false,
+        "title": "Import attached files"
+      },
+      "effect": {
+        "boundary": "public-url",
+        "kind": "create",
+        "retry": "key"
+      }
     },
     {
       "name": "clm_ingest_contract",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Add contract"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "create",
+        "retry": "key"
+      }
     },
     {
       "name": "clm_list_contract_comments",
-      "introducedInCapabilityPolicyVersion": 3
+      "introducedInCapabilityPolicyVersion": 3,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "List contract comments"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
     },
     {
       "name": "clm_list_contract_events",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "List contract events"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
     },
     {
       "name": "clm_list_contract_reconciliations",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "List contract reconciliations"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
     },
     {
       "name": "clm_list_contract_types",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "List contract types"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
     },
     {
       "name": "clm_list_contracts",
       "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "List contracts"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      },
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
@@ -294,6 +683,18 @@
     {
       "name": "clm_list_folders",
       "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "List folders"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      },
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
@@ -328,6 +729,18 @@
     {
       "name": "clm_list_parties",
       "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "List parties"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      },
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
@@ -354,6 +767,18 @@
     {
       "name": "clm_move_contract",
       "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Move contract"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "none"
+      },
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
@@ -366,9 +791,11 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Folder ID; null selects root."
           },
           "id": {
+            "description": "Record identifier.",
             "format": "uuid",
             "type": "string"
           }
@@ -383,10 +810,23 @@
     {
       "name": "clm_move_folder",
       "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Move folder"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "none"
+      },
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "id": {
+            "description": "Record identifier.",
             "format": "uuid",
             "type": "string"
           },
@@ -399,7 +839,8 @@
               {
                 "type": "null"
               }
-            ]
+            ],
+            "description": "Parent folder ID; null selects root."
           }
         },
         "required": [
@@ -411,19 +852,45 @@
     },
     {
       "name": "clm_read_contract_document",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Read contract document"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
     },
     {
       "name": "clm_rename_folder",
       "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Rename folder"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "none"
+      },
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "id": {
+            "description": "Record identifier.",
             "format": "uuid",
             "type": "string"
           },
           "name": {
+            "description": "Record name.",
             "maxLength": 255,
             "minLength": 1,
             "type": "string"
@@ -438,15 +905,55 @@
     },
     {
       "name": "clm_reprocess_contract_document",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Reprocess contract document"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "key"
+      }
     },
     {
       "name": "clm_search_contract_documents",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Search contract documents"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "readRequest": {
+          "method": "post",
+          "path": "/contracts/documents/search"
+        },
+        "retry": "read"
+      }
     },
     {
       "name": "clm_search_tools",
       "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Find tools for a task"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      },
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "additionalProperties": false,
@@ -479,47 +986,180 @@
     },
     {
       "name": "clm_update_contract",
-      "introducedInCapabilityPolicyVersion": 4
+      "introducedInCapabilityPolicyVersion": 4,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Update contract"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "version"
+      }
     },
     {
       "name": "clm_update_contract_events",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Update contract events"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "key"
+      }
     },
     {
       "name": "clm_update_contract_type",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Update contract type"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "none"
+      }
     },
     {
       "name": "clm_update_event_reminders",
-      "introducedInCapabilityPolicyVersion": 5
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Update event notifications"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "key"
+      }
     },
     {
       "name": "clm_update_party",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Update party"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "none"
+      }
     },
     {
       "name": "parser_create_job",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Start Parser processing"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "irreversible": true,
+        "kind": "create",
+        "retry": "none"
+      }
     },
     {
       "name": "parser_create_upload_url",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Prepare Parser document"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "create",
+        "retry": "none"
+      }
     },
     {
       "name": "parser_get_credits",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Check Parser credits"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "create",
+        "retry": "none"
+      }
     },
     {
       "name": "parser_get_job",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Get Parser job"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
     },
     {
       "name": "parser_list_jobs",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "List Parser jobs"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
     },
     {
       "name": "parser_preflight",
-      "introducedInCapabilityPolicyVersion": 1
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Estimate Parser credits"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "create",
+        "retry": "none"
+      }
     }
   ]
 }

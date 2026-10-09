@@ -20,15 +20,15 @@ if [ -n "${CI:-}" ] && ! [[ "$source_commit" =~ ^[0-9a-f]{40}$ ]]; then
 fi
 
 release_version="${VERSION:-}"
-directory_check_args=(--check-directory)
-if [ -n "$release_version" ]; then
-  release_version="${release_version#v}"
-  directory_check_args+=(--version "$release_version")
+if [ -z "$release_version" ]; then
+  release_version=$(python3 -c 'import json; from pathlib import Path; print(json.loads(Path("packaging/manifest.json").read_text())["version"])')
 fi
-python3 scripts/build_release_artifacts.py "${directory_check_args[@]}"
+release_version="${release_version#v}"
+python3 scripts/build_release_artifacts.py --check-directory --version "$release_version"
+python3 scripts/check_versions.py --tag "v$release_version"
 
 python3 scripts/build_release_artifacts.py \
   --output dist \
-  --version "${release_version:-0.0.0-dev}" \
+  --version "$release_version" \
   --source-commit "$source_commit" \
   $allow_unpinned

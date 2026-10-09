@@ -41,7 +41,7 @@ CLM tools (`clm_*`) add, import and manage contracts without Parser credits. Par
 
 `clm_list_folders` uses `continuation`, not the contract `cursor`. Omitting `parentFolderId`, or sending `parentFolderId: null`, lists only the visible root. Complete root pages, then list and complete the children of every visible folder recursively to enumerate the visible tree. A completed root page set is not a full-tree result. For each parent, repeat the same parent and limit with the opaque continuation until it is `null`. Returned paths contain visible ancestors only. Omission does not prove a hidden folder exists or does not exist.
 
-Inspect a destination before changing it. Confirm the visible path and every bulk change. `clm_move_contract` accepts `folderId: null` only to unfile. `clm_move_folder` accepts `parentFolderId: null` to move to the root. Folder deletes and all access changes are app work. `clm_get_folder` and `clm_get_contract_access` are read-only and provide no ACL write operation.
+Inspect a destination before changing it. Confirm the visible path and every bulk change. `clm_move_contract` accepts `folderId: null` only to unfile. `clm_move_folder` accepts `parentFolderId: null` to move to the root. Moves can remove inherited access and reassign affected people's scheduled email notifications to the contract owner. Moving a folder to root turns off limited access; moving it back does not restore that setting and requires current permissions. Explain these effects before moving. Folder deletes and direct access changes are app work. `clm_get_folder` and `clm_get_contract_access` are read-only and provide no ACL write operation.
 
 ```json mcp:clm_list_folders
 { "limit": 50 }
@@ -122,19 +122,21 @@ Resolve a vendor with `clm_list_parties` using `query` and `type` before passing
 | `clm_get_contract_document_download_url` | `contract:read` | Get a short-lived original or preview URL. Do not log it. |
 | `clm_list_contract_comments` | `contract:read` | Read comments on one contract. |
 
+Semantic and hybrid document search send the query to an external embedding provider. Use `exact` when that transfer is not authorized.
+
 ## Document re-reads
 
-A re-read runs AI extraction on one contract document again and compares the result with the saved contract. It never changes saved data on its own: it produces per-field findings that a person approves.
+A re-read runs external AI extraction on one contract document again, replaces its saved extraction snapshot and processing status, and compares the result with the saved contract. Contract-field proposals still require person approval. When Bento is enabled, successful extraction records a setup milestone on the acting member's subscriber.
 
 | Tool | Scope | Use |
 |---|---|---|
 | `clm_reprocess_contract_document` | `contract:write` | Start a re-read of one document. Retry with the same `idempotencyKey` to get the original run. |
-| `clm_get_contract_reprocess_run` | `contract:read` | Check a re-read's progress. |
+| `clm_get_contract_reprocess_run` | `contract:read` | Check progress and settle any unconfirmed queue handoff in the saved run. This changes saved state. |
 | `clm_list_contract_reconciliations` | `contract:read` | List a contract's recent re-reads, including completed ones nobody has reviewed. |
-| `clm_get_contract_reconciliation` | `contract:read` | Read the per-field differences a completed re-read found. Reading never applies or dismisses a finding. |
+| `clm_get_contract_reconciliation` | `contract:read` | Persist the review list and refresh saved comparison values and the approval version. Never applies or dismisses a finding. |
 | `clm_apply_contract_reconciliation` | `contract:write` | Write selected findings onto the contract after a person approves that exact selection. |
 
-The reads are safe to call at any time. Apply only works in a client that can ask the person to approve; otherwise send the user to the review in Contracko. A re-read uses the same extraction allowance as an import. During a free trial that allowance is capped; see [CLM trial limits](../SKILL.md#clm-trial-limits).
+The two `get` helpers above are annotated as writes despite requiring `contract:read`. Explain their saved-state changes and get approval before calling them; list-only review uses `clm_list_contract_reconciliations`. Apply only works in a client that can ask the person to approve; otherwise send the user to the review in Contracko. A re-read uses the same extraction allowance as an import. During a free trial that allowance is capped; see [CLM trial limits](../SKILL.md#clm-trial-limits).
 
 ## Import and contract writes
 
@@ -154,6 +156,8 @@ The reads are safe to call at any time. Apply only works in a client that can as
 | `clm_list_contract_types` / `clm_get_contract_type` | `contract:read` | Inspect types and fields. |
 | `clm_create_party` / `clm_update_party` | `contract:write` | Create or partially update parties. |
 | `clm_list_parties` / `clm_get_party` | `contract:read` | Resolve and inspect parties. |
+
+Creating a contract type does not re-extract contracts or generate fields with AI. When Bento is enabled, creating a type or completing ingest records a setup milestone on the acting member's subscriber.
 
 `taxId` and `registrationNumber` are for organisations only (`company`, `non-profit`, `government`), never for an `individual` or a personal identifier. Changing a party to `individual` needs both cleared in the same update.
 
@@ -190,10 +194,10 @@ Uses Parser credits; not needed to add contracts to your contract register. Only
 
 | Tool | Scope | Use |
 |---|---|---|
-| `parser_get_credits` | `parser:compute` | Check Parser balance and availability; spends no credits. |
-| `parser_preflight` | `parser:compute` | Estimate Parser credits and validate files; spends no credits. |
+| `parser_get_credits` | `parser:compute` | Check balance and availability; initializes a missing workspace credit ledger and spends no credits. |
+| `parser_preflight` | `parser:compute` | Estimate credits and validate files; initializes a missing workspace credit ledger and spends no credits. |
 | `parser_create_upload_url` | `parser:compute` | Prepare a document for a Parser job; spends no credits. |
-| `parser_create_job` | `parser:compute` | Start bulk document processing; spends Parser credits. |
+| `parser_create_job` | `parser:compute` | Start bulk processing with external AI providers; completed processing consumes Parser credits. |
 | `parser_get_job` | `parser:compute` | Read a Parser job and retrieve results; spends no additional credits. |
 | `parser_list_jobs` | `parser:compute` | List Parser jobs; spends no additional credits. |
 

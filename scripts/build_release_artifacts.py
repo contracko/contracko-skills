@@ -20,6 +20,7 @@ SKILLS = ("contracko", "contracko-create", "contracko-import", "contracko-review
 PLATFORMS = ("openclaw", "hermes")
 DIRECTORY_PACKAGE = ROOT / "packages" / "agent-plugin"
 PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
+MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
 VERSION_PATTERN = re.compile(
     r"^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)"
     r"(?:-(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)"
@@ -193,6 +194,13 @@ def build_platform_bundle(output: Path, platform: str, version: str, source_comm
     readme.write_text(render(readme.read_text(), version=version, source_commit=source_commit))
     write_bytes(package / "LICENSE", (ROOT / "LICENSE").read_bytes())
     write_bytes(package / "NOTICE.md", (ROOT / "packaging" / "NOTICE.md").read_bytes())
+    write_release_metadata(package, platform, version, source_commit)
+    for skill in SKILLS:
+        copy_tree(ROOT / "skills" / skill, package / "skills" / skill)
+    zip_tree(package, output / f"contracko-{platform}.zip")
+
+
+def write_release_metadata(package: Path, platform: str, version: str, source_commit: str) -> None:
     metadata = {
         "artifact": "contracko-agent-plugin",
         "platform": platform,
@@ -203,9 +211,6 @@ def build_platform_bundle(output: Path, platform: str, version: str, source_comm
         "generator": "scripts/build_release_artifacts.py",
     }
     write_bytes(package / "RELEASE-METADATA.json", (json.dumps(metadata, indent=2) + "\n").encode())
-    for skill in SKILLS:
-        copy_tree(ROOT / "skills" / skill, package / "skills" / skill)
-    zip_tree(package, output / f"contracko-{platform}.zip")
 
 
 def populate_directory_package(destination: Path, manifest: dict[str, object]) -> None:
@@ -219,6 +224,12 @@ def populate_directory_package(destination: Path, manifest: dict[str, object]) -
     copy_tree(source, destination)
     write_bytes(destination / "LICENSE", (ROOT / "LICENSE").read_bytes())
     write_bytes(destination / "NOTICE.md", (ROOT / "packaging" / "NOTICE.md").read_bytes())
+    server_url = json.loads((ROOT / "mcp.json").read_text())["mcpServers"]["contracko"]["url"]
+    descriptor = {
+        "$schema": MCP_SCHEMA,
+        "mcpServers": {"contracko": {"type": "streamable-http", "url": server_url}},
+    }
+    write_bytes(destination / "mcp.json", (json.dumps(descriptor, indent=2) + "\n").encode())
     for skill in SKILLS:
         skill_source = ROOT / "skills" / skill
         reject_symlink_entries(skill_source, label=f"canonical skill source {skill}")
@@ -303,6 +314,14 @@ def default_source_commit() -> str:
         return "working-tree"
 
 
+def build_agent_plugin_archive(output: Path, version: str, source_commit: str) -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+        package = Path(temporary) / "agent-plugin"
+        copy_tree(DIRECTORY_PACKAGE, package)
+        write_release_metadata(package, "agent-plugin", version, source_commit)
+        zip_tree(package, output / "contracko-agent-plugin.zip")
+
+
 def validate_output_path(output: Path) -> Path:
     """Return a safe output path without allowing source-tree deletion."""
     resolved = output.resolve()
@@ -360,7 +379,7 @@ def main() -> int:
         help="Regenerate the committed Agent Plugins directory package",
     )
     args = parser.parse_args()
-    version = args.version or "0.0.0-dev"
+    version = args.version or str(load_manifest()["version"])
     if not VERSION_PATTERN.fullmatch(version):
         parser.error("--version must be a semantic version")
 
@@ -380,6 +399,7 @@ def main() -> int:
         parser.error("--source-commit must be a full 40-character commit SHA")
 
     try:
+        check_directory_package(version)
         output = validate_output_path(args.output)
     except ValueError as error:
         parser.error(str(error))
@@ -391,6 +411,7 @@ def main() -> int:
             child.unlink()
     build_skill_archives(output)
     build_chat_archive(output)
+    build_agent_plugin_archive(output, version, args.source_commit)
     for platform in PLATFORMS:
         build_platform_bundle(output, platform, version, args.source_commit)
     print("\n".join(path.name for path in sorted(output.glob("*.zip"))))
