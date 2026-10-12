@@ -57,6 +57,25 @@ class McpShimTests(unittest.TestCase):
         self.assertIn("npx -y @contracko/mcp", docs)
         self.assertIn(MCP_URL, docs)
 
+    def test_lockfile_pins_patched_proxy_addr_and_qs(self) -> None:
+        package = json.loads((PACKAGE_DIR / "package.json").read_text())
+        self.assertEqual(package["overrides"]["proxy-addr"], "2.0.8")
+        self.assertEqual(package["overrides"]["qs"], "6.16.0")
+
+        lock = json.loads((PACKAGE_DIR / "package-lock.json").read_text())
+        packages = lock["packages"]
+        proxy = packages["node_modules/proxy-addr"]["version"]
+        self.assertGreaterEqual(tuple(int(part) for part in proxy.split(".")), (2, 0, 8))
+
+        qs_versions = [
+            entry["version"]
+            for name, entry in packages.items()
+            if name == "node_modules/qs" or name.endswith("/node_modules/qs")
+        ]
+        self.assertTrue(qs_versions)
+        for version in qs_versions:
+            self.assertGreaterEqual(tuple(int(part) for part in version.split(".")), (6, 16, 0))
+
 
 if __name__ == "__main__":
     unittest.main()
