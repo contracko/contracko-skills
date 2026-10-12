@@ -35,5 +35,9 @@
   },
   "dependencies": {
     "mcp-remote": "^0.8.6"
+  },
+  "overrides": {
+    "proxy-addr": "2.0.8",
+    "qs": "6.16.0"
   }
 }
