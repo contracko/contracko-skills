@@ -65,7 +65,7 @@ Starting with **1.1.0**, every public Contracko skills, plugin, extension, MCP R
 
 For each release, bump only the source version, copy that value into every public manifest and the npm lockfile's root package fields, then regenerate `packages/agent-plugin/` with `python3 scripts/build_release_artifacts.py --write-directory`. These mirrors have no independent version counters. Run `python3 scripts/check_versions.py --tag vX.Y.Z`: it fails on any public version drift or a mismatched tag. Validation CI, release CI and `build-zips.sh` enforce the rule.
 
-Type the ChatGPT and Claude developer portal version as exactly this value, for example `1.1.0`, without a `v` prefix. The Git release tag is `v1.1.0`. Portal values are manual and cannot be checked by repository CI. The plugin cache is keyed on the version, so bump it for changes users should receive.
+Type the ChatGPT and Claude developer portal version as exactly this value, for example `1.1.1`, without a `v` prefix. The Git release tag is `v1.1.1`. Portal values are manual and cannot be checked by repository CI. The plugin cache is keyed on the version, so bump it for changes users should receive.
 
 The ChatGPT listing `plugin_asdk_app_6a9e97994d248191b2dcb1714454bb2f` requires `.codex-plugin/plugin.json` name `app-6a9e97994d248191b2dcb1714454bb2f`. The mapping lives in [`packaging/directory-listings.json`](packaging/directory-listings.json), separate from the standard manifest so it does not enter other packages. The approved listing copy lives in [`packaging/chatgpt/plugin.json`](packaging/chatgpt/plugin.json); this template omits `name` and `version`, which the builder inserts from the mapping and unified version. `check_versions.py` requires both files to parse and rejects malformed mappings or conflicting template names and versions if stored. Upload `contracko-agent-plugin-chatgpt.zip` to that portal listing with the unified version. Configure the existing MCP connection in the ChatGPT portal; it is not included in the ZIP. Use `contracko-agent-plugin.zip` for every other directory, where the name remains `contracko`.
 
@@ -115,7 +115,7 @@ Cursor:   cursor://anysphere.cursor-deeplink/mcp/install?name=contracko&config=<
 VS Code:  https://vscode.dev/redirect?url=<urlencoded vscode:mcp/install?{"name":"contracko","type":"http","url":"..."}>
 ```
 
-**ChatGPT is the one client where shipping from a repo does not work at all.** No file-based instruction loading, no way to point it at GitHub. Skills arrive only inside a plugin installed from OpenAI's directory. Its auth constraint is also the strictest: an MCP server that expects an API key header cannot be connected from ChatGPT at all, so real OAuth with dynamic client registration is the price of entry. Contracko has that already.
+**ChatGPT is the one client where shipping from a repo does not work at all.** No file-based instruction loading, no way to point it at GitHub. Skills arrive only inside a plugin installed from OpenAI's directory. An MCP server that expects an API key header cannot be connected from ChatGPT at all. Contracko supports OAuth with Client ID Metadata Documents (CIMD) preferred for clients that present an HTTPS metadata-document client ID, and Dynamic Client Registration (DCR) retained as the fallback. This is normally transparent to users, and connection steps do not change.
 
 ## While developing: bump the version or the install goes stale
 

@@ -119,7 +119,9 @@ class ReleaseArtifactTests(unittest.TestCase):
             ),
             "skills/contracko-review/SKILL.md": (
                 "description: Reviews Contracko contracts. Use for notice dates, end dates, annual review, notifications (reminders), risk audits, comparing proposals or redlines, or portfolio priorities and gaps.",
-                "Requires `contract:read`. Compare, audit and report can use read-only tools. Reprocess and reconciliation `get` helpers change saved state despite that scope; explain the change and get approval, or use the list-only view. Setting notifications needs `contract:write`. Where the tools are missing from your tool list, the credential is narrower than the user thinks: see [contracko](../contracko/SKILL.md), which also covers connecting and reading Contracko's errors.",
+                "Requires `contract:read`. Compare, audit and report can use read-only tools.",
+                "Setting notifications needs `contract:write`.",
+                "Missing tools do not necessarily mean missing scopes:",
                 "## Events and notifications",
                 "A notification hangs off an event. List first: `clm_list_contract_events`.",
                 "**System events** (`notice`, `end`, `open_ended_review`) already exist. You do not create them. Renewal alerts target `end`. Attach a notification with `clm_create_event_reminders`, `anchorType: \"system\"`, and that `systemType`.",
@@ -192,9 +194,11 @@ class ReleaseArtifactTests(unittest.TestCase):
     def test_skills_cover_tool_search_and_full_catalog(self) -> None:
         catalog = json.loads((ROOT / "tests/fixtures/mcp-contract.json").read_text())
         names = {tool["name"] for tool in catalog["tools"]}
-        self.assertEqual(len(names), 52)
+        self.assertEqual(len(names), 60)
+        panel_tools = {"clm_show_upload_widget", "clm_prepare_widget_upload"}
+        self.assertEqual(len(names - panel_tools), 58)
         index = (ROOT / "skills/contracko/references/tool-index.md").read_text()
-        self.assertIn("all 52 tools", index)
+        self.assertIn("60 definitions: 58 normal tools plus two Claude-chat upload-panel tools", index)
         self.assertEqual({name for name in names if f"`{name}`" not in index}, set())
 
         skill = (ROOT / "skills/contracko/SKILL.md").read_text()
@@ -210,14 +214,22 @@ class ReleaseArtifactTests(unittest.TestCase):
         steps = [first.index(tool) for tool in ("clm_create_upload_url", "PUT", "clm_ingest_contract", "clm_get_contract`")]
         self.assertEqual(steps, sorted(steps))
 
-    def test_connect_copy_has_no_workspace_choice(self) -> None:
-        paths = [ROOT / "README.md", ROOT / "GEMINI.md", ROOT / "llms-install.md", ROOT / "agent-setup/prompt.md"]
-        paths += sorted((ROOT / "skills").rglob("*.md")) + sorted((ROOT / "packaging").rglob("*.md"))
-        for path in paths:
-            text = path.read_text().lower()
-            for phrase in ("choose a workspace", "select the workspace", "workspace selection", "workspace picker"):
-                with self.subTest(path=path.relative_to(ROOT).as_posix(), phrase=phrase):
-                    self.assertNotIn(phrase, text)
+    def test_connect_copy_matches_released_consent(self) -> None:
+        paths = (
+            "README.md", "GEMINI.md", "skills/contracko/SKILL.md",
+            "packaging/openclaw/README.md", "packaging/hermes/README.md",
+        )
+        for relative in paths:
+            with self.subTest(path=relative):
+                text = (ROOT / relative).read_text()
+                for phrase in (
+                    "choose your workspace", "View contracts", "Add and edit contracts",
+                    "start selected", "untick", "workspace role allows it",
+                    "info button", "copyable prompt",
+                ):
+                    self.assertIn(phrase, text)
+                for stale in ("**Read**", "**Write**", "Read and optionally Write"):
+                    self.assertNotIn(stale, text)
 
     def test_client_manifests_mirror_claude_plugin_version(self) -> None:
         expected = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())["version"]
@@ -581,8 +593,8 @@ class ReleaseArtifactTests(unittest.TestCase):
                 self.assertIn("https://app.contracko.com/mcp", readme)
                 self.assertIn("explicit", readme.lower())
                 self.assertIn("browser", readme.lower())
-                self.assertIn("Read", readme)
-                self.assertIn("Write", readme)
+                self.assertIn("View contracts", readme)
+                self.assertIn("Add and edit contracts", readme)
                 self.assertNotIn("mcp.contracko.com", readme)
                 # Built at runtime so this negative check is not itself flagged as a credential.
                 self.assertNotIn("Authorization: " + "Bearer", readme)

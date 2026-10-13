@@ -28,7 +28,7 @@ MCP has no file transfer, so where you run decides how a document reaches Contra
 |---|---|---|
 | in a shell with network access | `clm_create_upload_url` → PUT → `clm_import_contracts` with `kind: "upload"` (Contracko extracts), or → `clm_ingest_contract` (you supply the fields) | the bytes go machine-to-machine and never touch your context |
 | in ChatGPT with the file attached | `clm_import_files` with the attached files | Contracko downloads them from ChatGPT's file service. Ask for an attachment if there is none. |
-| in Claude chat (web or desktop) with the file attached | the sandbox upload first (`clm_create_upload_url`, one `curl -T` from the sandbox, then `clm_import_contracts` with `kind: "upload"`). If network access is blocked, base64 the same file in the sandbox and send `kind: "inline"`. Only if neither transfer works, `clm_create_upload_session` | ask permission before reading or uploading the attached file (usually under `/mnt/user-data/uploads/`). Inline is up to 35 MiB per file and within the client's tool-argument limit. |
+| in Claude chat (web or desktop) with attached or local files | `clm_show_upload_widget` first when available. Sandbox PUT only if the person says they allowed `app.contracko.com`, or the panel is unavailable; then `clm_import_contracts` with `kind: "upload"`. After blocked PUT, return to the panel when available. If the panel is unavailable or fails, try `kind: "inline"`, then `clm_create_upload_session` only if earlier paths cannot work or fail. | ask the person to choose documents in the panel. Ask permission before reading or uploading a sandbox file (usually under `/mnt/user-data/uploads/`). Inline is up to 35 MiB per file and within the client's tool-argument limit. |
 | without network, and the file is tiny | `clm_import_contracts` with `kind: "inline"` | base64 travels through your context: roughly 1.4x the file size, so a 50 KB PDF costs around 17k tokens. The cap is 35 MiB per file, but clients manage only tens of KB in practice. |
 | unable to send the bytes at all | `clm_create_upload_session`, then give the user its `uploadPageUrl` | the user adds the files in their browser, signed in to Contracko, within the hour |
 | pointing at a URL Contracko can fetch | `clm_import_contracts` with `kind: "remote"` | Contracko downloads it directly. |
@@ -36,7 +36,7 @@ MCP has no file transfer, so where you run decides how a document reaches Contra
 How the tested clients behave:
 
 - **Claude Code** uploads from the user's own shell and only needs the command approved. If a strict sandbox blocks network access, the user allows `app.contracko.com` in its sandbox or network settings. The same holds for Cursor and Codex CLI.
-- **Claude in claude.ai, Claude Desktop chat, Cowork and mobile** run the PUT from the code-execution sandbox, which blocks outbound hosts by default. Before the first upload, ask the user to open **Settings > Capabilities > Code execution and file creation**, allow network egress if the setting is available, add `app.contracko.com` under **Additional allowed domains**, and retry. On Team and Enterprise, an Owner uses **Organization settings > Capabilities > Package managers + specific domains** and adds `app.contracko.com` once for all members. Claude then uploads the attached file itself through the prepared upload URL. Until it is allowed, use the upload link or, for a tiny file, inline import.
+- **Claude in claude.ai, Claude Desktop chat, Cowork and mobile:** show the upload panel first when available and ask the person to choose documents. Use sandbox PUT only if they say they allowed `app.contracko.com`, or the panel is unavailable. For direct uploads, the optional setting is **Settings > Capabilities > Code execution and file creation**: allow network egress if available and add only `app.contracko.com` under **Additional allowed domains**. On Team and Enterprise, an Owner uses **Organization settings > Capabilities > Package managers + specific domains**. After blocked PUT, return to the panel when available. If it is unavailable or fails, try inline bytes within the file and client limits, then an upload link only if earlier paths cannot work or fail.
 - **Codex CLI** needs `sandbox_workspace_write.network_access = true` for the PUT, with egress limited to `app.contracko.com` where the environment can enforce it. Non-interactive runs need approval for `clm_import_contracts`.
 - **Cursor CLI** works only with one plain `curl -T "<file>" -H "Content-Type: <mimeType>" "<uploadUrl>"`, the URL written inline: no chaining, variables, or URL files. **Cursor web** limits attachments to 4 MB, so use the upload link.
 - **ChatGPT**'s sandbox has no internet. Use `clm_import_files`; some developer-mode connectors do not pass attached files through, so fall back to the upload link.
@@ -45,7 +45,7 @@ If the PUT cannot reach Contracko, follow `ifUploadUrlUnreachable` in the upload
 
 **Never publish a contract to a public URL to make `remote` work.** A signed or authenticated link from the user's own document store is what that option is for.
 
-Requires `contract:write`. Where the tools are absent from your list, the credential is the problem: see the [contracko](../contracko/SKILL.md) skill.
+Import requires `contract:write`. Missing tools do not necessarily mean missing scopes: check live discovery, granted scopes, capability policy and client. Run `auth_validate` and check `workspace.contractManagement` even if `status` is `ok`; a valid credential can still report a Contract Management refusal. Follow the returned hint and the [recovery guidance](../contracko/SKILL.md#errors): `subscription_inactive` means ask a workspace admin to check billing, `api_disabled` means ask an admin to turn on Contract Management API access (reconnecting helps neither), and `not_member` means reconnect and choose a workspace you belong to.
 
 If the document is already associated with a contract the user can see, import and ingest return a duplicate conflict instead of a second copy. Tell them which contract holds it. Only retry with `allowDuplicate: true` if they insist on another copy.
 
@@ -87,7 +87,7 @@ The wording follows the count: one contract reads "Your contract is still being 
 
 | Code | Meaning | Do |
 |---|---|---|
-| `UPLOAD_NOT_RECEIVED` | The file never reached the prepared destination. | Run the upload command from `clm_create_upload_url` again and retry the intake, or send a tiny file inline. Do not poll intake as an upload check. If the upload keeps failing, give the user the upload link. |
+| `UPLOAD_NOT_RECEIVED` | The file never reached the prepared destination. | Follow the returned hint; do not poll intake as an upload check. In Claude chat, return to the panel when available after a failed or blocked PUT. If it is unavailable or fails, try inline transfer within the limits, then an upload link only if earlier paths cannot work or fail. Other clients can retry the upload or use those fallbacks. |
 | `UPLOAD_EXPIRED` | The prepared upload passed its hour. | Prepare the file again, upload to the new URL, and use the new reference. |
 | `INVALID_FILE_CONTENT` | The content is not valid base64 or not a supported document. | Ask the user for the file again. Do not resend the same bytes. |
 
@@ -153,7 +153,7 @@ curl -T "<file>" -H "Content-Type: application/pdf" "<uploadUrl>"
 
 Replace `<file>` with the local path and `<uploadUrl>` with the real returned URL inline when executing. For another accepted file type, use the matching declared `Content-Type`; the server requires this header. Run the upload as one command, with no chaining, subshell, URL file, variable, extra destination, or added curl options. Do not follow redirects. This plain curl command does not display HTTP status; exit code zero alone does not prove the bytes arrived. If it completes with no transport error or upload-error response, continue to the intake call using the returned reference, but do not claim upload or filing success yet. Contracko validates stored bytes before creating a contract. Confirm filing only from a successful intake result and the contract read-back. If intake returns `UPLOAD_NOT_RECEIVED`, stop and tell the user or use an offered fallback. Do not retry intake as an upload-status polling loop.
 
-If the upload fails or policy blocks it, stop and tell the user. Offer `clm_import_contracts` with `kind: "inline"` only for files <=35 MiB that also fit the live tool's file and encoded-payload limits (the pinned release limits are listed above), or give the user the `clm_create_upload_session` upload link. Do not weaken policy or try a different host.
+If the upload fails or policy blocks it, stop and tell the user. In Claude chat, return to the upload panel when available. Only when it is unavailable or fails, try `clm_import_contracts` with `kind: "inline"` for files <=35 MiB that also fit the live tool's file and encoded-payload limits, then the `clm_create_upload_session` upload link if earlier paths cannot work or fail. Other clients can use the inline or upload-link fallbacks directly. Do not weaken policy or try a different host.
 
 Cursor, Codex, and Claude execution environments must allowlist only `app.contracko.com` for this upload, not general network egress. Cursor's narrow shell allow entry is `Shell(curl:*https://app.contracko.com/mcp/files/v1.*)`. This glob alone is not a security boundary: also deny a second `://` in the command and the standalone flag arguments `-x`, `--proxy`, `--resolve`, `--connect-to`, `-k`, `--insecure`, `-K`, and `--config`. Match flag arguments, not substrings inside the signed URL: base64url tokens can contain `-K`-like substrings. See the [README upload policy](https://github.com/contracko/contracko-skills#local-upload-policy) for operator setup.
 
@@ -192,4 +192,8 @@ An ingest that skips the analysis is the one case where the manual path really i
 | stuck in `extracting` | normal for minutes; keep honouring `pollAfterMs` before calling it stuck |
 | `retryable: false` on an item | the document itself is the problem, so surface it to the user |
 | 400 `code: "custom"` on `endDate` | the open-ended rule above |
-| the tools are missing entirely | `contract:write` was not granted |
+| the tools are missing entirely | check live discovery, scopes, capability policy and client; do not assume a missing scope |
+| `auth_validate` is `ok` but Contract Management is refused | inspect `workspace.contractManagement` and follow its hint; billing or API-access refusals need a workspace admin, not a reconnect |
+| `subscription_inactive` | ask a workspace admin to check billing; reconnecting will not help |
+| `api_disabled` | ask a workspace admin to turn on Contract Management API access; reconnecting will not help |
+| `not_member` | reconnect and choose a workspace you belong to |

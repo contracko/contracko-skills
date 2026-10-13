@@ -51,7 +51,7 @@ curl -T "<file>" -H "Content-Type: application/pdf" "<uploadUrl>"
 
 At execution, substitute the local path and real returned URL directly inside the quotes. The `Content-Type` header is required by the server; use the declared MIME type for non-PDF files. Run it as one command, with no chaining, subshell, URL file, variable, extra destination, or added curl options. Do not follow redirects. This plain curl command does not display HTTP status, and exit code zero alone does not prove the bytes arrived. A completed command with no transport error or upload-error response permits the next intake call, not a success claim. Contracko validates the stored bytes at intake; confirm filing only from a successful tool result and read-back. If intake returns `UPLOAD_NOT_RECEIVED`, stop and tell the user or use an offered fallback.
 
-If curl fails or execution policy blocks it, stop and tell the user. Offer inline import only for files <=35 MiB that also fit the live tool's file and encoded-payload limits, or the `clm_create_upload_session` upload link. The [import skill](skills/contracko-import/SKILL.md#managed-import) lists the pinned release's smaller limits. Keep policy intact and do not try another host.
+If curl fails or execution policy blocks it, stop and tell the user. In Claude chat, return to the upload panel when available. Only when that panel is unavailable or fails, offer inline import for files <=35 MiB that also fit the live tool's file and encoded-payload limits, then the `clm_create_upload_session` upload link if inline transfer cannot work or fails. Other clients can use those inline or upload-link fallbacks directly. The [import skill](skills/contracko-import/SKILL.md#managed-import) lists the pinned release's smaller limits. Keep policy intact and do not try another host.
 
 For **Cursor**, allow only this shell entry:
 
@@ -76,11 +76,11 @@ For every other assistant, you connect to Contracko in two steps:
 https://app.contracko.com/mcp
 ```
 
-A browser window will open. Sign in to Contracko, or start the free trial there, then approve access on the consent screen. That is the whole flow. Adding the skills does not connect the workspace on its own. If Contracko is already listed in that assistant, skip step 2.
+A browser window will open. Sign in to Contracko, or start the free trial there, choose your workspace, then review and approve access on the consent screen. That is the whole flow. Adding the skills does not connect the workspace on its own. If Contracko is already listed in that assistant, skip step 2.
 
-On the consent screen, tick **Read** so it can answer questions. Tick **Write** only if it should add or change contracts. Leave **Write** off unless you want that.
+The consent screen offers **View contracts** for questions and reviews, and **Add and edit contracts** for imports or changes. Requested permissions start selected. Untick **Add and edit contracts** unless you want imports or changes; it is offered only when your workspace role allows it. Each permission has an info button with details. When write access is requested, the screen offers a copyable prompt to add a contract in any workspace; select **Add and edit contracts** to copy it.
 
-Once connected, the assistant can see up to 52 Contracko tools, depending on what you approved. It can search them itself, so you do not need to know any tool names. Most assistants stay signed in; if one asks you to sign in again, repeat the browser step.
+The production catalog has 60 tool definitions: 58 normal tools plus two Claude-chat upload-panel tools. What the assistant sees depends on your granted scopes, capability policy and client. It can search them itself, so you do not need to know any tool names. Most assistants stay signed in; if one asks you to sign in again, repeat the browser step.
 
 The canonical Agent Plugins v1 package at [`packages/agent-plugin/`](packages/agent-plugin/) bundles skills plus an MCP descriptor. Check for an existing Contracko connection before manually registering `https://app.contracko.com/mcp` through the host client's native MCP and OAuth flow, to avoid duplicate connections.
 
@@ -96,13 +96,15 @@ The directory connector works on every Claude plan, including Free. On Team and 
 
 Added Contracko as a custom connector before? Remove that one, or you will see every tool twice.
 
-To add a contract in claude.ai, Claude Desktop chat, Cowork, or the mobile app, attach the file to the chat. It lands in Claude's code-execution sandbox, which blocks outbound hosts by default, so allow Contracko once:
+To add a contract in claude.ai, Claude Desktop chat, Cowork, or the mobile app, use Contracko's upload panel first when it is available. Claude opens it and asks you to choose documents on your device. It imports into your connected workspace and reports progress.
+
+For a direct upload of a chat attachment, Claude can use its code-execution sandbox only if you have allowed `app.contracko.com`, or the panel is unavailable. To allow that domain:
 
 1. Open **Settings > Capabilities**.
 2. Under **Code execution and file creation**, allow network egress, if available.
 3. Add `app.contracko.com` under **Additional allowed domains**.
 
-Claude then uploads the attached contract itself through Contracko's prepared upload URL. On Team and Enterprise, an Owner opens **Organization settings > Capabilities > Package managers + specific domains** and adds `app.contracko.com` once for all members. Without it, Claude sends only a tiny file inline, or gives you an upload link to add the file in your browser.
+On Team and Enterprise, an Owner opens **Organization settings > Capabilities > Package managers + specific domains** and adds `app.contracko.com` once for all members. For a direct upload, Claude sends the attached file only to Contracko's prepared upload URL. If that upload is blocked, it returns to the panel when available. Only when the panel is unavailable or fails does it try inline transfer within the file and client limits, then an upload link if the earlier paths cannot work or fail.
 
 On the Free plan you can still add the skills by hand: download them from [Releases](https://github.com/contracko/contracko-skills/releases/latest) and upload each one under **Customize, Skills**.
 
@@ -177,7 +179,7 @@ Sign in in the browser that opens. For local uploads, apply the [host-only uploa
 
 This repository includes a Cursor plugin manifest at `.cursor-plugin/plugin.json`. It bundles the four existing skills and the MCP connection in `mcp.json`; no API key is included. The plugin is not yet listed in the public Cursor Marketplace.
 
-To test the plugin locally, clone this repository into `~/.cursor/plugins/local/contracko-skills`, reload Cursor, and check **Customize** for the skills and MCP server. Connect Contracko and complete OAuth in the browser. The consent screen requests read and write access by default; review it before you approve. If you already added the same server manually, use one connection rather than enabling both.
+To test the plugin locally, clone this repository into `~/.cursor/plugins/local/contracko-skills`, reload Cursor, and check **Customize** for the skills and MCP server. Connect Contracko, sign in or start the trial in the browser, choose your workspace, then review **View contracts** and **Add and edit contracts** before approving. Requested permissions start selected; untick **Add and edit contracts** unless you want imports or changes. Write access is offered only when your workspace role allows it. Use each permission's info button for details; when write access is requested, the screen offers a copyable prompt to add a contract. If you already added the same server manually, use one connection rather than enabling both.
 
 For manual installation without the plugin:
 
@@ -261,7 +263,7 @@ openclaw mcp configure contracko --auth oauth
 openclaw mcp login contracko
 ```
 
-Run those commands only after explicitly approving the new central entry. Sign in in the browser that opens and choose **Read** or **Write** scopes yourself.
+Run those commands only after explicitly approving the new central entry. Sign in or start the trial in the browser, choose your workspace, then review and approve access. **View contracts** and **Add and edit contracts** start selected when requested; untick **Add and edit contracts** unless you want imports or changes. It is offered only when your workspace role allows it. Each permission has an info button with details, and a write request offers a copyable prompt to add a contract.
 
 </details>
 
@@ -281,7 +283,7 @@ mcp_servers:
     auth: oauth
 ```
 
-Run `hermes mcp login contracko` and sign in in the browser. Choose **Read** or **Write** scopes yourself.
+Run `hermes mcp login contracko`. Sign in or start the trial in the browser, choose your workspace, then review and approve access. **View contracts** and **Add and edit contracts** start selected when requested; untick **Add and edit contracts** unless you want imports or changes. It is offered only when your workspace role allows it. Each permission has an info button with details, and a write request offers a copyable prompt to add a contract.
 
 </details>
 

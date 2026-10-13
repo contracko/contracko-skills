@@ -17,7 +17,7 @@ Hermes keeps portable skills namespaced and keeps MCP OAuth in its native config
        auth: oauth
    ```
 
-4. Run `hermes mcp login contracko`. A browser opens for Contracko sign-in and consent. Approve **Read** for questions and reviews. Approve **Write** only when you want the assistant to import or change contracts.
+4. Run `hermes mcp login contracko`. A browser opens for Contracko sign-in and consent. Sign in or start the trial, choose your workspace, then review and approve access. The permissions are **View contracts** for questions and reviews, and **Add and edit contracts** for imports or changes. Requested permissions start selected; untick **Add and edit contracts** unless you want imports or changes. It is offered only when your workspace role allows it. Each permission has an info button with details. When write access is requested, the screen offers a copyable prompt to add a contract; select **Add and edit contracts** to copy it.
 5. Reload MCP or restart Hermes using the host's normal command when the connection is ready.
 
 The login command is an explicit user action. Do not put a bearer token in this package, a command, or a log. Do not assume that installing or enabling the bundle registers or authenticates the server.

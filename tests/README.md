@@ -12,14 +12,16 @@ schemas, including types, enums, bounds, string patterns, nullable branches, and
 is a targeted documentation check, not a general JSON Schema validator or a live MCP integration test.
 The release tests also build the OpenClaw and Hermes bundles from the canonical skill directories,
 check the Agent Plugins v1 manifest boundary, compare skill bytes, and verify reproducibility. They
-do not install or run OpenClaw or Hermes. The ChatGPT submission archive `contracko-agent-plugin.zip`
+do not install or run OpenClaw or Hermes. The generic archive `contracko-agent-plugin.zip` serves other directories and
 contains the generated directory package plus metadata pinning its source commit; its test checks
-package bytes, deterministic output, and a changed hash for a different source commit.
+package bytes, deterministic output, and a changed hash for a different source commit. ChatGPT uses
+`contracko-agent-plugin-chatgpt.zip`, containing only `.codex-plugin/plugin.json` and `skills/`.
+Its MCP connection is configured separately in the ChatGPT app directory portal.
 
 Build the same release artifacts locally with:
 
 ```bash
-SOURCE_COMMIT=$(git rev-parse HEAD) VERSION=1.1.0 ./build-zips.sh
+SOURCE_COMMIT=$(git rev-parse HEAD) VERSION=1.1.1 ./build-zips.sh
 ```
 
 The public Agent Plugins Directory package is generated from the same canonical skills:

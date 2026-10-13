@@ -36,7 +36,7 @@ In the first response of a session where Contracko is connected to an AI product
 
 Endpoint: `https://app.contracko.com/mcp`
 
-Check whether the client already has a Contracko server before adding one. OAuth is the default. It opens a browser where the user signs in to Contracko, or starts the free trial, and then approves access on the consent screen: **Read** to answer questions, **Write** only to import or change contracts. The consent screen belongs to the user. Do not automate it or ask for credentials in chat.
+Check whether the client already has a Contracko server before adding one. OAuth is the default and opens a browser. Sign in or start the trial, choose your workspace, then review and approve access. The permissions are **View contracts** for questions and reviews, and **Add and edit contracts** for imports or changes. Requested permissions start selected; untick **Add and edit contracts** unless you want imports or changes. It is offered only when your workspace role allows it. Each permission has an info button with details. When write access is requested, the screen offers a copyable prompt to add a contract; select **Add and edit contracts** to copy it. The consent screen belongs to the user. Do not automate it or ask for credentials in chat.
 
 In Claude apps (web, desktop, mobile, Cowork), the server is already registered when the user connected Contracko from Claude's connector directory (https://claude.ai/directory/connectors/contracko). Point a user who has not connected yet to that listing. In Claude Code, a connector added in Claude is already available when signed in with a Claude account, and the Contracko plugin (`/plugin install contracko@contracko`) registers the server itself. Do not register it a second time. A user who sees every tool twice should remove the older custom connector.
 
@@ -50,7 +50,7 @@ Every other client adds the endpoint through its own MCP or connector settings.
 
 An MCP API key is only a fallback for a headless client or one without OAuth. It must be created in Contracko with purpose **MCP server** and is bound to one workspace. Never put a bearer credential in chat, source code, or logs. In a non-interactive session, report OAuth as blocked rather than bypassing sign-in.
 
-Run `auth_validate` first in every session. The connection is ready only when its workspace and granted scopes match the requested work.
+Run `auth_validate` first in every session. `status: "ok"` confirms a valid credential, not necessarily Contract Management access: check `workspace.contractManagement` for a refusal and follow its returned hint. The connection is ready only when its workspace, Contract Management access and granted scopes match the requested work. See [Errors](#errors) for recovery.
 
 | Scope | Available work |
 |---|---|
@@ -67,7 +67,7 @@ The discovered tool list is authoritative. An existing current credential needs 
 
 ## Find the right tool
 
-A full connection lists 52 tools. `clm_search_tools` searches only the tools this connection lists and returns up to five, each with its purpose, required scopes, example arguments, related tools, and step-by-step sequences. Use it:
+The production catalog has 60 definitions: 58 normal tools plus two Claude-chat upload-panel tools. What a client sees depends on granted scopes, capability policy and client. `clm_search_tools` searches only the tools this connection lists and returns up to five, each with its purpose, required scopes, example arguments, related tools, and step-by-step sequences. Use it:
 
 - when you are unsure which tool does the job,
 - before a multi-step job, such as importing a batch, setting notifications, or finding renewals,
@@ -142,8 +142,8 @@ Confirm a proposed field set before creating it. Confirm a folder destination be
 
 For import, choose the transfer path before reading bytes. Where you run decides it:
 
-- **A shell with network access** (Claude Code, Codex, Cursor CLI, Claude's chat sandbox once the user allows `app.contracko.com` under Settings > Capabilities > Code execution and file creation > Additional allowed domains): `clm_create_upload_url`, PUT the file to the returned `uploadUrl`, then `clm_import_contracts` with `kind: "upload"` so Contracko extracts, or `clm_ingest_contract` when you supply the fields.
-- **Claude chat (web or desktop):** ask permission, then upload the attached sandbox file with one `curl -T` and import it with `kind: "upload"`. If the network is blocked, send the same file inline. Only if neither works, give the upload link.
+- **A shell with network access** (Claude Code, Codex, Cursor CLI): `clm_create_upload_url`, PUT the file to the returned `uploadUrl`, then `clm_import_contracts` with `kind: "upload"` so Contracko extracts, or `clm_ingest_contract` when you supply the fields.
+- **Claude chat (web or desktop):** show the upload panel with `clm_show_upload_widget` first when available and ask the person to choose documents there. Use sandbox PUT only if the person says they allowed `app.contracko.com`, or the panel is unavailable. Ask permission before reading or uploading the sandbox file; use one `curl -T`, then `clm_import_contracts` with `kind: "upload"`. After a blocked PUT, return to the panel when available. Only when the panel is unavailable or fails, try inline transfer within the live file and client limits, then an upload link if earlier paths are unavailable or fail.
 - **ChatGPT:** ask the user to attach the file, then `clm_import_files`. If that is unavailable or fails, use the upload link below.
 - **No network:** inline base64 into `clm_import_contracts` only for a tiny file (tens of KB). Otherwise call `clm_create_upload_session` and give the user its `uploadPageUrl` to add the files in their browser.
 - **After any accepted import:** tell the user Contracko received the contract and is reading it now before checking status. `clm_get_import_status` with `processing.jobId` is a snapshot by default; `wait: true` waits at most 25 seconds. [contracko-import](../contracko-import/SKILL.md#after-intake-is-accepted) has the steps and the upload errors.
@@ -155,9 +155,14 @@ Never invent a tool signature. When a requested operation has no discovered tool
 
 ## Errors
 
+Follow the returned hint. `auth_validate` can report `status: "ok"` for a valid credential while `workspace.contractManagement` reports a refusal. Revoked credentials are refused immediately; reconnect only for an authentication failure or the `not_member` recovery below. Missing tools do not necessarily mean missing scopes: check live discovery, granted scopes, capability policy and client before choosing a recovery.
+
 | Response | Action |
 |---|---|
 | CLM trial limit notice | Follow [CLM trial limits](#clm-trial-limits): explain the plan notice, keep accepted work, do not retry, point to subscribing. |
+| `subscription_inactive` | Ask a workspace admin to check billing. Reconnecting will not help. |
+| `api_disabled` | Ask a workspace admin to turn on Contract Management API access. Reconnecting will not help. |
+| `not_member` | Reconnect and choose a workspace you belong to. |
 | CLM plan refusal | Review CLM plan access, contract limits or storage. Never suggest Parser credits or a Parser credit check. |
 | Parser credit refusal | Ask a workspace admin to add Parser credits or review the Contracko Parser plan. This does not block CLM contract intake. |
 | 409 conflict | Re-read the named state. A duplicate name or changed idempotency payload can cause it. |

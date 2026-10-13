@@ -6,6 +6,15 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 - Added `contracko-agent-plugin-chatgpt.zip` in the live portal layout: only `.codex-plugin/plugin.json` and the four release skills with their references. The MCP connection is configured in the portal, not in the ZIP. Approved listing copy lives in `packaging/chatgpt/plugin.json`; the builder inserts the listing name and unified public version. The generic `contracko-agent-plugin.zip` and other directories keep `contracko` and their existing layout.
 
+## 1.1.1, 2026-10-13
+
+- Synced with Release 11: sign in or start the trial, choose a workspace, then review **View contracts** and **Add and edit contracts**. Requested permissions start selected, write access depends on your workspace role, and each permission has an info button. A write request offers a copyable add-contract prompt in every workspace.
+- Documented Contract Management refusal recovery: a workspace admin checks billing for `subscription_inactive` or enables API access for `api_disabled`; reconnecting will not help either. For `not_member`, reconnect and choose a workspace you belong to. `auth_validate` can report a valid credential with `status: "ok"` while `workspace.contractManagement` reports a refusal.
+- Synced with Release 12 part 1: OAuth prefers Client ID Metadata Documents (CIMD) for HTTPS metadata-document client IDs, with Dynamic Client Registration (DCR) as the fallback. Connection steps stay the same. Revoked credentials are refused immediately.
+- Updated the tool index to 60 definitions: 58 normal tools plus two Claude-chat upload-panel tools, filtered by scopes, capability policy and client. Added type generation and type re-read guidance, including allowance costs and saved-state changes.
+- Claude chat uses the upload panel first when available, sandbox PUT only after the domain is allowed or the panel is unavailable, then inline transfer and an upload link as fallbacks. A blocked PUT returns to the panel when available.
+- Corrected packaging guidance: ChatGPT uses `contracko-agent-plugin-chatgpt.zip` with its MCP connection configured separately in the portal; `contracko-agent-plugin.zip` serves other directories. All public versions and generated mirrors use 1.1.1.
+
 ## 1.1.0, 2026-10-09
 
 - All public plugin, extension, MCP Registry and npm package versions now use 1.1.0. Release tags and manually entered ChatGPT and Claude portal versions use that same value.

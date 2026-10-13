@@ -2,11 +2,11 @@
 
 Use live discovery for tool names and schemas. This index records workflow rules that schemas do not express. [workflows.md](workflows.md) maps user jobs to these tools.
 
-This index lists all 52 tools a connection with every scope can see. A narrower connection sees fewer. When you are unsure which tool fits, call `clm_search_tools` instead of guessing from this page.
+This index lists the production catalog's 60 definitions: 58 normal tools plus two Claude-chat upload-panel tools. What a client sees depends on granted scopes, capability policy and client. When you are unsure which tool fits, call `clm_search_tools` instead of guessing from this page.
 
 ## Discovery and results
 
-Tools absent from discovery are unavailable to this connection. First refresh discovery or reconnect if the client has cached schemas. If an older credential still omits newly available actions, a workspace admin can enable new MCP actions for its key, or the user can re-consent OAuth. Do not guess a call.
+Tools absent from discovery are unavailable to this connection, but do not necessarily mean missing scopes. Check live discovery, granted scopes, capability policy and client. First refresh discovery or reconnect if the client has cached schemas. If an older credential still omits newly available actions, a workspace admin can enable new MCP actions for its key, or the user can re-consent OAuth. Do not guess a call.
 
 Check `isError` first. On success, use `structuredContent` when present or the legacy JSON text otherwise, never both. Required fields missing from the discovered `outputSchema` are a response mismatch, not empty data. Re-read before retrying an `OUTCOME_UNKNOWN` mutation.
 
@@ -14,8 +14,10 @@ Check `isError` first. On success, use `structuredContent` when present or the l
 
 | Tool | Scope | Use |
 |---|---|---|
-| `auth_validate` | any valid credential | Confirm workspace and scopes before work. |
+| `auth_validate` | any valid credential | Confirm workspace and scopes; even with `status: "ok"`, check `workspace.contractManagement` for a refusal. |
 | `clm_search_tools` | any valid credential | Find up to five listed tools, with examples and step sequences, for a task. Reads no workspace data. |
+
+Follow a refusal's returned hint: `subscription_inactive` means ask a workspace admin to check billing; `api_disabled` means ask an admin to turn on Contract Management API access. Reconnecting will not help either. For `not_member`, reconnect and choose a workspace you belong to. See [recovery guidance](../SKILL.md#errors).
 
 Use `clm_search_tools` when the right tool is unclear, before a multi-step job, and for a first contract in an empty workspace. Results come only from this connection's tool list. Example arguments use synthetic IDs; replace them with real values from the connection.
 
@@ -144,7 +146,9 @@ The two `get` helpers above are annotated as writes despite requiring `contract:
 |---|---|---|
 | `clm_import_contracts` | `contract:write` | Managed import from a prepared upload (`kind: "upload"`), inline bytes, or a remote URL. Contracko extracts. |
 | `clm_import_files` | `contract:write` | Managed import of files attached in a ChatGPT chat. Contracko downloads them from ChatGPT's file service. |
-| `clm_create_upload_session` | `contract:write` | Create a one-hour upload link (`uploadPageUrl`) where the signed-in person adds files in their browser. The fallback when you cannot send the bytes. |
+| `clm_create_upload_session` | `contract:write` | Create a one-hour upload link (`uploadPageUrl`) where the signed-in person adds files in their browser. The fallback when earlier transfer paths are unavailable or fail. |
+| `clm_show_upload_widget` | no required scope; Claude chat only | Show the upload panel first for attached or local files; also return here after blocked sandbox PUT, before an upload link. The panel imports into the connected workspace and reports the processing job. |
+| `clm_prepare_widget_upload` | `contract:write`; Claude chat panel only | Prepare one chosen document with a single-use upload destination expiring within five minutes. |
 | `clm_get_import_status` | `contract:read` | Check import or ingest progress with `processing.jobId`. Returns a snapshot by default; `wait: true` waits at most 25 seconds. Send the "received, reading now" message first. |
 | `clm_create_upload_url` | `contract:write` | Create a short-lived upload destination for import or ingest. `ifUploadUrlUnreachable` names the fallback. |
 | `clm_ingest_contract` | `contract:write` | File uploaded documents with agent-supplied metadata and analysis. |
@@ -157,9 +161,26 @@ The two `get` helpers above are annotated as writes despite requiring `contract:
 | `clm_create_party` / `clm_update_party` | `contract:write` | Create or partially update parties. |
 | `clm_list_parties` / `clm_get_party` | `contract:read` | Resolve and inspect parties. |
 
-Creating a contract type does not re-extract contracts or generate fields with AI. When Bento is enabled, creating a type or completing ingest records a setup milestone on the acting member's subscriber.
+Creating a contract type with `clm_create_contract_type` does not re-extract contracts or generate fields with AI. When Bento is enabled, creating a type or completing ingest records a setup milestone on the acting member's subscriber.
 
 `taxId` and `registrationNumber` are for organisations only (`company`, `non-profit`, `government`), never for an `individual` or a personal identifier. Changing a party to `individual` needs both cleared in the same update.
+
+### Type generation and type re-reads
+
+| Tool | Scope | Use |
+|---|---|---|
+| `clm_create_type_generation_upload_url` | `contract:write` | Prepare an example document for type generation without adding it as a contract. |
+| `clm_start_type_generation` | `contract:write` | Start generation from an upload or a saved document version, spending generation allowance; a new type is saved immediately for review, matching types stay unchanged, and failed runs return their trial slot. |
+| `clm_get_type_generation` | `contract:read` | Check a background type generation run started by the connected user. |
+| `clm_get_type_generation_draft` | `contract:read` | Get the created type ID and read-only field examples/source quotes, or an existing-type verdict; this read never creates a type. |
+| `clm_reread_contract_type` | `contract:write` | Re-read custom fields for all contracts of a type with a primary document, using one AI extraction per contract and requiring human approval; saved contract fields stay unchanged. |
+| `clm_get_contract_type_reread` | `contract:read` | Check batch runs and pending proposal counts; may retry lost reads or stop stuck batches, changing saved status and cancelling unstarted items. |
+
+Generation spends the workspace's generation allowance; repeated starts are not idempotent. Review a generated type in the normal editor and read its current definitions with `clm_get_contract_type`. Field evidence is read-only, not editable field data; saving the type marks it reviewed.
+
+A type re-read uses one AI extraction per contract and replaces any open batch, cancelling its unstarted reads. Confirm the batch and cost before starting; reuse the same `idempotencyKey` for identical retries. Its status tool is annotated as a write despite requiring `contract:read`: explain its saved-state changes and get approval before checking. Contract-field proposals still need person approval.
+
+The two upload-panel tools are Claude-chat only, not Claude Code tools. `clm_prepare_widget_upload` is for the panel, not direct agent calls. Use live discovery to check availability; showing the panel alone uploads nothing, and importing still needs write access.
 
 ### Add your first contract
 
