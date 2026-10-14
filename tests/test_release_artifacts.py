@@ -205,10 +205,13 @@ class ReleaseArtifactTests(unittest.TestCase):
         self.assertEqual(len(rows), len(names))
         self.assertEqual({line.split("`")[1] for line in rows}, names)
         import_skill = (ROOT / "skills/contracko-import/SKILL.md").read_text()
-        prepare = import_skill[import_skill.index("## Prepare and file"):]
-        prepare = prepare[:prepare.index("\n### ")]
-        steps = [prepare.index(tool) for tool in ("clm_create_upload_url", "PUT", "clm_ingest_contract", "clm_get_contract`")]
-        self.assertEqual(steps, sorted(steps))
+        upload = import_skill.split("## Working the upload path\n", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("#managed-import", upload)
+        self.assertNotIn("`clm_ingest_contract`", upload)
+        sync = import_skill.split("## Sync a record from another system\n", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("Sync contract from another system", sync)
+        for argument in ("`externalSystem`", "`externalId`", "`uploadReference`"):
+            self.assertIn(argument, sync)
         workflows = (ROOT / "skills/contracko/references/workflows.md").read_text()
         self.assertIn("../../contracko-import/SKILL.md#managed-import", workflows)
         self.assertNotIn("clm_create_upload_url", workflows)
