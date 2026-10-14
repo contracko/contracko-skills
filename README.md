@@ -250,7 +250,7 @@ That package only launches the hosted server at `https://app.contracko.com/mcp`.
 <details>
 <summary><strong>Any other assistant</strong></summary>
 
-Copy the [install prompt](agent-setup/prompt.md) into the assistant. Client-specific connection steps are above.
+For agents, use the [hosted setup prompt](https://contracko.com/mcp/install/prompt.md). Human connection steps are above.
 
 </details>
 
