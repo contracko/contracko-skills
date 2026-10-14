@@ -1,6 +1,6 @@
 {
   "source": "Contracko released MCP catalog",
-  "revision": "d92646bdae020a668a9c76893dbdb2c399b4cc10",
+  "revision": "0ab297096082c7d949aee8df28ba6cf5a9ad857c",
   "tools": [
     {
       "name": "auth_validate",
@@ -582,7 +582,7 @@
         "idempotentHint": true,
         "openWorldHint": false,
         "readOnlyHint": false,
-        "title": "Add contract"
+        "title": "Sync contract from another system"
       },
       "effect": {
         "boundary": "workspace",
@@ -1230,15 +1230,15 @@
       "introducedInCapabilityPolicyVersion": 1,
       "annotations": {
         "destructiveHint": false,
-        "idempotentHint": false,
+        "idempotentHint": true,
         "openWorldHint": false,
-        "readOnlyHint": false,
+        "readOnlyHint": true,
         "title": "Check Parser credits"
       },
       "effect": {
         "boundary": "workspace",
-        "kind": "create",
-        "retry": "none"
+        "kind": "read",
+        "retry": "read"
       }
     },
     {

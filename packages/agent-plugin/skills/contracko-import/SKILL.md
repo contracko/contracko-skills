@@ -19,7 +19,7 @@ MCP has no file transfer, so where you run decides how a document reaches Contra
 
 | You are | Use | Why |
 |---|---|---|
-| in a shell with network access | `clm_create_upload_url` → PUT → `clm_import_contracts` with `kind: "upload"` (Contracko extracts), or → `clm_ingest_contract` (you supply the fields) | the bytes go machine-to-machine and never touch your context |
+| in a shell with network access | [Working the upload path](#working-the-upload-path), then [managed import](#managed-import) | the bytes go machine-to-machine and never touch your context |
 | in ChatGPT with the file attached | `clm_import_files` with the attached files | Contracko downloads them from ChatGPT's file service. Ask for an attachment if there is none. |
 | in Claude chat (web, desktop, Cowork or mobile) | follow [Claude chat transfer order](#claude-chat-transfer-order) | the panel lets the person choose documents without reading sandbox bytes |
 | without network, and the file is tiny | `clm_import_contracts` with `kind: "inline"` | base64 travels through your context: roughly 1.4x the file size, so a 50 KB PDF costs around 17k tokens. The cap is 35 MiB per file, but clients manage only tens of KB in practice. |
@@ -107,30 +107,19 @@ New contracts land as `entityStatus: "pending-review"`. Say so. A human is expec
 
 Once documents are in, the questions start: renewals, notice dates, risk, and what the workspace now holds. That is [contracko-review](../contracko-review/SKILL.md). If the user also asks to place imported contracts in folders, use the confirmed filing workflow in [contracko](../contracko/SKILL.md).
 
-## Prepare and file
+## Sync a record from another system
 
-Three steps, per contract, then a read-back. This is also the "add your first contract" sequence that `clm_search_tools` returns for an empty workspace.
+Use `clm_ingest_contract` ("Sync contract from another system") only when an external record already supplies the contract details and its id, for example from DocuSign, a CRM or Zapier. For documents without known details, use [managed import](#managed-import); for related documents, use [Add contract documents](#getting-the-bytes-there).
 
-1. `clm_create_upload_url` with `fileName`, `mimeType` and `fileSize`. Returns a signed destination valid for one hour, and an opaque `uploadReference`.
-2. `PUT` the bytes only to that URL with the matching `Content-Type`. A plain HTTP request, not a tool call. Intake checks whether the bytes arrived; the curl exit code alone is not confirmation.
-3. `clm_ingest_contract` with `externalSystem`, `externalId`, the `contract` object, and the upload references, `isPrimary` on the main document.
-4. `clm_get_contract` on the returned contract to confirm it landed.
+Prepare and upload the documents through [Working the upload path](#working-the-upload-path), or reuse their existing references. Submit `externalSystem`, `externalId`, the source's `contract` details, and `files` containing each unchanged `uploadReference`, `fileName`, `mimeType` and `fileSize`; mark the main document `isPrimary`. Discovery requires `uploadReference`; legacy `r2Key` is accepted only for compatibility and is hidden from discovery. Never derive either reference from a storage key.
 
-Accepted: PDF, DOCX, TXT, RTF, JPEG, PNG. 50 MiB per file, 100 files per contract. To let Contracko extract instead, replace step 3 with `clm_import_contracts` and a `kind: "upload"` file carrying the same reference. Contracko cleans up uploads that are never imported or ingested, so use the reference within the hour.
+Reusing the same source id with identical details and document references returns the same contract; keep those inputs unchanged on retry. Follow [accepted intake](#after-intake-is-accepted) and read the resulting contract back.
 
-### The rule that costs a call
-
-`contract.endDate` is absent from the schema's required list and required anyway. Omit it and the call fails with a 400 whose only detail is `code: "custom"` on `endDate`, which tells you nothing.
-
-The rule: **send `endDate`, or send `isOpenEnded: true`.** A contract with no end date by design is legitimate, and that flag is how you say so.
-
-Four defaults apply silently, so set them from the document rather than letting them land: `status` becomes `active`, `autoRenewing` true, the renewal period 1 year, the notice period 1 month. You have read the contract; use what it says.
-
-`externalSystem` and `externalId` are the source system's identity for this contract, and they are how a re-run recognises what it already filed. Where there is no source system, choose something stable and honest about its origin.
+Send `contract.endDate`, or `contract.isOpenEnded: true`. Set source values explicitly: otherwise `status` defaults to `active`, `autoRenewing` to true, the renewal period to 1 year and the notice period to 1 month.
 
 ## Working the upload path
 
-The three steps, with the parts that actually trip agents up.
+Prepare with `clm_create_upload_url` using the actual `fileName`, `mimeType` and `fileSize`. Reuse an existing upload reference instead of uploading the same document again. Supported files: PDF, DOCX, TXT, RTF, JPEG and PNG, up to 50 MiB each. Upload destinations and unused references expire within an hour.
 
 **1. Measure the file without reading it.** You need `fileSize` in bytes and a `mimeType`, and neither requires the contents:
 
@@ -155,32 +144,7 @@ If upload fails or policy blocks it, stop and tell the user. Follow [transfer or
 
 Cursor, Codex and Claude must restrict upload egress to `app.contracko.com`, not general network access. Without enforceable restrictions, keep uploads approval-gated or use a fallback. Cursor's narrow shell entry is `Shell(curl:*https://app.contracko.com/mcp/files/v1.*)`. Also deny a second `://` and standalone flags `-x`, `--proxy`, `--resolve`, `--connect-to`, `-k`, `--insecure`, `-K`, and `--config`. Match arguments, not substrings in base64url tokens. The glob alone is not a security boundary.
 
-**3. Read the document for its content, not its bytes.** To fill the contract and its analysis you need the text, and text is cheap where base64 is not. Extract it locally:
-
-```bash
-pdftotext -layout contract.pdf -      # PDF
-textutil -convert txt -stdout f.docx  # DOCX on macOS
-```
-
-A 50 KB PDF is perhaps 4k tokens as text against 17k as base64, and the text is the part you can actually reason over.
-
-Then call `clm_ingest_contract` with the reference, the metadata you read off the document, and a filled `summary.analysis`.
-
-### For a folder
-
-Do the loop, one contract per document, and keep the whole file out of your context every time: size it, upload it, extract its text, ingest it, move on. Confirm the batch with the user before starting, as above.
-
-Where several files clearly belong to one agreement, a master and its order forms, or a signed and unsigned copy of the same contract, say so before filing them as unrelated records. Nothing detects that for you, and a migration out of a shared drive is full of it.
-
-## When you ingest, do the extraction properly
-
-A contract filed through ingest does not go through Contracko's extraction pipeline. What lands is what you send, so sending a title and two dates produces a thin record that looks identical to a rich one until someone opens it.
-
-`contract.summary.analysis` is built for exactly this, and it takes far more than most callers give it: `risks[]`, `obligations[]`, `warranties[]`, `riskAllocation[]`, `gaps[]` and `deviations[]`, each with a severity, a headline and an `evidenceQuote`, plus `fieldEvidence` pointing at where each extracted value came from. There is also `proposedCategoryFields` for the custom fields this contract implies.
-
-You have read the document. Fill them. Quote verbatim in every `evidenceQuote`, because those are what the app highlights in the document viewer, and a paraphrase highlights nothing.
-
-An ingest that skips the analysis is the one case where the manual path really is worse than the managed one. Done properly it is equal, and it costs no context.
+**3. Submit the prepared documents.** Follow [managed import](#managed-import), then [accepted intake](#after-intake-is-accepted) and read the resulting contracts back. Acceptance is not completed extraction. Related classification neither attaches to another contract nor searches for a parent.
 
 ## When something goes wrong
 

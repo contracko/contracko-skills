@@ -4,6 +4,8 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
+- Synced Release 15 intake wording and read-only Parser balance checks; see [import and sync](skills/contracko-import/SKILL.md) and [Parser effects](skills/contracko/references/tool-index.md#contracko-parser-separate-bulk-document-processing).
+- Bumped the unified public version to 1.1.2 and regenerated the directory package.
 - Added the [ChatGPT portal package](packaging/directory/README.md), separate from the generic directory ZIP.
 
 ## 1.1.1, 2026-10-13
