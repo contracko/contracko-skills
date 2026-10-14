@@ -1,206 +1,103 @@
 # Contracko MCP tool index
 
-Use live discovery for tool names and schemas. This index records workflow rules that schemas do not express. [workflows.md](workflows.md) maps user jobs to these tools.
-
-This index lists all 52 tools a connection with every scope can see. A narrower connection sees fewer. When you are unsure which tool fits, call `clm_search_tools` instead of guessing from this page.
-
-## Discovery and results
-
-Tools absent from discovery are unavailable to this connection. First refresh discovery or reconnect if the client has cached schemas. If an older credential still omits newly available actions, a workspace admin can enable new MCP actions for its key, or the user can re-consent OAuth. Do not guess a call.
-
-Check `isError` first. On success, use `structuredContent` when present or the legacy JSON text otherwise, never both. Required fields missing from the discovered `outputSchema` are a response mismatch, not empty data. Re-read before retrying an `OUTCOME_UNKNOWN` mutation.
+60 definitions: 58 normal tools plus two Claude-chat upload-panel tools. Availability depends on scopes, capability policy and client. [Readiness and tool choice](../SKILL.md#connect-and-discover), [imports](../../contracko-import/SKILL.md), and [review](../../contracko-review/SKILL.md) own the instructions.
 
 ## Connection
 
-| Tool | Scope | Use |
+| Tool | Scope | Facts |
 |---|---|---|
-| `auth_validate` | any valid credential | Confirm workspace and scopes before work. |
-| `clm_search_tools` | any valid credential | Find up to five listed tools, with examples and step sequences, for a task. Reads no workspace data. |
-
-Use `clm_search_tools` when the right tool is unclear, before a multi-step job, and for a first contract in an empty workspace. Results come only from this connection's tool list. Example arguments use synthetic IDs; replace them with real values from the connection.
-
-```json mcp:clm_search_tools
-{ "query": "set renewal reminders", "toolset": "events" }
-```
-
-CLM tools (`clm_*`) add, import and manage contracts without Parser credits. Parser tools (`parser_*`) are separate Contracko Parser bulk document processing, use Parser credits and are not needed to add contracts to your contract register.
+| `auth_validate` | any valid credential | Reports workspace, scopes and Contract Management refusals, even with credential `status: "ok"`. |
+| `clm_search_tools` | any valid credential | Searches listed tools; up to five results with purpose, scopes, examples, related tools and sequences. Optional `toolset`: contracts, parties, folders, events, imports, parser, connection. Reads no workspace data and calls nothing. |
 
 ## Contracts and folders
 
-| Tool | Scope | Use |
+| Tool | Scope | Facts |
 |---|---|---|
-| `clm_list_contracts` | `contract:read` | Page contract records and business filters. |
-| `clm_get_contract` | `contract:read` | Read one contract, including filing state. |
-| `clm_list_folders` | `contract:read` | Page folders visible to the user. |
-| `clm_get_folder` | `contract:read` | Inspect one visible folder: its visible path, visibility, permission, and bounded members. |
-| `clm_create_folder` | `contract:write` | Create a root folder or a child of a visible parent. |
-| `clm_rename_folder` | `contract:write` | Rename a manageable folder. |
-| `clm_move_folder` | `contract:write` | Move a folder to a visible parent or the root. |
-| `clm_move_contract` | `contract:write` | File a contract in a visible folder, or unfile it. |
-| `clm_get_contract_access` | `contract:read` | Read a contract access overview. |
-
-`clm_list_folders` uses `continuation`, not the contract `cursor`. Omitting `parentFolderId`, or sending `parentFolderId: null`, lists only the visible root. Complete root pages, then list and complete the children of every visible folder recursively to enumerate the visible tree. A completed root page set is not a full-tree result. For each parent, repeat the same parent and limit with the opaque continuation until it is `null`. Returned paths contain visible ancestors only. Omission does not prove a hidden folder exists or does not exist.
-
-Inspect a destination before changing it. Confirm the visible path and every bulk change. `clm_move_contract` accepts `folderId: null` only to unfile. `clm_move_folder` accepts `parentFolderId: null` to move to the root. Moves can remove inherited access and reassign affected people's scheduled email notifications to the contract owner. Moving a folder to root turns off limited access; moving it back does not restore that setting and requires current permissions. Explain these effects before moving. Folder deletes and direct access changes are app work. `clm_get_folder` and `clm_get_contract_access` are read-only and provide no ACL write operation.
-
-```json mcp:clm_list_folders
-{ "limit": 50 }
-```
-
-Continue a child-folder page with the same parent and limit. The continuation is opaque.
-
-```json mcp:clm_list_folders
-{
-  "parentFolderId": "11111111-1111-4111-8111-111111111111",
-  "limit": 50,
-  "continuation": "opaque-folder-page-token"
-}
-```
-
-```json mcp:clm_get_folder
-{ "id": "11111111-1111-4111-8111-111111111111" }
-```
-
-```json mcp:clm_create_folder
-{ "name": "Legal", "parentFolderId": null }
-```
-
-```json mcp:clm_rename_folder
-{ "id": "11111111-1111-4111-8111-111111111111", "name": "Legal and compliance" }
-```
-
-```json mcp:clm_move_folder
-{ "id": "11111111-1111-4111-8111-111111111111", "parentFolderId": null }
-```
-
-```json mcp:clm_move_contract
-{ "id": "22222222-2222-4222-8222-222222222222", "folderId": "11111111-1111-4111-8111-111111111111" }
-```
-
-Unfile only after the user asks to remove the contract from its folder.
-
-```json mcp:clm_move_contract
-{ "id": "22222222-2222-4222-8222-222222222222", "folderId": null }
-```
-
-```json mcp:clm_get_contract_access
-{ "id": "22222222-2222-4222-8222-222222222222" }
-```
-
-Use IDs returned by discovery in real calls. The UUIDs above are valid example values only.
-
-### Contract filters and filing state
-
-`clm_list_contracts` supports `status`, `categoryId`, `counterpartyId`, `query`, `endDateFrom`, `endDateTo`, `noticeDateFrom`, `noticeDateTo`, `updatedSince`, and `folderId`. All supplied filters combine with AND. `query` is a literal, trimmed, case-insensitive substring over the title and the assigned Party B display or legal name, including historical names. It is not document search.
-
-The `folderId` list filter must be a valid visible UUID. It cannot be `null`. To audit unfiled contracts, page the applicable contract result and inspect `filing.kind`. A contract has `filing.kind` of `unfiled`, `folder`, or `unavailable`. Every returned contract has `folderId`: it is a visible UUID only for `folder`, otherwise `null`. `filing.folder.id` and `filing.folder.path` are available only for `folder`. Treat `unavailable` as unknown filing, not as unfiled.
-
-Use the narrowest supported filters, then repeat the same normalized filters and opaque `cursor` until `nextCursor` is `null`. Changing any filter starts a new query without a cursor. For an OR question, run separate complete queries and deduplicate by contract ID. For value, currency, null-presence, or custom-field filters, complete the narrowed server result before local filtering. Date windows exclude null dates.
-
-Resolve a vendor with `clm_list_parties` using `query` and `type` before passing its returned ID as `counterpartyId`. When more than one party matches, ask the user to choose.
-
-```json mcp:clm_list_contracts
-{
-  "endDateFrom": "2026-04-01",
-  "endDateTo": "2026-06-30",
-  "status": "active",
-  "limit": 50
-}
-```
-
-```json mcp:clm_list_parties
-{ "query": "Acme", "type": "company" }
-```
+| `clm_list_contracts` | `contract:read` | Paginated records with business filters and filing state. |
+| `clm_get_contract` | `contract:read` | One contract, including filing state. |
+| `clm_list_folders` | `contract:read` | Visible folders; `continuation` pagination, separate from contract cursors. |
+| `clm_get_folder` | `contract:read` | Visible path, visibility, permission and bounded members. |
+| `clm_create_folder` | `contract:write` | Creates a root folder or child of a visible parent. |
+| `clm_rename_folder` | `contract:write` | Renames a manageable folder. |
+| `clm_move_folder` | `contract:write` | Moves to a visible parent or root. |
+| `clm_move_contract` | `contract:write` | Files in a visible folder, or unfiles. |
+| `clm_get_contract_access` | `contract:read` | Informational access overview; no ACL writes. |
 
 ## Evidence and review
 
-| Tool | Scope | Use |
+| Tool | Scope | Facts |
 |---|---|---|
-| `clm_get_contract_analysis` | `contract:read` | Risk, obligations, and key-term analysis. |
-| `clm_search_contract_documents` | `contract:read` | Find cited text. `exact` is the stable pagination mode. |
-| `clm_read_contract_document` | `contract:read` | Read bounded cited sections. |
-| `clm_get_contract_document_download_url` | `contract:read` | Get a short-lived original or preview URL. Do not log it. |
-| `clm_list_contract_comments` | `contract:read` | Read comments on one contract. |
-
-Semantic and hybrid document search send the query to an external embedding provider. Use `exact` when that transfer is not authorized.
+| `clm_get_contract_analysis` | `contract:read` | Risks, obligations and key terms. |
+| `clm_search_contract_documents` | `contract:read` | Cited text; exact search has stable pagination. Semantic/hybrid queries use an external embedding provider. |
+| `clm_read_contract_document` | `contract:read` | Bounded cited sections. |
+| `clm_get_contract_document_download_url` | `contract:read` | Original or preview URL, expiring in 15 minutes. |
+| `clm_list_contract_comments` | `contract:read` | Comments on one contract. |
 
 ## Document re-reads
 
-A re-read runs external AI extraction on one contract document again, replaces its saved extraction snapshot and processing status, and compares the result with the saved contract. Contract-field proposals still require person approval. When Bento is enabled, successful extraction records a setup milestone on the acting member's subscriber.
-
-| Tool | Scope | Use |
+| Tool | Scope | Facts |
 |---|---|---|
-| `clm_reprocess_contract_document` | `contract:write` | Start a re-read of one document. Retry with the same `idempotencyKey` to get the original run. |
-| `clm_get_contract_reprocess_run` | `contract:read` | Check progress and settle any unconfirmed queue handoff in the saved run. This changes saved state. |
-| `clm_list_contract_reconciliations` | `contract:read` | List a contract's recent re-reads, including completed ones nobody has reviewed. |
-| `clm_get_contract_reconciliation` | `contract:read` | Persist the review list and refresh saved comparison values and the approval version. Never applies or dismisses a finding. |
-| `clm_apply_contract_reconciliation` | `contract:write` | Write selected findings onto the contract after a person approves that exact selection. |
-
-The two `get` helpers above are annotated as writes despite requiring `contract:read`. Explain their saved-state changes and get approval before calling them; list-only review uses `clm_list_contract_reconciliations`. Apply only works in a client that can ask the person to approve; otherwise send the user to the review in Contracko. A re-read uses the same extraction allowance as an import. During a free trial that allowance is capped; see [CLM trial limits](../SKILL.md#clm-trial-limits).
+| `clm_reprocess_contract_document` | `contract:write` | External AI extraction replaces the saved snapshot/status; costs one extraction. Same-key retries return the original run. Successful extraction records a Bento setup milestone when enabled. |
+| `clm_get_contract_reprocess_run` | `contract:read` | Progress; settles unconfirmed queue handoffs in saved state. Annotated as a write. |
+| `clm_list_contract_reconciliations` | `contract:read` | Recent re-reads, including unreviewed completed runs; list-only read. |
+| `clm_get_contract_reconciliation` | `contract:read` | Persists review list, refreshes comparison values and approval version; applies/dismisses nothing. Annotated as a write. |
+| `clm_apply_contract_reconciliation` | `contract:write` | Applies selected findings; requires human approval in a capable client. |
 
 ## Import and contract writes
 
-| Tool | Scope | Use |
+| Tool | Scope | Facts |
 |---|---|---|
-| `clm_import_contracts` | `contract:write` | Managed import from a prepared upload (`kind: "upload"`), inline bytes, or a remote URL. Contracko extracts. |
-| `clm_import_files` | `contract:write` | Managed import of files attached in a ChatGPT chat. Contracko downloads them from ChatGPT's file service. |
-| `clm_create_upload_session` | `contract:write` | Create a one-hour upload link (`uploadPageUrl`) where the signed-in person adds files in their browser. The fallback when you cannot send the bytes. |
-| `clm_get_import_status` | `contract:read` | Check import or ingest progress with `processing.jobId`. Returns a snapshot by default; `wait: true` waits at most 25 seconds. Send the "received, reading now" message first. |
-| `clm_create_upload_url` | `contract:write` | Create a short-lived upload destination for import or ingest. `ifUploadUrlUnreachable` names the fallback. |
-| `clm_ingest_contract` | `contract:write` | File uploaded documents with agent-supplied metadata and analysis. |
-| `clm_add_contract_documents` | `contract:write` | Add draft or related documents, or replace the primary document. |
-| `clm_update_contract` | `contract:write` | Partially update one contract with its latest `updatedAt`. |
-| `clm_bulk_update_contracts` | `contract:write` | Independently update up to 100 contracts. Confirm the batch. |
-| `clm_add_contract_comment` | `contract:write` | Add a comment. Contracko emails the contract's followers. After an unknown outcome, list comments before retrying. |
-| `clm_create_contract_type` / `clm_update_contract_type` | `contract:write` | Create types and fields, or replace a supplied field set. |
-| `clm_list_contract_types` / `clm_get_contract_type` | `contract:read` | Inspect types and fields. |
-| `clm_create_party` / `clm_update_party` | `contract:write` | Create or partially update parties. |
-| `clm_list_parties` / `clm_get_party` | `contract:read` | Resolve and inspect parties. |
+| `clm_import_contracts` | `contract:write` | Managed extraction from prepared upload, inline bytes or remote URL. |
+| `clm_import_files` | `contract:write` | Managed import from ChatGPT's attachment service. |
+| `clm_create_upload_session` | `contract:write` | One-hour browser upload link for the signed-in person. |
+| `clm_show_upload_widget` | no required scope; Claude chat only | Opens the panel, uploads nothing itself. Panel import needs write access and reports a processing job. Not available in Claude Code. |
+| `clm_prepare_widget_upload` | `contract:write`; Claude chat panel only | Panel-internal, not a direct agent call; single-use document destination expires within five minutes. |
+| `clm_get_import_status` | `contract:read` | Import/ingest snapshot; `wait: true` waits at most 25 seconds. |
+| `clm_create_upload_url` | `contract:write` | Short-lived upload destination; `ifUploadUrlUnreachable` supplies a fallback. |
+| `clm_ingest_contract` | `contract:write` | Files documents with supplied metadata/analysis; records a Bento setup milestone when enabled. |
+| `clm_add_contract_documents` | `contract:write` | Adds drafts or related documents, or replaces the primary. |
+| `clm_update_contract` | `contract:write` | Partial update with latest `updatedAt`. |
+| `clm_bulk_update_contracts` | `contract:write` | Up to 100 independent updates. |
+| `clm_add_contract_comment` | `contract:write` | Adds a comment and emails followers. |
+| `clm_create_contract_type` | `contract:write` | Creates definitions, not AI fields or re-extractions; records a Bento setup milestone when enabled. |
+| `clm_update_contract_type` | `contract:write` | Supplied `fields` replace the whole field set. |
+| `clm_list_contract_types` | `contract:read` | Type definitions. |
+| `clm_get_contract_type` | `contract:read` | Current type and field definitions. |
+| `clm_create_party` | `contract:write` | Creates a counterparty. |
+| `clm_update_party` | `contract:write` | Partial party update. |
+| `clm_list_parties` | `contract:read` | Party resolution by query and type. |
+| `clm_get_party` | `contract:read` | One party. |
 
-Creating a contract type does not re-extract contracts or generate fields with AI. When Bento is enabled, creating a type or completing ingest records a setup milestone on the acting member's subscriber.
+## Type generation and type re-reads
 
-`taxId` and `registrationNumber` are for organisations only (`company`, `non-profit`, `government`), never for an `individual` or a personal identifier. Changing a party to `individual` needs both cleared in the same update.
-
-### Add your first contract
-
-For a single local file in an empty workspace, `clm_search_tools` with "Add my first contract" returns this sequence. [workflows.md](workflows.md#add-your-first-contract) has the full job.
-
-1. `clm_create_upload_url` with `fileName`, `mimeType`, and `fileSize`.
-2. HTTP `PUT` the bytes to the returned URL with the same `Content-Type`. This is a plain request, not a tool call.
-3. `clm_ingest_contract` with the returned `uploadReference` and the contract details you read from the document.
-4. `clm_get_contract` to verify the new record.
-
-```json mcp:clm_create_upload_url
-{ "fileName": "acme-msa.pdf", "mimeType": "application/pdf", "fileSize": 182044 }
-```
-
-After the PUT, `clm_import_contracts` with a `kind: "upload"` file lets Contracko extract instead of you. In ChatGPT, use `clm_import_files` for attached files. Without network access, send only a tiny file inline; otherwise create an upload link with `clm_create_upload_session`. Upload only to the returned `uploadUrl`, never to a third-party host. Never publish a confidential contract to make a remote URL work. [contracko-import](../../contracko-import/SKILL.md) defines these paths.
+| Tool | Scope | Facts |
+|---|---|---|
+| `clm_create_type_generation_upload_url` | `contract:write` | Example-document upload without filing a contract. |
+| `clm_start_type_generation` | `contract:write` | Spends generation allowance; repeated starts are not idempotent. Saves a new type immediately for review, leaves matching types unchanged, returns failed runs' trial slots. |
+| `clm_get_type_generation` | `contract:read` | Background generation run started by the connected user. |
+| `clm_get_type_generation_draft` | `contract:read` | Created type ID with read-only field examples/quotes, or existing-type verdict; creates nothing. Saving in the normal editor marks the type reviewed. |
+| `clm_reread_contract_type` | `contract:write` | One external-AI extraction per contract with a primary document; replaces an open batch, cancelling unstarted reads. Idempotent same-key retries. Human approval required; saved contract fields remain unchanged pending approval. |
+| `clm_get_contract_type_reread` | `contract:read` | Runs/proposal counts; can retry lost reads or stop stuck batches, update saved status and cancel unstarted items. Annotated as a write. |
 
 ## CLM events and notifications
 
-Events and notifications need `contract:read` to list and `contract:write` to change. List before a change, use the latest `expectedUpdatedAt` for updates or deletes, and confirm a bulk write. Renewal notifications attach to the existing `end` system event.
-
-Contracko emails each notification to its recipient when it falls due. Creating or changing events and notifications therefore schedules email to real people; say who will receive what before writing. Deleting an event or notification stops those emails.
-
-| Tool family | Scope | Use |
+| Tool | Scope | Facts |
 |---|---|---|
-| `clm_list_contract_events` | `contract:read` | List custom and supported system events with notifications. |
-| `clm_create_contract_events`, `clm_update_contract_events`, `clm_delete_contract_events` | `contract:write` | Manage custom events. |
-| `clm_create_event_reminders`, `clm_update_event_reminders`, `clm_delete_event_reminders` | `contract:write` | Manage notifications on events. |
+| `clm_list_contract_events` | `contract:read` | Custom and supported system events with notifications. |
+| `clm_create_contract_events` | `contract:write` | Creates custom events. |
+| `clm_update_contract_events` | `contract:write` | Updates custom events. |
+| `clm_delete_contract_events` | `contract:write` | Deletes custom events and their notifications. |
+| `clm_create_event_reminders` | `contract:write` | Schedules notification emails on events. |
+| `clm_update_event_reminders` | `contract:write` | Changes scheduled notifications. |
+| `clm_delete_event_reminders` | `contract:write` | Stops notification emails; leaves the event. |
 
 ## Contracko Parser: separate bulk document processing
 
-Uses Parser credits; not needed to add contracts to your contract register. Only use this workflow for requested standalone processing, not contract intake or a CLM plan refusal.
-
-| Tool | Scope | Use |
+| Tool | Scope | Facts |
 |---|---|---|
-| `parser_get_credits` | `parser:compute` | Check balance and availability; initializes a missing workspace credit ledger and spends no credits. |
-| `parser_preflight` | `parser:compute` | Estimate credits and validate files; initializes a missing workspace credit ledger and spends no credits. |
-| `parser_create_upload_url` | `parser:compute` | Prepare a document for a Parser job; spends no credits. |
-| `parser_create_job` | `parser:compute` | Start bulk processing with external AI providers; completed processing consumes Parser credits. |
-| `parser_get_job` | `parser:compute` | Read a Parser job and retrieve results; spends no additional credits. |
-| `parser_list_jobs` | `parser:compute` | List Parser jobs; spends no additional credits. |
-
-A workspace without an eligible Parser subscription gets 20 free Parser credits once. That is 20 credits, not 20 extractions: each document costs 1 to 5 credits (one per 10 estimated pages, or one per 2 MiB when pages cannot be estimated), and review doubles the cost. Beyond the free credits, jobs need paid Parser credits. Check `parser_get_credits` and `parser_preflight` before quoting how much a balance covers.
-
-Preflight before starting a Parser job, confirm the estimated Parser credit cost, and retrieve exports before their retention window ends. Parser credit refusals affect this product, not CLM contract intake.
+| `parser_get_credits` | `parser:compute` | Balance/availability; initializes a missing credit ledger, spends no credits. Annotated as a write. |
+| `parser_preflight` | `parser:compute` | Credit estimate/file validation; initializes a missing ledger, spends no credits. Annotated as a write. |
+| `parser_create_upload_url` | `parser:compute` | Prepares a Parser document; spends no credits. |
+| `parser_create_job` | `parser:compute` | External-AI bulk processing; completed processing consumes Parser credits. |
+| `parser_get_job` | `parser:compute` | Job/results; no additional credits. |
+| `parser_list_jobs` | `parser:compute` | Jobs; no additional credits. |

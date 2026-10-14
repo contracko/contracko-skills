@@ -12,28 +12,7 @@ schemas, including types, enums, bounds, string patterns, nullable branches, and
 is a targeted documentation check, not a general JSON Schema validator or a live MCP integration test.
 The release tests also build the OpenClaw and Hermes bundles from the canonical skill directories,
 check the Agent Plugins v1 manifest boundary, compare skill bytes, and verify reproducibility. They
-do not install or run OpenClaw or Hermes. The ChatGPT submission archive `contracko-agent-plugin.zip`
-contains the generated directory package plus metadata pinning its source commit; its test checks
-package bytes, deterministic output, and a changed hash for a different source commit.
-
-Build the same release artifacts locally with:
-
-```bash
-SOURCE_COMMIT=$(git rev-parse HEAD) VERSION=1.1.0 ./build-zips.sh
-```
-
-The public Agent Plugins Directory package is generated from the same canonical skills:
-
-```bash
-python3 scripts/build_release_artifacts.py --write-directory
-python3 scripts/build_release_artifacts.py --check-directory
-```
-
-Do not edit `packages/agent-plugin/` by hand. The check fails on drift and keeps the nested
-`plugin.json`, the root MCP descriptor, and immediate `skills/<name>/SKILL.md` files aligned with their sources.
-
-Tag releases supply the tag version and GitHub commit SHA through the release workflow. The generated
-platform archives contain setup guidance only; native MCP registration and OAuth remain host-owned.
+do not install or run OpenClaw or Hermes. Package layouts, regeneration and version checks: [DISTRIBUTION.md](../DISTRIBUTION.md). Tests compare package bytes, deterministic output and commit metadata without installing hosts or submitting to portals.
 
 Mark executable examples with `json mcp:<tool-name>` on the opening code fence. Values must be
 syntactically valid examples, not placeholders. Explain nearby that real IDs come from discovery and

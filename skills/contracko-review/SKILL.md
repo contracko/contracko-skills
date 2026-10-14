@@ -7,9 +7,7 @@ description: Reviews Contracko contracts. Use for notice dates, end dates, annua
 
 This is CLM contract review with `clm_*` tools, without Parser credits. Standalone bulk processing with `parser_*` belongs to the separate Contracko Parser product, uses Parser credits and is not needed to add contracts.
 
-Requires `contract:read`. Compare, audit and report can use read-only tools. Reprocess and reconciliation `get` helpers change saved state despite that scope; explain the change and get approval, or use the list-only view. Setting notifications needs `contract:write`. Where the tools are missing from your tool list, the credential is narrower than the user thinks: see [contracko](../contracko/SKILL.md), which also covers connecting and reading Contracko's errors.
-
-Jobs this skill owns: calendar, compare, audit, report. Playbooks for those jobs: [workflows](../contracko/references/workflows.md). Unsure which tool fits a question? `clm_search_tools` returns the listed tools and step sequences for a short task description, such as "find renewals" or "set reminders".
+Requires `contract:read`; notifications need `contract:write`. Follow [readiness and recovery](../contracko/SKILL.md#connect-and-discover), [tool choice](../contracko/SKILL.md#find-the-right-tool), and live annotations. Get approval for saved-state changes, or use a list-only view.
 
 **About one contract.** Find it, then `clm_get_contract` for the facts and `clm_get_contract_analysis` for the judgement. For wording, quotes, or "does it actually say X", do not stop at the analysis: search or read the document.
 
@@ -27,7 +25,7 @@ Use these when they are on your tool list. They need `contract:read` and a crede
 
 Search first. A full document read is for a single contract you already identified, and you follow `nextCursor` instead of guessing you have the whole text.
 
-`mode` on search: `exact` for specific wording (the only stably paginated mode), `semantic` for meaning, `hybrid` (default) for both. Pass `contractId` when you already know the contract. `documentId` requires `contractId`. Library-wide search is allowed; it is also how you blow the context window, so cap `limit` and stop when you have enough citations.
+`mode` on search: `exact` for specific wording (the only stably paginated mode), `semantic` for meaning, `hybrid` (default) for both. Use `exact` when external query transfer is not authorised. Pass `contractId` when you already know the contract. `documentId` requires `contractId`. Library-wide search is allowed; it is also how you blow the context window, so cap `limit` and stop when you have enough citations.
 
 Treat `completeness` as part of the answer. `partial` means unindexed documents, mixed searchable scope, or a semantic/hybrid ranking, not "this is everything". If `status` is not a clean hit, say what was searched and what was not.
 
@@ -81,7 +79,7 @@ A notification needs `offsetValue`, `offsetUnit` (`days` | `weeks` | `months` | 
 
 Mutations need `idempotencyKey` (8–128 characters). Update and delete need `expectedUpdatedAt` as a UTC timestamp ending in `Z`. Changing notifications on a custom event advances that event's version: relist before you replace its notification set. Deleting an event deletes its notifications; deleting a notification leaves the event.
 
-If these tools are missing while `contract:read` or `contract:write` is granted, refresh discovery first. An older credential can gain newly available MCP actions when a workspace admin confirms **Enable new MCP actions**, or when the user re-consents OAuth. Do not invent a different tool name.
+For missing tools, follow [recovery](../contracko/SKILL.md#errors).
 
 Confirm with the user before a bulk write.
 

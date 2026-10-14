@@ -14,9 +14,7 @@ These skills teach the assistant how to import, review, organise, and file that 
 
 **No account yet?** Start a [7-day free trial](https://contracko.com) (no credit card). You can also create the trial account on the OAuth screen the first time you connect the server.
 
-The trial includes 3 AI extractions (imports and document re-reads count), 10 Clara messages and 1 signature request in total, not per day. When you reach a limit, Contracko shows a plan notice rather than an error: work already accepted is kept, and the assistant stops retrying. Subscribing with a payment method lifts these limits straight away; your free end date stays the same. Parser credits do not lift CLM trial limits.
-
-Contracko Parser gives a workspace without a Parser subscription 20 free Parser credits once. Credits are not extractions: a document costs 1 to 5 credits depending on its size, and review doubles that.
+Trial allowances: [CLM](skills/contracko/SKILL.md#clm-trial-limits) and [Parser](skills/contracko/SKILL.md#parser-allowance).
 
 ## Usage
 
@@ -41,27 +39,7 @@ Connecting this plugin is different: when Claude, ChatGPT, Codex, or another ass
 
 ### Local upload policy
 
-Upload contract bytes **only to the `uploadUrl` returned by `clm_create_upload_url`**, unchanged, after checking HTTPS, the exact host `app.contracko.com`, and the `/mcp/files/v1.` path prefix. Never send a contract to a third-party host or file-sharing service to work around an upload failure or a policy block.
-
-For a PDF, the assistant must execute one literal command:
-
-```bash
-curl -T "<file>" -H "Content-Type: application/pdf" "<uploadUrl>"
-```
-
-At execution, substitute the local path and real returned URL directly inside the quotes. The `Content-Type` header is required by the server; use the declared MIME type for non-PDF files. Run it as one command, with no chaining, subshell, URL file, variable, extra destination, or added curl options. Do not follow redirects. This plain curl command does not display HTTP status, and exit code zero alone does not prove the bytes arrived. A completed command with no transport error or upload-error response permits the next intake call, not a success claim. Contracko validates the stored bytes at intake; confirm filing only from a successful tool result and read-back. If intake returns `UPLOAD_NOT_RECEIVED`, stop and tell the user or use an offered fallback.
-
-If curl fails or execution policy blocks it, stop and tell the user. Offer inline import only for files <=35 MiB that also fit the live tool's file and encoded-payload limits, or the `clm_create_upload_session` upload link. The [import skill](skills/contracko-import/SKILL.md#managed-import) lists the pinned release's smaller limits. Keep policy intact and do not try another host.
-
-For **Cursor**, allow only this shell entry:
-
-```text
-Shell(curl:*https://app.contracko.com/mcp/files/v1.*)
-```
-
-Pair it with network egress restricted to **`app.contracko.com` only** and command denials. Apply the same host-only network restriction and command validation in **Codex** and **Claude** execution environments where local uploads run. Do not enable general egress or broadly allow `curl`. If the client cannot enforce these restrictions, keep uploads approval-gated or use the fallback above.
-
-Deny commands containing a second `://`, even when one URL matches the allow entry. Deny the standalone flag arguments `-x`, `--proxy`, `--resolve`, `--connect-to`, `-k`, `--insecure`, `-K`, and `--config`. The one-command shape also excludes other options and attached option forms. Match flags as arguments, not as arbitrary substrings: base64url upload tokens can legitimately contain `-K`-like text. A host string inside a command is not proof of its destination; the shell glob must not stand alone as the security boundary.
+Local uploads and client network settings: [import skill](skills/contracko-import/SKILL.md#working-the-upload-path).
 
 ## Install
 
@@ -76,13 +54,15 @@ For every other assistant, you connect to Contracko in two steps:
 https://app.contracko.com/mcp
 ```
 
-A browser window will open. Sign in to Contracko, or start the free trial there, then approve access on the consent screen. That is the whole flow. Adding the skills does not connect the workspace on its own. If Contracko is already listed in that assistant, skip step 2.
+A browser opens. Sign in or start the free trial, choose your workspace, then review and approve access. Adding skills alone does not connect the workspace. Reuse an existing Contracko connection.
 
-On the consent screen, tick **Read** so it can answer questions. Tick **Write** only if it should add or change contracts. Leave **Write** off unless you want that.
+The consent screen offers **View contracts** for questions and reviews, and **Add and edit contracts** for imports or changes. Requested permissions start selected. Untick **Add and edit contracts** unless you want imports or changes; it is offered only when your workspace role allows it. Each permission has an info button with details. When write access is requested, the screen offers a copyable prompt to add a contract in any workspace; select **Add and edit contracts** to copy it.
 
-Once connected, the assistant can see up to 52 Contracko tools, depending on what you approved. It can search them itself, so you do not need to know any tool names. Most assistants stay signed in; if one asks you to sign in again, repeat the browser step.
+OAuth prefers Client ID Metadata Documents (CIMD) for HTTPS metadata-document client IDs, with Dynamic Client Registration (DCR) as fallback. This is transparent to users; connection steps stay the same.
 
-The canonical Agent Plugins v1 package at [`packages/agent-plugin/`](packages/agent-plugin/) bundles skills plus an MCP descriptor. Check for an existing Contracko connection before manually registering `https://app.contracko.com/mcp` through the host client's native MCP and OAuth flow, to avoid duplicate connections.
+Clients without OAuth can use a workspace-bound key created in Contracko for purpose **MCP server**, stored in the client's secret settings. Never paste the credential into chat, source code or logs.
+
+Release bundles and directory submissions: [Distribution](DISTRIBUTION.md).
 
 Open the section for the product you use.
 
@@ -96,13 +76,7 @@ The directory connector works on every Claude plan, including Free. On Team and 
 
 Added Contracko as a custom connector before? Remove that one, or you will see every tool twice.
 
-To add a contract in claude.ai, Claude Desktop chat, Cowork, or the mobile app, attach the file to the chat. It lands in Claude's code-execution sandbox, which blocks outbound hosts by default, so allow Contracko once:
-
-1. Open **Settings > Capabilities**.
-2. Under **Code execution and file creation**, allow network egress, if available.
-3. Add `app.contracko.com` under **Additional allowed domains**.
-
-Claude then uploads the attached contract itself through Contracko's prepared upload URL. On Team and Enterprise, an Owner opens **Organization settings > Capabilities > Package managers + specific domains** and adds `app.contracko.com` once for all members. Without it, Claude sends only a tiny file inline, or gives you an upload link to add the file in your browser.
+Contract uploads: [import skill](skills/contracko-import/SKILL.md#getting-the-bytes-there).
 
 On the Free plan you can still add the skills by hand: download them from [Releases](https://github.com/contracko/contracko-skills/releases/latest) and upload each one under **Customize, Skills**.
 
@@ -120,7 +94,7 @@ For the skills, install the plugin, which also registers the connection:
 /plugin install contracko@contracko
 ```
 
-Paste that full GitHub address (not a short `owner/repo` name). Then run `/mcp` and sign in in the browser.
+Paste that full GitHub address (not a short `owner/repo` name). Run `/mcp`, then follow the [sign-in and consent steps](#install).
 
 Using an API key without the plugin? Run this only if `claude mcp list` shows no Contracko entry:
 
@@ -130,7 +104,7 @@ claude mcp add --transport http contracko https://app.contracko.com/mcp
 
 If you installed the older `contracko-skills` plugin, remove that plugin and install `contracko@contracko` after updating the marketplace. The GitHub repository remains `contracko/contracko-skills`; the MCP connection remains `contracko`.
 
-To add a contract, give Claude Code the file's path. It uploads the file from your own shell, so the bytes never pass through the chat. Approve the upload command when Claude Code asks. If a strict sandbox blocks network access, allow `app.contracko.com` in its sandbox or network settings.
+Contract uploads: [import skill](skills/contracko-import/SKILL.md#getting-the-bytes-there).
 
 </details>
 
@@ -140,11 +114,11 @@ To add a contract, give Claude Code the file's path. It uploads the file from yo
 1. In the workspace, go to **Settings → Plugins → Import marketplace** and enter `contracko/contracko-skills`.
 2. Turn on **Developer mode**.
 3. Go to **Settings → Apps → Create** and paste `https://app.contracko.com/mcp`.
-4. Sign in in the browser that opens.
+4. Follow the [sign-in and consent steps](#install).
 
 ChatGPT has no settings file for this. Use the screens above.
 
-To add a contract, attach the file to the chat and ask ChatGPT to import it. If the attachment does not reach Contracko, ChatGPT gives you an upload link where you add the file in your browser.
+Contract uploads: [import skill](skills/contracko-import/SKILL.md#getting-the-bytes-there).
 
 </details>
 
@@ -153,7 +127,7 @@ To add a contract, attach the file to the chat and ask ChatGPT to import it. If 
 
 1. Open [grok.com/connectors](https://grok.com/connectors).
 2. Add `https://app.contracko.com/mcp`.
-3. Sign in in the browser that opens.
+3. Follow the [sign-in and consent steps](#install).
 
 For Grok in the terminal, see **Any other assistant** below.
 
@@ -168,16 +142,16 @@ codex mcp add contracko --url https://app.contracko.com/mcp
 codex mcp login contracko
 ```
 
-Sign in in the browser that opens. For local uploads, apply the [host-only upload policy](#local-upload-policy) rather than enabling general network access.
+Follow the [sign-in and consent steps](#install).
 
 </details>
 
 <details>
 <summary><strong>Cursor</strong></summary>
 
-This repository includes a Cursor plugin manifest at `.cursor-plugin/plugin.json`. It bundles the four existing skills and the MCP connection in `mcp.json`; no API key is included. The plugin is not yet listed in the public Cursor Marketplace.
+The Cursor plugin is not yet listed in the public Marketplace. [Distribution status](DISTRIBUTION.md#status).
 
-To test the plugin locally, clone this repository into `~/.cursor/plugins/local/contracko-skills`, reload Cursor, and check **Customize** for the skills and MCP server. Connect Contracko and complete OAuth in the browser. The consent screen requests read and write access by default; review it before you approve. If you already added the same server manually, use one connection rather than enabling both.
+To test the plugin locally, clone this repository into `~/.cursor/plugins/local/contracko-skills`, reload Cursor, and check **Customize**. Follow the [sign-in and consent steps](#install).
 
 For manual installation without the plugin:
 
@@ -191,7 +165,7 @@ Then add this to `.cursor/mcp.json` in your project (create the file if it is no
 { "mcpServers": { "contracko": { "url": "https://app.contracko.com/mcp" } } }
 ```
 
-Restart Cursor if it does not pick up the connection, then sign in in the browser. For local uploads, apply the [narrow shell allow entry and host-only upload policy](#local-upload-policy).
+Restart Cursor if it does not pick up the connection, then follow the [sign-in and consent steps](#install).
 
 </details>
 
@@ -208,7 +182,7 @@ Then open the Cline panel, go to the **Configure** tab, and add this to the MCP 
 { "mcpServers": { "contracko": { "type": "streamableHttp", "url": "https://app.contracko.com/mcp" } } }
 ```
 
-Sign in in the browser that opens. Set `"type": "streamableHttp"`, because leaving it out falls back to the older SSE transport.
+Follow the [sign-in and consent steps](#install). Set `"type": "streamableHttp"`; omitting it selects the older SSE transport.
 
 </details>
 
@@ -225,7 +199,7 @@ Then add this to `.vscode/mcp.json` in your project:
 { "servers": { "contracko": { "type": "http", "url": "https://app.contracko.com/mcp" } } }
 ```
 
-Sign in in the browser that opens.
+Follow the [sign-in and consent steps](#install).
 
 </details>
 
@@ -242,46 +216,21 @@ Then add this to `~/.gemini/settings.json`:
 { "mcpServers": { "contracko": { "httpUrl": "https://app.contracko.com/mcp" } } }
 ```
 
-Sign in in the browser that opens.
+Follow the [sign-in and consent steps](#install).
 
 </details>
 
 <details>
 <summary><strong>OpenClaw</strong></summary>
 
-For the thin wrapper, download [contracko-openclaw.zip](https://github.com/contracko/contracko-skills/releases/latest/download/contracko-openclaw.zip), extract it, and install the directory through OpenClaw's normal bundle flow. The archive contains the four skills only. It does not register or authenticate an MCP server.
-
-For a skills-only install, run `npx skills@latest add contracko/contracko-skills`.
-
-If you already have the skills, use the native setup below. Check for an existing `contracko` entry first and do not add a second connection:
-
-```bash
-openclaw mcp set contracko '{"url":"https://app.contracko.com/mcp","transport":"streamable-http"}'
-openclaw mcp configure contracko --auth oauth
-openclaw mcp login contracko
-```
-
-Run those commands only after explicitly approving the new central entry. Sign in in the browser that opens and choose **Read** or **Write** scopes yourself.
+Use the [OpenClaw setup](packaging/openclaw/README.md) for its native MCP commands. Follow the [sign-in and consent steps](#install).
 
 </details>
 
 <details>
 <summary><strong>Hermes</strong></summary>
 
-For the thin wrapper, download [contracko-hermes.zip](https://github.com/contracko/contracko-skills/releases/latest/download/contracko-hermes.zip), extract it, and install the directory through Hermes's normal plugin flow. Review and enable the package explicitly. The archive contains the four skills only. It does not write MCP configuration or credentials.
-
-For a skills-only install, run `npx skills@latest add contracko/contracko-skills`.
-
-If you already have the skills, check `~/.hermes/config.yaml` for an existing `mcp_servers.contracko` entry first. If none exists, explicitly approve adding this entry while preserving the rest of the file:
-
-```yaml
-mcp_servers:
-  contracko:
-    url: "https://app.contracko.com/mcp"
-    auth: oauth
-```
-
-Run `hermes mcp login contracko` and sign in in the browser. Choose **Read** or **Write** scopes yourself.
+Use the [Hermes setup](packaging/hermes/README.md) for its native configuration and login command. Follow the [sign-in and consent steps](#install).
 
 </details>
 
@@ -301,25 +250,9 @@ That package only launches the hosted server at `https://app.contracko.com/mcp`.
 <details>
 <summary><strong>Any other assistant</strong></summary>
 
-Paste this into the assistant and let it follow the file:
-
-```
-Fetch and follow https://contracko.com/mcp/install/prompt.md
-```
-
-If you are adding the connection yourself, the address is still `https://app.contracko.com/mcp`. Sign in in a browser. Do not add Contracko twice if it is already connected.
-
-Step-by-step recipes: [agent-setup/prompt.md](agent-setup/prompt.md).
+For agents, use the [hosted setup prompt](https://contracko.com/mcp/install/prompt.md). Human connection steps are above.
 
 </details>
-
-### Adding contract files from Codex and Cursor
-
-- **Codex CLI:** the default sandbox has no network, so set `sandbox_workspace_write.network_access = true` for the upload, with egress limited to `app.contracko.com` where possible. Non-interactive runs need approval for the import tool.
-- **Cursor CLI:** allow one plain `curl -T "<file>" -H "Content-Type: <mimeType>" "<uploadUrl>"` command and network access to `app.contracko.com` only.
-- **Cursor web:** attachments are limited to 4 MB, so the assistant gives you an upload link instead.
-
-Contract files go only to Contracko's own upload address, never to a third-party host. If an upload is blocked, the assistant stops and tells you.
 
 ## Skills
 
@@ -347,6 +280,6 @@ See [validation and catalog refresh](tests/README.md) and the [workflow regressi
 
 ### Release sync
 
-After each Contracko MCP release reaches production, open a skills-bundle sync PR for that release's agent-facing changes. Check what is live on the app's `main` (not staging or open PRs), update the skills to match, follow the [single public version rule](DISTRIBUTION.md#versioning), add [release notes](CHANGELOG.md), and run the checks above. The 1.1.0 baseline uses `packaging/manifest.json` for every public version, including the manually entered ChatGPT and Claude portal values. The checklist step on the app side is tracked in CTD-5544.
+After each MCP release reaches production, check the app's `main`, sync the skills, follow [Versioning](DISTRIBUTION.md#versioning), add [release notes](CHANGELOG.md), and run the checks above. The app checklist is tracked in CTD-5544.
 
 MIT licensed.

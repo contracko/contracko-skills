@@ -4,7 +4,15 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
-- Added `contracko-agent-plugin-chatgpt.zip` in the live portal layout: only `.codex-plugin/plugin.json` and the four release skills with their references. The MCP connection is configured in the portal, not in the ZIP. Approved listing copy lives in `packaging/chatgpt/plugin.json`; the builder inserts the listing name and unified public version. The generic `contracko-agent-plugin.zip` and other directories keep `contracko` and their existing layout.
+- Added the [ChatGPT portal package](packaging/directory/README.md), separate from the generic directory ZIP.
+
+## 1.1.1, 2026-10-13
+
+- Synced Release 11 [workspace consent](README.md#install) and [Contract Management refusal recovery](skills/contracko/SKILL.md#errors).
+- Synced Release 12 part 1 [CIMD/DCR compatibility](README.md#install) and immediate refusal of revoked credentials.
+- Added the missing generation, type re-read and upload-panel tools to the [tool index](skills/contracko/references/tool-index.md), including costs and saved-state effects.
+- Corrected [Claude chat transfer order](skills/contracko-import/SKILL.md#claude-chat-transfer-order) and [ChatGPT ZIP guidance](packaging/directory/README.md).
+- Unified public versions and regenerated mirrors at 1.1.1; deduplicated instructions and trimmed the install prompt.
 
 ## 1.1.0, 2026-10-09
 

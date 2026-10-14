@@ -1,6 +1,6 @@
 {
   "source": "Contracko released MCP catalog",
-  "revision": "4cc991bb32927d5d585632568b417f0fd1aabb34",
+  "revision": "d92646bdae020a668a9c76893dbdb2c399b4cc10",
   "tools": [
     {
       "name": "auth_validate",
@@ -152,7 +152,7 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "name": {
-            "description": "Record name.",
+            "description": "Name",
             "maxLength": 255,
             "minLength": 1,
             "type": "string"
@@ -185,6 +185,22 @@
         "openWorldHint": false,
         "readOnlyHint": false,
         "title": "Create party"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "create",
+        "retry": "none"
+      }
+    },
+    {
+      "name": "clm_create_type_generation_upload_url",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Prepare type generation document"
       },
       "effect": {
         "boundary": "workspace",
@@ -417,6 +433,22 @@
       }
     },
     {
+      "name": "clm_get_contract_type_reread",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Get re-read batch"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "settled"
+      }
+    },
+    {
       "name": "clm_get_folder",
       "introducedInCapabilityPolicyVersion": 5,
       "annotations": {
@@ -471,6 +503,38 @@
         "openWorldHint": false,
         "readOnlyHint": true,
         "title": "Get party"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
+    },
+    {
+      "name": "clm_get_type_generation",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Get type generation status"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
+    },
+    {
+      "name": "clm_get_type_generation_draft",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Get generated type result"
       },
       "effect": {
         "boundary": "workspace",
@@ -795,7 +859,7 @@
             "description": "Folder ID; null selects root."
           },
           "id": {
-            "description": "Record identifier.",
+            "description": "Record ID",
             "format": "uuid",
             "type": "string"
           }
@@ -826,7 +890,7 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "id": {
-            "description": "Record identifier.",
+            "description": "Record ID",
             "format": "uuid",
             "type": "string"
           },
@@ -848,6 +912,22 @@
           "parentFolderId"
         ],
         "type": "object"
+      }
+    },
+    {
+      "name": "clm_prepare_widget_upload",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Prepare panel upload"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "create",
+        "retry": "none"
       }
     },
     {
@@ -885,12 +965,12 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "id": {
-            "description": "Record identifier.",
+            "description": "Record ID",
             "format": "uuid",
             "type": "string"
           },
           "name": {
-            "description": "Record name.",
+            "description": "Name",
             "maxLength": 255,
             "minLength": 1,
             "type": "string"
@@ -912,6 +992,22 @@
         "openWorldHint": false,
         "readOnlyHint": false,
         "title": "Reprocess contract document"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "key"
+      }
+    },
+    {
+      "name": "clm_reread_contract_type",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Re-read contract type"
       },
       "effect": {
         "boundary": "workspace",
@@ -982,6 +1078,38 @@
           "query"
         ],
         "type": "object"
+      }
+    },
+    {
+      "name": "clm_show_upload_widget",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Show upload panel"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      }
+    },
+    {
+      "name": "clm_start_type_generation",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Generate a contract type"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "create",
+        "retry": "none"
       }
     },
     {

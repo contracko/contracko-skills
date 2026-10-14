@@ -22,9 +22,7 @@ The bundle is a GitHub repo with one folder per skill, `SKILL.md` at each folder
 | Other coding agents | `npx skills add https://contracko.com` | ready once production serves `/.well-known/skills/index.json` (site PR [contracko/contracko-site#693](https://github.com/contracko/contracko-site/pull/693) merged) |
 | Goose and other stdio MCP clients | `npx -y @contracko/mcp` | launcher in `packages/mcp`; publishes to the public npm registry, not GitHub Packages. Proxies stdio to `https://app.contracko.com/mcp`. Not a second MCP server. First version is a local `npm publish`; later versions `npm stage publish` from `release.yml` (OIDC), then a maintainer `npm stage approve` with 2FA. |
 
-`.mcp.json` is intentional (CTO-791). The Claude plugin registers the Contracko server itself, which the plugin directory listing needs. The duplicate risk moved to the docs instead: someone who added Contracko as a custom connector earlier must remove it, and in Claude Code `claude mcp add` is only the fallback for API-key users without the plugin, run only when `claude mcp list` shows no Contracko entry. A manually added server with the same URL hides the claude.ai connector but not the plugin's own server. Never tell a plugin user to run `claude mcp add`; `tests/test_release_artifacts.py` fails if the README or the `contracko` skill does.
-
-Claude connect copy follows the canonical install prompt at [`https://contracko.com/mcp/install/prompt.md`](https://contracko.com/mcp/install/prompt.md): the directory listing first, the plugin `contracko@contracko` for Claude Code skills, and the raw `https://app.contracko.com/mcp` URL for every other client.
+`.mcp.json` is intentional (CTO-791): the Claude plugin registers its server. Client connection and consent steps live in [README.md](README.md#install); [agent-setup/prompt.md](agent-setup/prompt.md) is the copyable installer prompt.
 
 ## The two audiences are not the same person
 
@@ -32,7 +30,7 @@ Nearly every published distribution pattern is a developer-tool pattern: `npx`, 
 
 **Path A, the contract manager.** A remote MCP server with OAuth, added through their client's connector UI, ideally from a directory listing so it is a button rather than a URL. Ends with a first prompt to try, because the activation event is an answer, not a config file.
 
-**Path B, the coding agent.** One line: `npx skills add https://contracko.com`. The MCP connection steps live at [`https://contracko.com/mcp/install/prompt.md`](https://contracko.com/mcp/install/prompt.md); do not add a `/agent-setup/prompt.md` alias.
+**Path B, the coding agent.** One line: `npx skills add https://contracko.com`. Connection steps live in [README.md](README.md#install).
 
 ## Claude chat needs zips, and the repo has to serve them
 
@@ -44,7 +42,7 @@ https://github.com/contracko/contracko-skills/releases/latest/download/contracko
 
 `latest` always resolves to the newest release, so a docs page hard-codes those once and never edits them.
 
-User flow: click the link, then **Customize > Skills > Add > Upload**, pick the zip, toggle it on, start a new conversation. Team and Enterprise owners can instead push skills to everyone from **Organization settings > Skills**, where they arrive enabled by default, which is the fastest route into a customer with an IT function.
+Upload and enable steps: [README Claude section](README.md#install).
 
 ### Gotchas that will bite users
 
@@ -65,7 +63,7 @@ Starting with **1.1.0**, every public Contracko skills, plugin, extension, MCP R
 
 For each release, bump only the source version, copy that value into every public manifest and the npm lockfile's root package fields, then regenerate `packages/agent-plugin/` with `python3 scripts/build_release_artifacts.py --write-directory`. These mirrors have no independent version counters. Run `python3 scripts/check_versions.py --tag vX.Y.Z`: it fails on any public version drift or a mismatched tag. Validation CI, release CI and `build-zips.sh` enforce the rule.
 
-Type the ChatGPT and Claude developer portal version as exactly this value, for example `1.1.0`, without a `v` prefix. The Git release tag is `v1.1.0`. Portal values are manual and cannot be checked by repository CI. The plugin cache is keyed on the version, so bump it for changes users should receive.
+Type the ChatGPT and Claude developer portal version as exactly this value, for example `1.1.1`, without a `v` prefix. The Git release tag is `v1.1.1`. Portal values are manual and cannot be checked by repository CI. The plugin cache is keyed on the version, so bump it for changes users should receive.
 
 The ChatGPT listing `plugin_asdk_app_6a9e97994d248191b2dcb1714454bb2f` requires `.codex-plugin/plugin.json` name `app-6a9e97994d248191b2dcb1714454bb2f`. The mapping lives in [`packaging/directory-listings.json`](packaging/directory-listings.json), separate from the standard manifest so it does not enter other packages. The approved listing copy lives in [`packaging/chatgpt/plugin.json`](packaging/chatgpt/plugin.json); this template omits `name` and `version`, which the builder inserts from the mapping and unified version. `check_versions.py` requires both files to parse and rejects malformed mappings or conflicting template names and versions if stored. Upload `contracko-agent-plugin-chatgpt.zip` to that portal listing with the unified version. Configure the existing MCP connection in the ChatGPT portal; it is not included in the ZIP. Use `contracko-agent-plugin.zip` for every other directory, where the name remains `contracko`.
 
@@ -93,11 +91,11 @@ Three standards now cover nearly everything, so a vendor shipping from one repo 
 - **Agent Skills / `SKILL.md`** became an open standard, and is now read by Codex (`.agents/skills/`), Copilot and VS Code (`.github/skills/`, `.claude/skills/`, `.agents/skills/`), Gemini CLI, Cursor, Cline and Zed. The format here is already the portable one.
 - **Agent Plugins 1.0**, announced August 2026 by Amazon, Cursor, Microsoft, OpenAI, Vercel and Google: one directory with `plugin.json` + `skills/` + `mcp.json`, launching in ChatGPT, Codex, Cursor, Copilot, VS Code and Kiro. Anthropic is not a member, so it does not replace the Claude plugin format.
 
-**Agent Plugins v1 is used for the canonical directory package and the OpenClaw/Hermes release bundles.** The generated directory package at `packages/agent-plugin/` contains a standard `plugin.json`, the four canonical skills and `mcp.json` copied from the repository root. It is the public Git-tree package for the directory crawler, which records its nested manifest path. `contracko-agent-plugin.zip` packages this directory for every directory other than ChatGPT, with the manifest, skills and MCP descriptor at the archive root. It adds release metadata but contains no `.codex-plugin` metadata. `contracko-agent-plugin-chatgpt.zip` mirrors the live portal layout: only `.codex-plugin/plugin.json` and `skills/`, with the four release skills and their references byte-identical to `packages/agent-plugin/skills/`. It contains no MCP descriptor, root manifest, README, license, notice or release metadata. The existing MCP connection is configured in the portal. OpenClaw/Hermes bundles remain skills-only and omit MCP descriptors. The host owns native MCP registration, OAuth and user consent on every path.
+Agent Plugins v1 package layouts and the two directory ZIPs: [directory package](packaging/directory/README.md). OpenClaw/Hermes bundles contain skills only, without MCP descriptors. Native MCP registration, OAuth, credential storage and consent remain host-owned.
 
 The release builder renders the directory package and bundles from `skills/` and `packaging/manifest.json`, using `packaging/chatgpt/plugin.json` for ChatGPT listing copy and `packaging/directory-listings.json` for its name. It fixes archive ordering and timestamps, stores entries without compression, and runs in the existing release workflow. Both Agent Plugins ZIPs are deterministic for identical files, config and version. The generic archive also records the source commit in `RELEASE-METADATA.json`, so changing that commit changes its hash. The ChatGPT archive has no source-commit metadata and keeps the same bytes when only the commit changes. A local candidate is for review; official packages are built by the release workflow from the tagged main commit. The workflow attaches `dist/*.zip`, including both Agent Plugins assets. No host software, OAuth client, credential store, or background updater is shipped.
 
-The committed directory package is not hand-maintained. `skills/` is the source of truth; `packages/agent-plugin/skills/` must contain the same relative files and bytes, except `.DS_Store` files. Regenerate it with `python3 scripts/build_release_artifacts.py --write-directory`; CI and `build-zips.sh` run `--check-directory` and fail on missing, extra, or changed files, including MCP descriptor drift. The generator also rejects canonical files outside its configured skill list, so a new skill cannot be silently omitted. Add new skill names to `SKILLS` in `scripts/build_release_artifacts.py` before regenerating. The check does not modify either tree. The repository-root `mcp.json` is the descriptor source; `.mcp.json` serves the Claude integration and stays outside this package.
+`skills/` is canonical; generated mirrors are never hand-edited. Regenerate with `python3 scripts/build_release_artifacts.py --write-directory`. CI and `build-zips.sh` use `--check-directory` to reject missing, extra, changed or symlinked entries, including descriptor drift. Add new skill names to the builder's `SKILLS` before regenerating. Root `mcp.json` supplies the descriptor; `.mcp.json` is Claude-only.
 
 The generated manifest follows the [Agent Plugins v1 specification](https://agent-plugins.org/specification/). The host flows follow [OpenClaw bundle mapping](https://github.com/openclaw/openclaw/blob/2f8cd215e92320703237b8def415b691f15f3b56/docs/plugins/bundles.md) and [Hermes portable package guidance](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins).
 
@@ -115,18 +113,14 @@ Cursor:   cursor://anysphere.cursor-deeplink/mcp/install?name=contracko&config=<
 VS Code:  https://vscode.dev/redirect?url=<urlencoded vscode:mcp/install?{"name":"contracko","type":"http","url":"..."}>
 ```
 
-**ChatGPT is the one client where shipping from a repo does not work at all.** No file-based instruction loading, no way to point it at GitHub. Skills arrive only inside a plugin installed from OpenAI's directory. Its auth constraint is also the strictest: an MCP server that expects an API key header cannot be connected from ChatGPT at all, so real OAuth with dynamic client registration is the price of entry. Contracko has that already.
+## While developing
 
-## While developing: bump the version or the install goes stale
+Follow [Versioning](#versioning) and reinstall after changes, or use `claude --plugin-dir .` to read the working tree. Marketplace updates alone do not refresh a version-pinned plugin. Removing its version makes the cache pin permanent.
 
-The plugin cache is keyed on `plugin.json`'s `version`. Editing a skill in the source directory changes nothing for anyone who has it installed, including you: `claude plugin marketplace update` refreshes the marketplace, not the plugin, and the installed copy stays pinned at whatever version it was fetched under.
-
-Removing `version` does not fix this. It makes the cache pin permanent, since there is no new string to compare against.
-
-So during development, either follow [Versioning](#versioning) and reinstall, or run `claude --plugin-dir .` for a session that reads the working tree live. Verify with:
+Check the installed skill bytes with:
 
 ```bash
 diff -rq skills ~/.claude/plugins/cache/contracko/contracko/<version>/skills
 ```
 
-Silence means the install matches. This is worth checking before any test run, because a stale install fails in the most confusing way available: the skills are there, they trigger, and they are the wrong ones.
+No differences means the install matches.

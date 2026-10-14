@@ -5,20 +5,13 @@ description: Imports contracts into Contracko from disk, Google Drive, SharePoin
 
 # Importing contracts into Contracko
 
-This is CLM contract intake with `clm_*` tools. Adding, importing and managing contracts never needs Parser credits, even for bulk imports. `parser_*` tools belong to the separate Contracko Parser product: bulk document processing using Parser credits, not a step to add contracts to your contract register.
-
-Onboarding is this skill plus types in [contracko](../contracko/SKILL.md). Find and file here. Shape types after extraction, not before.
+For readiness, product choice and refusals, follow [contracko](../contracko/SKILL.md#connect-and-discover). Imports need `contract:write`. This skill owns transfer and intake; shape types after extraction.
 
 ## Find the files first
 
 Contracko MCP does not browse disks or cloud drives. Use the file, Google Drive, SharePoint, Box or OneDrive tools *you already have*. If you have none, ask the user to share the folder, attach files, or paste a signed download link.
 
-1. Ask where the contracts live. Typical: a laptop folder, Google Drive, SharePoint, Box, email exports.
-2. List candidates. Keep PDFs and DOCX (and the other ingest types). Skip obvious noise (photos of whiteboards, duplicate `final-final-v3`).
-3. Group related files before filing: an MSA with its SOWs, a signed copy next to an unsigned draft. Say the grouping out loud. Nothing in Contracko detects it for you.
-4. Confirm workspace, count and names before a bulk send. A single file they just handed you needs no ceremony.
-
-Do not publish a confidential file to a public URL so `remote` import works. A signed or authenticated link from their own store is the remote path.
+Ask where the contracts live and list supported documents, skipping noise and duplicates. Group related versions, an MSA with its SOWs, and signed with unsigned copies before filing them as unrelated records. Confirm the grouping with the user.
 
 ## Getting the bytes there
 
@@ -28,24 +21,27 @@ MCP has no file transfer, so where you run decides how a document reaches Contra
 |---|---|---|
 | in a shell with network access | `clm_create_upload_url` → PUT → `clm_import_contracts` with `kind: "upload"` (Contracko extracts), or → `clm_ingest_contract` (you supply the fields) | the bytes go machine-to-machine and never touch your context |
 | in ChatGPT with the file attached | `clm_import_files` with the attached files | Contracko downloads them from ChatGPT's file service. Ask for an attachment if there is none. |
-| in Claude chat (web or desktop) with the file attached | the sandbox upload first (`clm_create_upload_url`, one `curl -T` from the sandbox, then `clm_import_contracts` with `kind: "upload"`). If network access is blocked, base64 the same file in the sandbox and send `kind: "inline"`. Only if neither transfer works, `clm_create_upload_session` | ask permission before reading or uploading the attached file (usually under `/mnt/user-data/uploads/`). Inline is up to 35 MiB per file and within the client's tool-argument limit. |
+| in Claude chat (web, desktop, Cowork or mobile) | follow [Claude chat transfer order](#claude-chat-transfer-order) | the panel lets the person choose documents without reading sandbox bytes |
 | without network, and the file is tiny | `clm_import_contracts` with `kind: "inline"` | base64 travels through your context: roughly 1.4x the file size, so a 50 KB PDF costs around 17k tokens. The cap is 35 MiB per file, but clients manage only tens of KB in practice. |
 | unable to send the bytes at all | `clm_create_upload_session`, then give the user its `uploadPageUrl` | the user adds the files in their browser, signed in to Contracko, within the hour |
 | pointing at a URL Contracko can fetch | `clm_import_contracts` with `kind: "remote"` | Contracko downloads it directly. |
 
-How the tested clients behave:
+### Claude chat transfer order
 
-- **Claude Code** uploads from the user's own shell and only needs the command approved. If a strict sandbox blocks network access, the user allows `app.contracko.com` in its sandbox or network settings. The same holds for Cursor and Codex CLI.
-- **Claude in claude.ai, Claude Desktop chat, Cowork and mobile** run the PUT from the code-execution sandbox, which blocks outbound hosts by default. Before the first upload, ask the user to open **Settings > Capabilities > Code execution and file creation**, allow network egress if the setting is available, add `app.contracko.com` under **Additional allowed domains**, and retry. On Team and Enterprise, an Owner uses **Organization settings > Capabilities > Package managers + specific domains** and adds `app.contracko.com` once for all members. Claude then uploads the attached file itself through the prepared upload URL. Until it is allowed, use the upload link or, for a tiny file, inline import.
-- **Codex CLI** needs `sandbox_workspace_write.network_access = true` for the PUT, with egress limited to `app.contracko.com` where the environment can enforce it. Non-interactive runs need approval for `clm_import_contracts`.
-- **Cursor CLI** works only with one plain `curl -T "<file>" -H "Content-Type: <mimeType>" "<uploadUrl>"`, the URL written inline: no chaining, variables, or URL files. **Cursor web** limits attachments to 4 MB, so use the upload link.
-- **ChatGPT**'s sandbox has no internet. Use `clm_import_files`; some developer-mode connectors do not pass attached files through, so fall back to the upload link.
+Show `clm_show_upload_widget` first when available. Ask the person to choose documents there. Sandbox PUT is allowed only if they say they allowed `app.contracko.com`, or the panel is unavailable; ask permission before reading or uploading a sandbox file.
 
-If the PUT cannot reach Contracko, follow `ifUploadUrlUnreachable` in the upload result rather than preparing the file again. **Upload only to the returned `uploadUrl`. Never send a contract to a third-party host or file-sharing service**, including to work around a block. If the upload is blocked, stop and tell the user.
+After blocked PUT, stop and tell the user, then return to the panel when available. If the panel is unavailable or fails, try inline bytes within the live file, encoded-payload and client limits, then an upload link only when earlier paths cannot work or fail.
 
-**Never publish a contract to a public URL to make `remote` work.** A signed or authenticated link from the user's own document store is what that option is for.
+For optional sandbox access, use **Settings > Capabilities > Code execution and file creation**, enable network egress if available, and add only `app.contracko.com` under **Additional allowed domains**. On Team and Enterprise, an Owner uses **Organization settings > Capabilities > Package managers + specific domains**.
 
-Requires `contract:write`. Where the tools are absent from your list, the credential is the problem: see the [contracko](../contracko/SKILL.md) skill.
+### Other client limits
+
+- **Claude Code:** approve the shell command; strict sandboxes need host-only access to `app.contracko.com`.
+- **Codex CLI:** PUT needs `sandbox_workspace_write.network_access = true`, with egress limited to that host. Non-interactive imports need tool approval.
+- **Cursor CLI:** use the literal upload command in [Working the upload path](#working-the-upload-path). **Cursor web:** attachments are limited to 4 MB, so use the upload link.
+- **ChatGPT:** its sandbox has no internet. If the connector cannot pass attachments to `clm_import_files`, use the upload link.
+
+Follow `ifUploadUrlUnreachable` if PUT cannot reach Contracko. Use only returned upload destinations. Never publish a contract to a public URL to make remote import work; use a signed or authenticated link from the user's own store.
 
 If the document is already associated with a contract the user can see, import and ingest return a duplicate conflict instead of a second copy. Tell them which contract holds it. Only retry with `allowDuplicate: true` if they insist on another copy.
 
@@ -58,6 +54,8 @@ Nothing here can be undone. Contracko deliberately keeps delete and archive out 
 Before a bulk import, put three things in front of the user and wait: the workspace `auth_validate` reports, how many documents you are about to send, and what they are. A single file the user just handed you needs no ceremony. Fifty files out of a shared drive does.
 
 ## Managed import
+
+For a first contract, ask the user to attach their own file or give its path, explain that Contracko will extract dates and terms, and ask permission before reading or uploading. Connecting imports nothing.
 
 One call per batch, up to 100 documents, one managed contract per document.
 
@@ -87,7 +85,7 @@ The wording follows the count: one contract reads "Your contract is still being 
 
 | Code | Meaning | Do |
 |---|---|---|
-| `UPLOAD_NOT_RECEIVED` | The file never reached the prepared destination. | Run the upload command from `clm_create_upload_url` again and retry the intake, or send a tiny file inline. Do not poll intake as an upload check. If the upload keeps failing, give the user the upload link. |
+| `UPLOAD_NOT_RECEIVED` | The file never reached the prepared destination. | Follow the returned hint and [transfer order](#getting-the-bytes-there); do not poll intake to check an upload. |
 | `UPLOAD_EXPIRED` | The prepared upload passed its hour. | Prepare the file again, upload to the new URL, and use the new reference. |
 | `INVALID_FILE_CONTENT` | The content is not valid base64 or not a supported document. | Ask the user for the file again. Do not resend the same bytes. |
 
@@ -153,9 +151,9 @@ curl -T "<file>" -H "Content-Type: application/pdf" "<uploadUrl>"
 
 Replace `<file>` with the local path and `<uploadUrl>` with the real returned URL inline when executing. For another accepted file type, use the matching declared `Content-Type`; the server requires this header. Run the upload as one command, with no chaining, subshell, URL file, variable, extra destination, or added curl options. Do not follow redirects. This plain curl command does not display HTTP status; exit code zero alone does not prove the bytes arrived. If it completes with no transport error or upload-error response, continue to the intake call using the returned reference, but do not claim upload or filing success yet. Contracko validates stored bytes before creating a contract. Confirm filing only from a successful intake result and the contract read-back. If intake returns `UPLOAD_NOT_RECEIVED`, stop and tell the user or use an offered fallback. Do not retry intake as an upload-status polling loop.
 
-If the upload fails or policy blocks it, stop and tell the user. Offer `clm_import_contracts` with `kind: "inline"` only for files <=35 MiB that also fit the live tool's file and encoded-payload limits (the pinned release limits are listed above), or give the user the `clm_create_upload_session` upload link. Do not weaken policy or try a different host.
+If upload fails or policy blocks it, stop and tell the user. Follow [transfer order](#getting-the-bytes-there); keep policy intact.
 
-Cursor, Codex, and Claude execution environments must allowlist only `app.contracko.com` for this upload, not general network egress. Cursor's narrow shell allow entry is `Shell(curl:*https://app.contracko.com/mcp/files/v1.*)`. This glob alone is not a security boundary: also deny a second `://` in the command and the standalone flag arguments `-x`, `--proxy`, `--resolve`, `--connect-to`, `-k`, `--insecure`, `-K`, and `--config`. Match flag arguments, not substrings inside the signed URL: base64url tokens can contain `-K`-like substrings. See the [README upload policy](https://github.com/contracko/contracko-skills#local-upload-policy) for operator setup.
+Cursor, Codex and Claude must restrict upload egress to `app.contracko.com`, not general network access. Without enforceable restrictions, keep uploads approval-gated or use a fallback. Cursor's narrow shell entry is `Shell(curl:*https://app.contracko.com/mcp/files/v1.*)`. Also deny a second `://` and standalone flags `-x`, `--proxy`, `--resolve`, `--connect-to`, `-k`, `--insecure`, `-K`, and `--config`. Match arguments, not substrings in base64url tokens. The glob alone is not a security boundary.
 
 **3. Read the document for its content, not its bytes.** To fill the contract and its analysis you need the text, and text is cheap where base64 is not. Extract it locally:
 
@@ -192,4 +190,4 @@ An ingest that skips the analysis is the one case where the manual path really i
 | stuck in `extracting` | normal for minutes; keep honouring `pollAfterMs` before calling it stuck |
 | `retryable: false` on an item | the document itself is the problem, so surface it to the user |
 | 400 `code: "custom"` on `endDate` | the open-ended rule above |
-| the tools are missing entirely | `contract:write` was not granted |
+| the tools are missing entirely | follow [readiness and recovery](../contracko/SKILL.md#errors) |
