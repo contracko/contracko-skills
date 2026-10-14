@@ -12,7 +12,7 @@ Contracko manages a workspace of contracts, dates, parties, fields, folders, and
 ## Choose the product
 
 - **CLM** (`clm_*`): add, import and manage contracts in the contract register. Never needs Parser credits, including bulk imports and document re-reads.
-- **Contracko Parser** (`parser_*`): separate bulk document processing. Uses Parser credits; not needed to add contracts to your contract register. Checking its balance or preparing an upload does not spend credits; completed processing does. Balance checks and preflight can initialize a missing workspace credit ledger, so they are annotated as writes.
+- **Contracko Parser** (`parser_*`): separate bulk document processing. Uses Parser credits; not needed to add contracts to your contract register. Completed processing spends credits. Per-tool saved-state effects live in the [tool index](references/tool-index.md#contracko-parser-separate-bulk-document-processing).
 
 Use CLM for adding contracts. Use Parser only when the user requests standalone bulk processing, not as a fallback for unavailable CLM access.
 

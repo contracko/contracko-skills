@@ -37,7 +37,7 @@
 
 | Tool | Scope | Facts |
 |---|---|---|
-| `clm_reprocess_contract_document` | `contract:write` | External AI extraction replaces the saved snapshot/status; costs one extraction. Same-key retries return the original run. Successful extraction records a Bento setup milestone when enabled. |
+| `clm_reprocess_contract_document` | `contract:write` | External AI extraction replaces the saved snapshot/status; costs one extraction. Same-key retries return the original run. |
 | `clm_get_contract_reprocess_run` | `contract:read` | Progress; settles unconfirmed queue handoffs in saved state. Annotated as a write. |
 | `clm_list_contract_reconciliations` | `contract:read` | Recent re-reads, including unreviewed completed runs; list-only read. |
 | `clm_get_contract_reconciliation` | `contract:read` | Persists review list, refreshes comparison values and approval version; applies/dismisses nothing. Annotated as a write. |
@@ -47,19 +47,19 @@
 
 | Tool | Scope | Facts |
 |---|---|---|
-| `clm_import_contracts` | `contract:write` | Managed extraction from prepared upload, inline bytes or remote URL. |
-| `clm_import_files` | `contract:write` | Managed import from ChatGPT's attachment service. |
+| `clm_import_contracts` | `contract:write` | Managed intake; see [import](../../contracko-import/SKILL.md#managed-import). |
+| `clm_import_files` | `contract:write` | ChatGPT attachment intake; see [transfer](../../contracko-import/SKILL.md#getting-the-bytes-there). |
 | `clm_create_upload_session` | `contract:write` | One-hour browser upload link for the signed-in person. |
 | `clm_show_upload_widget` | no required scope; Claude chat only | Opens the panel, uploads nothing itself. Panel import needs write access and reports a processing job. Not available in Claude Code. |
 | `clm_prepare_widget_upload` | `contract:write`; Claude chat panel only | Panel-internal, not a direct agent call; single-use document destination expires within five minutes. |
 | `clm_get_import_status` | `contract:read` | Import/ingest snapshot; `wait: true` waits at most 25 seconds. |
 | `clm_create_upload_url` | `contract:write` | Short-lived upload destination; `ifUploadUrlUnreachable` supplies a fallback. |
-| `clm_ingest_contract` | `contract:write` | Files documents with supplied metadata/analysis; records a Bento setup milestone when enabled. |
-| `clm_add_contract_documents` | `contract:write` | Adds drafts or related documents, or replaces the primary. |
+| `clm_ingest_contract` | `contract:write` | External-record sync; see [sync](../../contracko-import/SKILL.md#sync-a-record-from-another-system). |
+| `clm_add_contract_documents` | `contract:write` | Existing-contract documents; see [attachments](../../contracko-import/SKILL.md#add-contract-documents). |
 | `clm_update_contract` | `contract:write` | Partial update with latest `updatedAt`. |
 | `clm_bulk_update_contracts` | `contract:write` | Up to 100 independent updates. |
 | `clm_add_contract_comment` | `contract:write` | Adds a comment and emails followers. |
-| `clm_create_contract_type` | `contract:write` | Creates definitions, not AI fields or re-extractions; records a Bento setup milestone when enabled. |
+| `clm_create_contract_type` | `contract:write` | Creates definitions, not AI fields or re-extractions; existing-contract notifications/calendar feeds stay unchanged. |
 | `clm_update_contract_type` | `contract:write` | Supplied `fields` replace the whole field set. |
 | `clm_list_contract_types` | `contract:read` | Type definitions. |
 | `clm_get_contract_type` | `contract:read` | Current type and field definitions. |
@@ -95,7 +95,7 @@
 
 | Tool | Scope | Facts |
 |---|---|---|
-| `parser_get_credits` | `parser:compute` | Balance/availability; initializes a missing credit ledger, spends no credits. Annotated as a write. |
+| `parser_get_credits` | `parser:compute` | Read-only, idempotent balance/availability check; computes an absent ledger's allocation without saving it. Spends no credits and does not complete `make_api_call` onboarding. |
 | `parser_preflight` | `parser:compute` | Credit estimate/file validation; initializes a missing ledger, spends no credits. Annotated as a write. |
 | `parser_create_upload_url` | `parser:compute` | Prepares a Parser document; spends no credits. |
 | `parser_create_job` | `parser:compute` | External-AI bulk processing; completed processing consumes Parser credits. |
