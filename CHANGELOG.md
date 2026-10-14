@@ -4,6 +4,12 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
+- Synced Release 16 [CLM billing notices](skills/contracko/SKILL.md#clm-billing-notices): relay audience-specific messages and links verbatim, preserve accepted imports, and do not retry refused work.
+- Updated launcher help to follow the returned billing notice instead of prescribing a subscription at every limit.
+- Bumped the unified public version to 1.1.3 and regenerated the directory package.
+
+## 1.1.2, 2026-10-14
+
 - Synced Release 15 intake wording and read-only Parser balance checks; see [import and sync](skills/contracko-import/SKILL.md) and [Parser effects](skills/contracko/references/tool-index.md#contracko-parser-separate-bulk-document-processing).
 - Bumped the unified public version to 1.1.2 and regenerated the directory package.
 - Added the [ChatGPT portal package](packaging/directory/README.md), separate from the generic directory ZIP.

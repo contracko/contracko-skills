@@ -16,13 +16,15 @@ Contracko manages a workspace of contracts, dates, parties, fields, folders, and
 
 Use CLM for adding contracts. Use Parser only when the user requests standalone bulk processing, not as a fallback for unavailable CLM access.
 
-### CLM trial limits
+### CLM billing notices
 
 The 7-day free trial includes 3 AI extractions, 10 Clara messages and 1 signature request for the whole trial, not per day. Imports and document re-reads share the extraction limit. The limits apply while the trial has no payment method, or has cancel at period end turned on. Subscribing with a payment method and renewal on lifts them straight away; the original free end date stays, and the paid plan's contract, storage and signature allowances still apply.
 
-At any limit, the underlying API reason is `data.billingGate.reason` `TRIAL_USAGE_LIMIT_REACHED`. MCP does not pass that field on: it maps the reason to a refusal with code `PAYMENT_REQUIRED`, the notice "This workspace has reached its free CLM trial limit. Subscribe to lift the trial caps." and a no-retry hint. Read the code and hint; the user sees only the notice. The app shows its own copy: the headline "You've used your 3 free AI extractions" is specific to the extraction limit, while "Subscribe now to lift these limits today" is shared by all three trial limits. Relay the notice as a plan notice, not a technical error: keep the work already accepted, stop retrying, and point to subscribing. Parser credits never lift CLM trial limits.
+Billing refusals have `isError: true` and JSON text in `content` with `error: true`, `status`, `code` (`PAYMENT_REQUIRED` or `FORBIDDEN`), identical `message` and `hint`, `billingReason`, `audience`, and optional `link`. An inactive-subscription refusal may also carry `refusalReason: "subscription_inactive"`. `billingReason` is `trial_cap_reached`, `trial_ended`, `subscription_ended`, `payment_failed`, or `plan_limit_reached` (including full document storage).
 
-Reserving a signature can be refused separately at the source with `FORBIDDEN`, `cause.reason` `SIGNATURE_TRIAL_CAP_REACHED` and "You've used your free trial signature. Subscribe to keep sending." Treat it as the same plan notice and do not retry.
+Relay the returned billing message and any link verbatim, including the `ref` query parameter. This is the exception to using recovery hints without quoting them. Keep the audience-specific next step: `billing_admin` gets the exact action and a direct link; `member` gets an ask-workspace-owner message without a link. Live trial caps distinguish adding billing details from enabling renewal; ended trials, ended paid subscriptions, failed payments, plan limits and full storage have their own copy. Treat these as billing notices, not technical errors, and never retry the refused work. Parser credits do not resolve CLM billing refusals.
+
+Partial imports can succeed with a top-level `billingNotice` containing `code` (the billing reason), `message`, `audience`, and optional `link`, plus matching capped-item `note` values. Items with `errorCode: "TRIAL_USAGE_LIMIT_REACHED"` have `retryable: false`. Follow the same relay rule, keep accepted items, and continue checking their progress. Do not resubmit the batch.
 
 The characteristic failure of this surface is **silence**. Scopes can hide tools, unknown keys can be dropped, and configuration can return success without the intended change. Check discovery and returned state.
 
@@ -132,11 +134,9 @@ Follow returned hints. Revoked credentials are refused immediately. Reconnect on
 
 | Response | Action |
 |---|---|
-| CLM trial limit notice | Follow [CLM trial limits](#clm-trial-limits): explain the plan notice, keep accepted work, do not retry, point to subscribing. |
-| `subscription_inactive` | Ask a workspace admin to check billing. Reconnecting will not help. |
+| CLM billing refusal (including `subscription_inactive`) or partial-import notice | Follow [CLM billing notices](#clm-billing-notices). Reconnecting will not help. |
 | `api_disabled` | Ask a workspace admin to turn on Contract Management API access. Reconnecting will not help. |
 | `not_member` | Reconnect and choose a workspace you belong to. |
-| CLM plan refusal | Review CLM plan access, contract limits or storage. Never suggest Parser credits or a Parser credit check. |
 | Parser credit refusal | Ask a workspace admin to add Parser credits or review the Contracko Parser plan. This does not block CLM contract intake. |
 | 409 conflict | Re-read the named state. A duplicate name or changed idempotency payload can cause it. |
 | 400 `code: "custom"` | Check cross-field requirements, not only the named field. |

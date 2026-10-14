@@ -30,7 +30,7 @@ class LauncherHelpTests(unittest.TestCase):
                     self.assertIn("not needed to add contracts", result.stdout)
                     self.assertIn("CLM 7-day free trial", result.stdout)
                     self.assertIn("3 AI extractions, 10 Clara messages", result.stdout)
-                    self.assertIn("subscribe to lift it; do not retry", result.stdout)
+                    self.assertIn("follow the returned billing notice; do not retry", result.stdout)
                     self.assertIn("Parser credits do not lift CLM trial limits", result.stdout)
                     self.assertIn("20 free credits once, not 20 extractions", result.stdout)
                     self.assertIn("a document costs 1-5", result.stdout)

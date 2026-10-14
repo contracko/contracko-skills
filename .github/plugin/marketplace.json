@@ -8,7 +8,7 @@
     {
       "name": "contracko",
       "description": "CLM: add, import, review and manage contracts without Parser credits. Separate Contracko Parser: bulk document processing using Parser credits, not needed to add contracts.",
-      "version": "1.1.2",
+      "version": "1.1.3",
       "source": "./",
       "keywords": [
         "contracko",
