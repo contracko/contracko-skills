@@ -26,6 +26,10 @@ Reserving a signature can be refused separately at the source with `FORBIDDEN`, 
 
 The characteristic failure of this surface is **silence**. Scopes can hide tools, unknown keys can be dropped, and configuration can return success without the intended change. Check discovery and returned state.
 
+### Parser allowance
+
+A workspace without an eligible Parser subscription gets 20 free Parser credits once. Documents cost 1 to 5 credits: one per 10 estimated pages, or per 2 MiB when pages cannot be estimated; review doubles the cost. Further jobs need paid credits. Check balance and preflight, confirm the estimated cost, and retrieve exports before retention expires.
+
 ## Say this once
 
 In the first response of a session where Contracko is connected to an AI product that is not Contracko's own:
@@ -34,23 +38,9 @@ In the first response of a session where Contracko is connected to an AI product
 
 ## Connect and discover
 
-Endpoint: `https://app.contracko.com/mcp`
+For client setup, follow [README connection and consent steps](https://github.com/contracko/contracko-skills#install). Consent belongs to the user; do not automate it or ask for credentials in chat. In a non-interactive session, report browser sign-in as blocked.
 
-Check whether the client already has a Contracko server before adding one. OAuth is the default and opens a browser. Sign in or start the trial, choose your workspace, then review and approve access. The permissions are **View contracts** for questions and reviews, and **Add and edit contracts** for imports or changes. Requested permissions start selected; untick **Add and edit contracts** unless you want imports or changes. It is offered only when your workspace role allows it. Each permission has an info button with details. When write access is requested, the screen offers a copyable prompt to add a contract; select **Add and edit contracts** to copy it. The consent screen belongs to the user. Do not automate it or ask for credentials in chat.
-
-In Claude apps (web, desktop, mobile, Cowork), the server is already registered when the user connected Contracko from Claude's connector directory (https://claude.ai/directory/connectors/contracko). Point a user who has not connected yet to that listing. In Claude Code, a connector added in Claude is already available when signed in with a Claude account, and the Contracko plugin (`/plugin install contracko@contracko`) registers the server itself. Do not register it a second time. A user who sees every tool twice should remove the older custom connector.
-
-Only a Claude Code user on an API key without the plugin needs a manual entry, and only if `claude mcp list` shows no Contracko entry:
-
-```bash
-claude mcp add --transport http contracko https://app.contracko.com/mcp
-```
-
-Every other client adds the endpoint through its own MCP or connector settings.
-
-An MCP API key is only a fallback for a headless client or one without OAuth. It must be created in Contracko with purpose **MCP server** and is bound to one workspace. Never put a bearer credential in chat, source code, or logs. In a non-interactive session, report OAuth as blocked rather than bypassing sign-in.
-
-Run `auth_validate` first in every session. `status: "ok"` confirms a valid credential, not necessarily Contract Management access: check `workspace.contractManagement` for a refusal and follow its returned hint. The connection is ready only when its workspace, Contract Management access and granted scopes match the requested work. See [Errors](#errors) for recovery.
+Run `auth_validate` first in every session. `status: "ok"` confirms a credential, not Contract Management access: inspect `workspace.contractManagement` for refusals. Continue only when the workspace, access and scopes match the requested work. Follow [Errors](#errors) for refusal recovery and missing tools.
 
 | Scope | Available work |
 |---|---|
@@ -59,25 +49,17 @@ Run `auth_validate` first in every session. `status: "ok"` confirms a valid cred
 | `contract:read` | contracts, folders, access overviews, types, parties, comments, events, document search and reads, document re-read results |
 | `contract:write` | contract and folder changes, import and ingest, documents, comments, events, notifications, types, and parties |
 
-Starting a document re-read, or applying its findings, also needs `contract:write`.
-
-Scopes do not guarantee read-only behavior. `clm_get_contract_reprocess_run` and `clm_get_contract_reconciliation` require `contract:read` but change saved processing or review state. Follow live annotations and the [document re-read rules](references/tool-index.md#document-re-reads) before using them.
-
-The discovered tool list is authoritative. An existing current credential needs only a discovery refresh or reconnect if its client has cached old schemas. An older credential can gain newly available MCP actions when a workspace admin enables new MCP actions for its key, or when the user re-consents OAuth. If an argument or tool remains absent after discovery refresh, use only what is discovered and state the limitation.
+Read scopes do not guarantee read-only effects. Follow live annotations and get approval before any saved-state change; [tool index](references/tool-index.md) records those effects. Use only discovered tools and arguments.
 
 ## Find the right tool
 
-The production catalog has 60 definitions: 58 normal tools plus two Claude-chat upload-panel tools. What a client sees depends on granted scopes, capability policy and client. `clm_search_tools` searches only the tools this connection lists and returns up to five, each with its purpose, required scopes, example arguments, related tools, and step-by-step sequences. Use it:
-
-- when you are unsure which tool does the job,
-- before a multi-step job, such as importing a batch, setting notifications, or finding renewals,
-- when the workspace is empty and the user wants to add their first contract.
+Use `clm_search_tools` when unsure which tool fits, before a multi-step job, or for a first contract in an empty workspace. It searches only this connection's listed tools; a missing search result does not establish unavailability.
 
 ```json mcp:clm_search_tools
 { "query": "Add my first contract", "toolset": "imports" }
 ```
 
-`toolset` is optional and only narrows the results: `contracts`, `parties`, `folders`, `events`, `imports`, `parser`, or `connection`. Search reads no workspace data and calls nothing. Its examples use synthetic IDs, so replace them with values the connection returns. Search returns at most five matches, so a tool missing from one result may still be available: the discovered tool list decides that. Search never makes an unlisted tool callable.
+Search examples contain synthetic IDs; replace them with returned values. For scopes, search limits and the catalog, see the [tool index](references/tool-index.md#connection).
 
 ## Read tool results once
 
@@ -138,24 +120,15 @@ SaaS subscriptions, leases, permits, certificates, insurance policies, warrantie
 
 ## Write safely
 
-Confirm a proposed field set before creating it. Confirm a folder destination before moving a contract, and confirm every bulk change. Mutations can have partial outcomes. Read the returned per-item result and reconcile writes that do not have a clear success state.
+Confirm a proposed field set before creating it. Confirm a folder destination before moving a contract, and confirm every bulk change and its allowance cost. For type generation or re-reads, inspect the [tool effects](references/tool-index.md#type-generation-and-type-re-reads) first; review generated definitions in the normal editor. Mutations can have partial outcomes. Read the returned per-item result and reconcile writes that do not have a clear success state.
 
-For import, choose the transfer path before reading bytes. Where you run decides it:
-
-- **A shell with network access** (Claude Code, Codex, Cursor CLI): `clm_create_upload_url`, PUT the file to the returned `uploadUrl`, then `clm_import_contracts` with `kind: "upload"` so Contracko extracts, or `clm_ingest_contract` when you supply the fields.
-- **Claude chat (web or desktop):** show the upload panel with `clm_show_upload_widget` first when available and ask the person to choose documents there. Use sandbox PUT only if the person says they allowed `app.contracko.com`, or the panel is unavailable. Ask permission before reading or uploading the sandbox file; use one `curl -T`, then `clm_import_contracts` with `kind: "upload"`. After a blocked PUT, return to the panel when available. Only when the panel is unavailable or fails, try inline transfer within the live file and client limits, then an upload link if earlier paths are unavailable or fail.
-- **ChatGPT:** ask the user to attach the file, then `clm_import_files`. If that is unavailable or fails, use the upload link below.
-- **No network:** inline base64 into `clm_import_contracts` only for a tiny file (tens of KB). Otherwise call `clm_create_upload_session` and give the user its `uploadPageUrl` to add the files in their browser.
-- **After any accepted import:** tell the user Contracko received the contract and is reading it now before checking status. `clm_get_import_status` with `processing.jobId` is a snapshot by default; `wait: true` waits at most 25 seconds. [contracko-import](../contracko-import/SKILL.md#after-intake-is-accepted) has the steps and the upload errors.
-- **Always:** upload only to the returned `uploadUrl`, never to a third-party host. If the upload is blocked, stop and tell the user.
-
-A signed short-lived remote URL works for a document Contracko can fetch. [contracko-import](../contracko-import/SKILL.md) has the limits and reconciliation rules.
+For uploads, transfer order, intake status and import errors, follow [contracko-import](../contracko-import/SKILL.md).
 
 Never invent a tool signature. When a requested operation has no discovered tool, identify the available nearest step and hand the unavailable operation to the app.
 
 ## Errors
 
-Follow the returned hint. `auth_validate` can report `status: "ok"` for a valid credential while `workspace.contractManagement` reports a refusal. Revoked credentials are refused immediately; reconnect only for an authentication failure or the `not_member` recovery below. Missing tools do not necessarily mean missing scopes: check live discovery, granted scopes, capability policy and client before choosing a recovery.
+Follow returned hints. Revoked credentials are refused immediately. Reconnect only for authentication failures or `not_member`. For missing tools, refresh discovery and check granted scopes, capability policy and client. If an older credential omits new actions, a workspace admin can enable new MCP actions for its key, or the user can re-consent OAuth.
 
 | Response | Action |
 |---|---|

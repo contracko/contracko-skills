@@ -119,9 +119,8 @@ class ReleaseArtifactTests(unittest.TestCase):
             ),
             "skills/contracko-review/SKILL.md": (
                 "description: Reviews Contracko contracts. Use for notice dates, end dates, annual review, notifications (reminders), risk audits, comparing proposals or redlines, or portfolio priorities and gaps.",
-                "Requires `contract:read`. Compare, audit and report can use read-only tools.",
-                "Setting notifications needs `contract:write`.",
-                "Missing tools do not necessarily mean missing scopes:",
+                "Requires `contract:read`; notifications need `contract:write`.",
+                "[readiness and recovery](../contracko/SKILL.md#connect-and-discover)",
                 "## Events and notifications",
                 "A notification hangs off an event. List first: `clm_list_contract_events`.",
                 "**System events** (`notice`, `end`, `open_ended_review`) already exist. You do not create them. Renewal alerts target `end`. Attach a notification with `clm_create_event_reminders`, `anchorType: \"system\"`, and that `systemType`.",
@@ -132,13 +131,12 @@ class ReleaseArtifactTests(unittest.TestCase):
             ),
             "skills/contracko/references/tool-index.md": (
                 "## CLM events and notifications",
-                "Events and notifications need `contract:read` to list and `contract:write` to change. List before a change, use the latest `expectedUpdatedAt` for updates or deletes, and confirm a bulk write. Renewal notifications attach to the existing `end` system event.",
-                "| `clm_list_contract_events` | `contract:read` | List custom and supported system events with notifications. |",
-                "| `clm_create_event_reminders`, `clm_update_event_reminders`, `clm_delete_event_reminders` | `contract:write` | Manage notifications on events. |",
-                "Preflight before starting a Parser job, confirm the estimated Parser credit cost, and retrieve exports before their retention window ends. Parser credit refusals affect this product, not CLM contract intake.",
+                "| `clm_list_contract_events` | `contract:read` | Custom and supported system events with notifications. |",
+                "| `clm_create_event_reminders` | `contract:write` | Schedules notification emails on events. |",
+                "| `clm_delete_event_reminders` | `contract:write` | Stops notification emails; leaves the event. |",
             ),
             "skills/contracko/references/workflows.md": (
-                "Get today's date from the environment. Use inclusive end-date or notice-date filters for dated candidates and complete every returned page. `autoRenewing` identifies a renewal; a date window alone does not. For contracts ending OR needing notice, run separate complete queries and deduplicate by contract ID. Use existing system events for renewal or notice notifications. [contracko-review](../../contracko-review/SKILL.md) owns the calendar.",
+                "[calendar](../../contracko-review/SKILL.md#calendar-notice-end-annual-review)",
                 "**Done when:** the user has the urgent bucket, its dates, and any requested notification confirmed as created.",
                 "**They say:** notice dates, end dates, renewals, annual review, reminders, notifications.",
             ),
@@ -166,23 +164,18 @@ class ReleaseArtifactTests(unittest.TestCase):
         self.assertEqual(claude_marketplace["metadata"]["version"], claude_plugin["version"])
 
     def test_claude_connect_copy_is_directory_first(self) -> None:
-        sources = {
-            "README.md": (ROOT / "README.md").read_text(),
-            "skills/contracko/SKILL.md": (ROOT / "skills/contracko/SKILL.md").read_text(),
-        }
-        for relative, text in sources.items():
-            with self.subTest(path=relative):
-                self.assertIn(CLAUDE_DIRECTORY_URL, text)
-                self.assertIn("contracko@contracko", text)
-                self.assertNotIn("contracko-skills@contracko", text)
-                plugin_install = text.index("/plugin install contracko@contracko")
-                mcp_add = text.index("claude mcp add")
-                self.assertGreater(mcp_add, plugin_install)
-                between = text[plugin_install:mcp_add]
-                self.assertIn("without the plugin", between)
-                self.assertIn("claude mcp list", text[mcp_add - 400 : mcp_add + 400])
+        readme = (ROOT / "README.md").read_text()
+        self.assertIn(CLAUDE_DIRECTORY_URL, readme)
+        self.assertNotIn("contracko-skills@contracko", readme)
+        plugin_install = readme.index("/plugin install contracko@contracko")
+        mcp_add = readme.index("claude mcp add")
+        self.assertGreater(mcp_add, plugin_install)
+        self.assertIn("without the plugin", readme[plugin_install:mcp_add])
+        self.assertIn("claude mcp list", readme[mcp_add - 400:mcp_add + 400])
+        skill = (ROOT / "skills/contracko/SKILL.md").read_text()
+        self.assertIn("https://github.com/contracko/contracko-skills#install", skill)
+        self.assertNotIn("claude mcp add", skill)
 
-        readme = sources["README.md"]
         claude_section = readme[readme.index("<summary><strong>Claude</strong>") :]
         claude_section = claude_section[: claude_section.index("</details>")]
         first_step = claude_section[claude_section.index("1. ") :].splitlines()[0]
@@ -208,28 +201,36 @@ class ReleaseArtifactTests(unittest.TestCase):
             with self.subTest(trigger=trigger):
                 self.assertIn(trigger, when_to_use)
 
-        workflows = (ROOT / "skills/contracko/references/workflows.md").read_text()
-        first = workflows[workflows.index("## Add your first contract") :]
-        first = first[: first.index("\n## ", 1)]
-        steps = [first.index(tool) for tool in ("clm_create_upload_url", "PUT", "clm_ingest_contract", "clm_get_contract`")]
+        rows = [line for line in index.splitlines() if line.startswith("| `")]
+        self.assertEqual(len(rows), len(names))
+        self.assertEqual({line.split("`")[1] for line in rows}, names)
+        import_skill = (ROOT / "skills/contracko-import/SKILL.md").read_text()
+        prepare = import_skill[import_skill.index("## Prepare and file"):]
+        prepare = prepare[:prepare.index("\n### ")]
+        steps = [prepare.index(tool) for tool in ("clm_create_upload_url", "PUT", "clm_ingest_contract", "clm_get_contract`")]
         self.assertEqual(steps, sorted(steps))
+        workflows = (ROOT / "skills/contracko/references/workflows.md").read_text()
+        self.assertIn("../../contracko-import/SKILL.md#managed-import", workflows)
+        self.assertNotIn("clm_create_upload_url", workflows)
 
     def test_connect_copy_matches_released_consent(self) -> None:
+        text = (ROOT / "README.md").read_text()
+        for phrase in (
+            "choose your workspace", "View contracts", "Add and edit contracts",
+            "start selected", "Untick", "workspace role allows it",
+            "info button", "copyable prompt",
+        ):
+            self.assertIn(phrase, text)
         paths = (
-            "README.md", "GEMINI.md", "skills/contracko/SKILL.md",
+            "GEMINI.md", "skills/contracko/SKILL.md",
             "packaging/openclaw/README.md", "packaging/hermes/README.md",
         )
         for relative in paths:
             with self.subTest(path=relative):
                 text = (ROOT / relative).read_text()
-                for phrase in (
-                    "choose your workspace", "View contracts", "Add and edit contracts",
-                    "start selected", "untick", "workspace role allows it",
-                    "info button", "copyable prompt",
-                ):
-                    self.assertIn(phrase, text)
-                for stale in ("**Read**", "**Write**", "Read and optionally Write"):
-                    self.assertNotIn(stale, text)
+                self.assertIn("#install", text)
+                for duplicated in ("View contracts", "Add and edit contracts", "copyable prompt"):
+                    self.assertNotIn(duplicated, text)
 
     def test_client_manifests_mirror_claude_plugin_version(self) -> None:
         expected = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())["version"]
@@ -593,8 +594,8 @@ class ReleaseArtifactTests(unittest.TestCase):
                 self.assertIn("https://app.contracko.com/mcp", readme)
                 self.assertIn("explicit", readme.lower())
                 self.assertIn("browser", readme.lower())
-                self.assertIn("View contracts", readme)
-                self.assertIn("Add and edit contracts", readme)
+                self.assertIn("https://github.com/contracko/contracko-skills#install", readme)
+                self.assertNotIn("Add and edit contracts", readme)
                 self.assertNotIn("mcp.contracko.com", readme)
                 # Built at runtime so this negative check is not itself flagged as a credential.
                 self.assertNotIn("Authorization: " + "Bearer", readme)

@@ -1,5 +1,5 @@
 # Contracko Agent Plugin
 
-This is the canonical Agent Plugins v1 skills package for Contracko. It is generated from the four source directories in `skills/` by `scripts/build_release_artifacts.py`.
+Agent Plugins v1 package generated from four canonical `skills/` directories by `scripts/build_release_artifacts.py`.
 
-The package includes `plugin.json`, the four skills, and `mcp.json` pointing to `https://app.contracko.com/mcp`. The host client owns MCP registration, OAuth, credential storage, and user consent. The release ZIP `contracko-agent-plugin.zip` serves other directories and adds `RELEASE-METADATA.json` with the release version and source commit. It contains no `.codex-plugin` metadata. ChatGPT uses `contracko-agent-plugin-chatgpt.zip`, containing only `.codex-plugin/plugin.json` and `skills/`. Its MCP connection is configured separately in the ChatGPT app directory portal.
+`contracko-agent-plugin.zip` contains `plugin.json`, skills, `mcp.json` (`https://app.contracko.com/mcp`) and version/source-commit `RELEASE-METADATA.json`, without `.codex-plugin` metadata. ChatGPT uses `contracko-agent-plugin-chatgpt.zip`: only `.codex-plugin/plugin.json` and `skills/`; configure MCP separately in its app directory portal. [Connection and consent](https://github.com/contracko/contracko-skills#install).

@@ -1,13 +1,3 @@
 # Set up Contracko
 
-Fetch and follow the current official setup guide:
-
-**https://contracko.com/mcp/install/prompt.md**
-
-It covers skill installation, client configuration, OAuth sign-in, dedicated MCP bearer credentials when OAuth is unavailable, privacy, and read-only verification. Follow that guide instead of older copies of setup instructions. If you cannot fetch it, report that limitation rather than inventing configuration or asking for credentials in chat.
-
-For Cline, also use the explicit Streamable HTTP configuration in [README.md](../README.md).
-
-CLM (`clm_*`) adds, imports and manages contracts without Parser credits. Contracko Parser (`parser_*`) is separate bulk document processing that uses Parser credits, not needed to add contracts to your contract register.
-
-After setup, follow the installed `contracko` skill for operational workflows and the connection's live MCP discovery for tool names and input/output schemas. Do not build or start a local MCP server; Contracko hosts it remotely.
+Install the Contracko skills from https://github.com/contracko/contracko-skills using this client's supported installer. Connect to the remote MCP server at https://app.contracko.com/mcp using the client's native OAuth flow, reusing an existing Contracko connection. I will sign in in the browser. Confirm the four skills are installed and the MCP connection is authenticated.

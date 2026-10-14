@@ -1,15 +1,8 @@
 # Contracko for OpenClaw
 
-This is a content-only OpenClaw bundle. It carries the four canonical Contracko skills and no executable bridge, token, or duplicate MCP declaration.
-
-OpenClaw's portable bundle format does not carry Contracko's interactive OAuth configuration. Keep connection setup in OpenClaw so it can preserve its own MCP registry, browser flow, token storage, and tool policy.
-
-## Setup
-
-1. Extract this archive, then install the package directory with `openclaw plugins install ./contracko-openclaw`.
-2. Enable the bundle if OpenClaw asks, then restart the Gateway when prompted.
-3. Check whether a server named `contracko` already exists. If it does, reuse that entry rather than adding a second connection.
-4. If it does not exist, explicitly approve adding this server to the central MCP registry, then run:
+1. Extract the archive and run `openclaw plugins install ./contracko-openclaw`.
+2. Enable the bundle and restart the Gateway if prompted.
+3. Reuse an existing `contracko` MCP entry. Otherwise, explicitly approve adding it to OpenClaw's central registry, then run:
 
    ```bash
    openclaw mcp set contracko '{"url":"https://app.contracko.com/mcp","transport":"streamable-http"}'
@@ -17,6 +10,4 @@ OpenClaw's portable bundle format does not carry Contracko's interactive OAuth c
    openclaw mcp login contracko
    ```
 
-5. A browser opens for Contracko sign-in and consent. Sign in or start the trial, choose your workspace, then review and approve access. The permissions are **View contracts** for questions and reviews, and **Add and edit contracts** for imports or changes. Requested permissions start selected; untick **Add and edit contracts** unless you want imports or changes. It is offered only when your workspace role allows it. Each permission has an info button with details. When write access is requested, the screen offers a copyable prompt to add a contract; select **Add and edit contracts** to copy it.
-
-The login command is an explicit user action. Do not put a bearer token in this package, a command, or a log. Do not assume that installing the bundle registers or authenticates the server.
+The login command opens a browser. Follow the [sign-in and consent steps](https://github.com/contracko/contracko-skills#install). OpenClaw stores its own OAuth configuration and credentials; installing the bundle does not authenticate it.
