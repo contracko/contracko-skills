@@ -55,7 +55,7 @@
 | `clm_get_import_status` | `contract:read` | Import/ingest snapshot; `wait: true` waits at most 25 seconds. |
 | `clm_create_upload_url` | `contract:write` | Short-lived upload destination; `ifUploadUrlUnreachable` supplies a fallback. |
 | `clm_ingest_contract` | `contract:write` | External-record sync; see [sync](../../contracko-import/SKILL.md#sync-a-record-from-another-system). |
-| `clm_add_contract_documents` | `contract:write` | Adds drafts or related documents, or replaces the primary. |
+| `clm_add_contract_documents` | `contract:write` | Existing-contract documents; see [attachments](../../contracko-import/SKILL.md#add-contract-documents). |
 | `clm_update_contract` | `contract:write` | Partial update with latest `updatedAt`. |
 | `clm_bulk_update_contracts` | `contract:write` | Up to 100 independent updates. |
 | `clm_add_contract_comment` | `contract:write` | Adds a comment and emails followers. |

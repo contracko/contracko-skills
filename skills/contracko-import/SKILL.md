@@ -45,7 +45,9 @@ Follow `ifUploadUrlUnreachable` if PUT cannot reach Contracko. Use only returned
 
 If the document is already associated with a contract the user can see, import and ingest return a duplicate conflict instead of a second copy. Tell them which contract holds it. Only retry with `allowDuplicate: true` if they insist on another copy.
 
-To add a file to an *existing* contract (draft, related, or replace the primary), use `clm_add_contract_documents` with a new idempotency key. That is not an import.
+### Add contract documents
+
+For an existing contract, read it with `clm_get_contract` and confirm the target before calling `clm_add_contract_documents`. Send its `id`, a new `idempotencyKey` and `documents` with `intent: "related"`, `"draft"` or `"replace"` (at most one replacement per request). Sources are inline bytes or a reachable signed download URL, not prepared upload references. If neither source works, report the transfer blocked rather than importing a new contract. Read the contract back to confirm the document change.
 
 ## Confirm before writing
 
@@ -109,7 +111,7 @@ Once documents are in, the questions start: renewals, notice dates, risk, and wh
 
 ## Sync a record from another system
 
-Use `clm_ingest_contract` ("Sync contract from another system") only when an external record already supplies the contract details and its id, for example from DocuSign, a CRM or Zapier. For documents without known details, use [managed import](#managed-import); for related documents, use [Add contract documents](#getting-the-bytes-there).
+Use `clm_ingest_contract` ("Sync contract from another system") only when an external record already supplies the contract details and its id, for example from DocuSign, a CRM or Zapier. For documents without known details, use [managed import](#managed-import); for related documents, use [Add contract documents](#add-contract-documents).
 
 Prepare and upload the documents through [Working the upload path](#working-the-upload-path), or reuse their existing references. Submit `externalSystem`, `externalId`, the source's `contract` details, and `files` containing each unchanged `uploadReference`, `fileName`, `mimeType` and `fileSize`; mark the main document `isPrimary`. Discovery requires `uploadReference`; legacy `r2Key` is accepted only for compatibility and is hidden from discovery. Never derive either reference from a storage key.
 
@@ -144,7 +146,7 @@ If upload fails or policy blocks it, stop and tell the user. Follow [transfer or
 
 Cursor, Codex and Claude must restrict upload egress to `app.contracko.com`, not general network access. Without enforceable restrictions, keep uploads approval-gated or use a fallback. Cursor's narrow shell entry is `Shell(curl:*https://app.contracko.com/mcp/files/v1.*)`. Also deny a second `://` and standalone flags `-x`, `--proxy`, `--resolve`, `--connect-to`, `-k`, `--insecure`, `-K`, and `--config`. Match arguments, not substrings in base64url tokens. The glob alone is not a security boundary.
 
-**3. Submit the prepared documents.** Follow [managed import](#managed-import), then [accepted intake](#after-intake-is-accepted) and read the resulting contracts back. Acceptance is not completed extraction. Related classification neither attaches to another contract nor searches for a parent.
+**3. Submit through the chosen intake path.** For a known external record, return to [sync submission](#sync-a-record-from-another-system); otherwise follow [managed import](#managed-import). Then follow [accepted intake](#after-intake-is-accepted) and read the resulting contracts back. Acceptance is not completed extraction. Related classification neither attaches to another contract nor searches for a parent.
 
 ## When something goes wrong
 

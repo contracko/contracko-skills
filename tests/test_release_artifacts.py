@@ -207,9 +207,13 @@ class ReleaseArtifactTests(unittest.TestCase):
         import_skill = (ROOT / "skills/contracko-import/SKILL.md").read_text()
         upload = import_skill.split("## Working the upload path\n", 1)[1].split("\n## ", 1)[0]
         self.assertIn("#managed-import", upload)
+        self.assertIn("#sync-a-record-from-another-system", upload)
         self.assertNotIn("`clm_ingest_contract`", upload)
         sync = import_skill.split("## Sync a record from another system\n", 1)[1].split("\n## ", 1)[0]
         self.assertIn("Sync contract from another system", sync)
+        self.assertIn("#add-contract-documents", sync)
+        attachments = import_skill.split("### Add contract documents\n", 1)[1].split("\n## ", 1)[0]
+        self.assertIn("`clm_add_contract_documents`", attachments)
         for argument in ("`externalSystem`", "`externalId`", "`uploadReference`"):
             self.assertIn(argument, sync)
         workflows = (ROOT / "skills/contracko/references/workflows.md").read_text()
