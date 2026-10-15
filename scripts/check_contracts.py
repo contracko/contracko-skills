@@ -105,7 +105,7 @@ def check(root):
     for path in sorted(paths):
         text = path.read_text()
         for name in set(re.findall(r"\b(?:clm_|parser_)[a-z_]+\b|\bauth_validate\b", text)):
-            if name not in tools:
+            if name not in tools and name != "parser_credits_exhausted":
                 failures.append(f"{path.relative_to(root)}: unknown tool {name}")
         for name, body in re.findall(r"```json mcp:(\w+)\n(.*?)\n```", text, re.S):
             examples += 1

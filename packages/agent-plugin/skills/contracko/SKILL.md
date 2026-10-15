@@ -16,21 +16,23 @@ Contracko manages a workspace of contracts, dates, parties, fields, folders, and
 
 Use CLM for adding contracts. Use Parser only when the user requests standalone bulk processing, not as a fallback for unavailable CLM access.
 
-### CLM billing notices
-
-The 7-day free trial includes 3 AI extractions, 10 Clara messages and 1 signature request for the whole trial, not per day. Imports and document re-reads share the extraction limit. The limits apply while the trial has no payment method, or has cancel at period end turned on. Subscribing with a payment method and renewal on lifts them straight away; the original free end date stays, and the paid plan's contract, storage and signature allowances still apply.
-
-Billing refusals have `isError: true` and JSON text in `content` with `error: true`, `status`, `code` (`PAYMENT_REQUIRED` or `FORBIDDEN`), identical `message` and `hint`, `billingReason`, `audience`, and optional `link`. An inactive-subscription refusal may also carry `refusalReason: "subscription_inactive"`. `billingReason` is `trial_cap_reached`, `trial_ended`, `subscription_ended`, `payment_failed`, or `plan_limit_reached` (including full document storage).
-
-Relay the returned billing message and any link verbatim, including the `ref` query parameter. This is the exception to using recovery hints without quoting them. Keep the audience-specific next step: `billing_admin` gets the exact action and a direct link; `member` gets an ask-workspace-owner message without a link. Live trial caps distinguish adding billing details from enabling renewal; ended trials, ended paid subscriptions, failed payments, plan limits and full storage have their own copy. Treat these as billing notices, not technical errors, and never retry the refused work. Parser credits do not resolve CLM billing refusals.
-
-Partial imports can succeed with a top-level `billingNotice` containing `code` (the billing reason), `message`, `audience`, and optional `link`, plus matching capped-item `note` values. Items with `errorCode: "TRIAL_USAGE_LIMIT_REACHED"` have `retryable: false`. Follow the same relay rule, keep accepted items, and continue checking their progress. Do not resubmit the batch.
-
 The characteristic failure of this surface is **silence**. Scopes can hide tools, unknown keys can be dropped, and configuration can return success without the intended change. Check discovery and returned state.
 
-### Parser allowance
+### Billing and allowances
 
-A workspace without an eligible Parser subscription gets 20 free Parser credits once. Documents cost 1 to 5 credits: one per 10 estimated pages, or per 2 MiB when pages cannot be estimated; review doubles the cost. Further jobs need paid credits. Check balance and preflight, confirm the estimated cost, and retrieve exports before retention expires.
+Call `auth_validate` at connect time and again when the user mentions upgrading, plans or limits. Its optional `billing` summary has `audience`, `contractManagement` and `parser`. Each product has `state`, `nextStep`, live-trial `trialEndsAt`, and billing-admin-only `actionUrl`. States are `trialing`, `active_paid`, `payment_problem`, `ended` or `none`; Parser also has `free_allowance`. CLM `aiExtractions` and `contractTypeGenerations` contain `{ used, limit, remaining }` or `{ status: "unlimited" }` / `{ status: "not_applicable" }`. Parser `credits` contain `{ used, limit, remaining }`, including paid allocations.
+
+Check this summary before an allowance-consuming batch and warn if its expected cost exceeds the remaining allowance. Successful billing-relevant results refresh `billingRemaining` with `{ aiExtractions: n }` or `{ parserCredits: n }`. Uncapped CLM results omit it; an unavailable advisory read also omits it, so absence does not prove unlimited use. After an upgrade, refresh from a current result or re-call `auth_validate` before continuing.
+
+Complete refusals have `isError: true`, exactly one plain-text message in `content`, and `structuredContent` with `code: "billing_action_required"`, `reason`, `audience`, and `action_url` for `billing_admin` only. Reasons: `trial_cap_reached`, `trial_ended`, `subscription_ended`, `payment_failed`, `plan_limit_reached`, `storage_full`, `parser_credits_exhausted`. There is no JSON-text compatibility block or `status`, `hint`, `billingReason`, `link` or `refusalReason` on this envelope.
+
+Relay the text verbatim and a link only when supplied, preserving its query parameters. Follow the audience-specific next step: billing admins add billing details, enable renewal, update payment or review the plan as directed; members ask the workspace owner, without a billing link. Parser credit refusals direct admins to `/parser?plans=open`. Treat these as billing outcomes, not technical errors; never retry refused work. Parser credits do not lift CLM caps.
+
+Partial imports remain successful results with `structuredContent.billingNotice`: `code` (the reason), `audience`, `message`, and admin-only `link`. Relay that message and each blocked item's `note`; blocked items have `retryable: false`. Keep accepted items, keep checking accepted unfinished work, and do not resubmit the batch. For cached Tasks, inspect the nested `result`: a recorded refusal keeps its reason while copy, audience and links refresh for the current reader.
+
+The CLM trial includes 3 AI extractions, 10 Clara messages and 1 signature request across the trial. Imports and document re-reads share extractions. A payment method with renewal enabled lifts trial usage caps, keeping the original trial end date; paid-plan contract, storage and signature allowances still apply. Use the returned trial date rather than assuming a duration.
+
+Without an eligible Parser subscription, a workspace gets 20 free credits once. Documents cost 1 to 5 credits: one per 10 estimated pages, or per 2 MiB without a page estimate; review doubles the cost. Further jobs need paid credits. Check balance and preflight, confirm estimated cost, and retrieve exports before retention expires.
 
 ## Say this once
 
@@ -42,7 +44,7 @@ In the first response of a session where Contracko is connected to an AI product
 
 For client setup, follow [README connection and consent steps](https://github.com/contracko/contracko-skills#install). Consent belongs to the user; do not automate it or ask for credentials in chat. In a non-interactive session, report browser sign-in as blocked.
 
-Run `auth_validate` first in every session. `status: "ok"` confirms a credential, not Contract Management access: inspect `workspace.contractManagement` for refusals. Continue only when the workspace, access and scopes match the requested work. Follow [Errors](#errors) for refusal recovery and missing tools.
+Use `auth_validate` to confirm the workspace, access and scopes match the requested work. `status: "ok"` confirms a credential, not Contract Management access: inspect `workspace.contractManagement` for refusals. [Billing and allowances](#billing-and-allowances) owns connection-time checks and limits; [Errors](#errors) owns other refusal recovery and missing tools.
 
 | Scope | Available work |
 |---|---|
@@ -134,10 +136,9 @@ Follow returned hints. Revoked credentials are refused immediately. Reconnect on
 
 | Response | Action |
 |---|---|
-| CLM billing refusal (including `subscription_inactive`) or partial-import notice | Follow [CLM billing notices](#clm-billing-notices). Reconnecting will not help. |
+| Billing refusal or partial-import notice | Follow [Billing and allowances](#billing-and-allowances). Reconnecting will not help. |
 | `api_disabled` | Ask a workspace admin to turn on Contract Management API access. Reconnecting will not help. |
 | `not_member` | Reconnect and choose a workspace you belong to. |
-| Parser credit refusal | Ask a workspace admin to add Parser credits or review the Contracko Parser plan. This does not block CLM contract intake. |
 | 409 conflict | Re-read the named state. A duplicate name or changed idempotency payload can cause it. |
 | 400 `code: "custom"` | Check cross-field requirements, not only the named field. |
 | malformed success payload | Report the schema mismatch. Do not treat it as no data. |

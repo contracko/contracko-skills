@@ -1,13 +1,15 @@
 # Contracko MCP tool index
 
-60 definitions: 58 normal tools plus two Claude-chat upload-panel tools. Availability depends on scopes, capability policy and client. [Readiness and tool choice](../SKILL.md#connect-and-discover), [imports](../../contracko-import/SKILL.md), and [review](../../contracko-review/SKILL.md) own the instructions.
+60 definitions: 58 normal tools plus two Claude-chat upload-panel tools. Availability depends on scopes, capability policy and client. [Readiness and tool choice](../SKILL.md#connect-and-discover), [billing and allowances](../SKILL.md#billing-and-allowances), [imports](../../contracko-import/SKILL.md), and [review](../../contracko-review/SKILL.md) own the instructions.
 
 ## Connection
 
 | Tool | Scope | Facts |
 |---|---|---|
-| `auth_validate` | any valid credential | Reports workspace, scopes and Contract Management refusals, even with credential `status: "ok"`. |
+| `auth_validate` | any valid credential | Workspace, scopes, access refusals and optional audience-safe `billing` summary. |
 | `clm_search_tools` | any valid credential | Searches listed tools; up to five results with purpose, scopes, examples, related tools and sequences. Optional `toolset`: contracts, parties, folders, events, imports, parser, connection. Reads no workspace data and calls nothing. |
+
+Successful billing-relevant results may include `billingRemaining` (`aiExtractions` or `parserCredits`).
 
 ## Contracts and folders
 

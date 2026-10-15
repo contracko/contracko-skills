@@ -1,6 +1,6 @@
 {
   "source": "Contracko released MCP catalog",
-  "revision": "223693cf33f3798e6d62b990b4c608091c01b337",
+  "revision": "60360f055833ff9f8abbd0abacb1c3834e7c90b5",
   "tools": [
     {
       "name": "auth_validate",
