@@ -14,7 +14,7 @@ These skills teach the assistant how to import, review, organise, and file that 
 
 **No account yet?** Start a [7-day free trial](https://contracko.com) (no credit card). You can also create the trial account on the OAuth screen the first time you connect the server.
 
-Trial allowances: [CLM](skills/contracko/SKILL.md#clm-trial-limits) and [Parser](skills/contracko/SKILL.md#parser-allowance).
+[Billing and allowances](skills/contracko/SKILL.md#billing-and-allowances) covers CLM and Parser.
 
 ## Usage
 

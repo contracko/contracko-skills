@@ -4,7 +4,12 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
-- Synced Release 16 [CLM billing notices](skills/contracko/SKILL.md#clm-billing-notices): relay audience-specific messages and links verbatim, preserve accepted imports, and do not retry refused work.
+- Synced Release 17 [billing and allowances](skills/contracko/SKILL.md#billing-and-allowances): plain-text refusal envelopes, partial imports, current-reader Task notices, connection summaries and remaining allowances.
+- Bumped the unified public version to 1.1.4 and regenerated the directory package.
+
+## 1.1.3, 2026-10-15
+
+- Synced Release 16 [CLM billing notices](skills/contracko/SKILL.md#billing-and-allowances): relay audience-specific messages and links verbatim, preserve accepted imports, and do not retry refused work.
 - Updated launcher help to follow the returned billing notice instead of prescribing a subscription at every limit.
 - Bumped the unified public version to 1.1.3 and regenerated the directory package.
 

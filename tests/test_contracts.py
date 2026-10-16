@@ -69,8 +69,16 @@ class ContractDocumentationTests(unittest.TestCase):
             with self.subTest(claim=claim):
                 self.assertNotEqual(self.check(self.call({}) + claim).returncode, 0)
 
+    def test_accepts_parser_billing_reason_without_treating_it_as_a_tool(self):
+        result = self.check(self.call({}) + "Billing reason: `parser_credits_exhausted`.")
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_rejects_invented_argument_and_tool(self):
-        for text in (self.call({"minimumAnnualValue": 25000}), self.call({}) + "Use `clm_magic_search`."):
+        for text in (
+            self.call({"minimumAnnualValue": 25000}),
+            self.call({}) + "Use `clm_magic_search`.",
+            self.call({}) + "Use `parser_magic_search`.",
+        ):
             with self.subTest(text=text):
                 self.assertNotEqual(self.check(text).returncode, 0)
 
