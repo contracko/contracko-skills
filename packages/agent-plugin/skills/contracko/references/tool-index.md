@@ -49,14 +49,14 @@ Successful billing-relevant results may include `billingRemaining` (`aiExtractio
 
 | Tool | Scope | Facts |
 |---|---|---|
-| `clm_import_contracts` | `contract:write` | Managed intake; see [import](../../contracko-import/SKILL.md#managed-import). |
+| `clm_import_contracts` | `contract:write` | Managed document intake; see [import or sync rule](../../contracko-import/SKILL.md#choose-import-or-sync). |
 | `clm_import_files` | `contract:write` | ChatGPT attachment intake; see [transfer](../../contracko-import/SKILL.md#getting-the-bytes-there). |
 | `clm_create_upload_session` | `contract:write` | One-hour browser upload link for the signed-in person. |
 | `clm_show_upload_widget` | no required scope; Claude chat only | Opens the panel, uploads nothing itself. Panel import needs write access and reports a processing job. Not available in Claude Code. |
 | `clm_prepare_widget_upload` | `contract:write`; Claude chat panel only | Panel-internal, not a direct agent call; single-use document destination expires within five minutes. |
 | `clm_get_import_status` | `contract:read` | Import/ingest snapshot; `wait: true` waits at most 25 seconds. |
 | `clm_create_upload_url` | `contract:write` | Short-lived upload destination; `ifUploadUrlUnreachable` supplies a fallback. |
-| `clm_ingest_contract` | `contract:write` | External-record sync; see [sync](../../contracko-import/SKILL.md#sync-a-record-from-another-system). |
+| `clm_ingest_contract` | `contract:write` | Existing external-record sync; see [import or sync rule](../../contracko-import/SKILL.md#choose-import-or-sync). |
 | `clm_add_contract_documents` | `contract:write` | Existing-contract documents; see [attachments](../../contracko-import/SKILL.md#add-contract-documents). |
 | `clm_update_contract` | `contract:write` | Partial update with latest `updatedAt`. |
 | `clm_bulk_update_contracts` | `contract:write` | Up to 100 independent updates. |

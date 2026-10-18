@@ -14,7 +14,7 @@ Follow [first-contract intake](../../contracko-import/SKILL.md#managed-import).
 
 **They say:** import, onboard, migrate; files on disk, Drive, SharePoint or Box.
 
-Follow [contracko-import](../../contracko-import/SKILL.md).
+Follow the [import or sync rule](../../contracko-import/SKILL.md#choose-import-or-sync). For cloud-drive files, download or fetch the file with the available connector, then import it.
 
 **Done when:** the requested files are contracts in the intended workspace.
 

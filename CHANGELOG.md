@@ -4,6 +4,12 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
+- Made [import versus sync](skills/contracko-import/SKILL.md#choose-import-or-sync) explicit: default to Contracko's extraction pipeline when a document exists; later agent field updates are possible but not recommended. Document-free entry in the app is the least-preferred path; sync requires an existing external record with real source identifiers.
+- Clarified cloud-drive download/fetch before import and routed tool-choice guidance to the import skill.
+- Bumped the unified public version to 1.1.5 and regenerated the directory package.
+
+## 1.1.4, 2026-10-16
+
 - Synced Release 17 [billing and allowances](skills/contracko/SKILL.md#billing-and-allowances): plain-text refusal envelopes, partial imports, current-reader Task notices, connection summaries and remaining allowances.
 - Bumped the unified public version to 1.1.4 and regenerated the directory package.
 

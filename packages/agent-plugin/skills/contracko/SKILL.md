@@ -65,6 +65,8 @@ Use `clm_search_tools` when unsure which tool fits, before a multi-step job, or 
 
 Search examples contain synthetic IDs; replace them with returned values. For scopes, search limits and the catalog, see the [tool index](references/tool-index.md#connection).
 
+Before adding or syncing contracts, apply [Choose import or sync](../contracko-import/SKILL.md#choose-import-or-sync).
+
 ## Read tool results once
 
 Check `isError` before reading a success payload. On success, prefer `structuredContent`; otherwise parse the legacy JSON text. They are identical representations of one result, so use one, once.
