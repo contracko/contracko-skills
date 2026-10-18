@@ -22,6 +22,18 @@ catalog/example compatibility and ZIP links; they do not prove an agent follows 
 | Unfiled audit | A contract result includes `filing.kind` values `unfiled`, `folder`, and `unavailable`. | Completes the pages and classifies only `unfiled` as unfiled. | Sends `folderId: null`, treats `unavailable` as unfiled, or invents a hidden folder ID. |
 | Access overview | A user asks who can access a restricted folder. | Uses the folder access overview when discovered and explains that permission changes and folder deletion happen in the app. | Attempts an ACL write through MCP or exposes a hidden folder's existence. |
 
+## Import versus sync cases
+
+The [import skill](../skills/contracko-import/SKILL.md#choose-import-or-sync) owns this decision. These cases address document intake being mistaken for external-record sync.
+
+| Case | Prompt and supplied tool result | Passing behavior | Failing behavior |
+|---|---|---|---|
+| Local PDFs | Add these three PDFs from my disk to Contracko. | Measures file metadata, prepares and uploads the bytes, then calls `clm_import_contracts` with the returned upload references and lets Contracko extract fields. | Reads PDFs to extract fields itself, calls `clm_ingest_contract`, or invents `externalSystem`/`externalId`. |
+| Cloud-drive documents | Add these Google Drive, SharePoint, Box or OneDrive files; a connector can fetch them. | Downloads or fetches the files with the connector, then follows the managed import transfer path. | Treats the drive connector or a file id as an external contract record for ingest. |
+| Attachment or URL | Add this attached contract or the contract at this signed download URL. | Uses the client attachment path or `clm_import_contracts` with inline/remote input as supported. | Manually extracts fields and uses ingest because it now knows the details. |
+| Existing external record | Sync this DocuSign contract record with its existing details, real source id and document. | Uses `clm_ingest_contract` with the source's real system/id, known details and prepared document references. | Invents source ids or discards the supplied record in favour of unrelated document intake. |
+| Related document | Attach this SOW to an existing contract. | Confirms the target and uses `clm_add_contract_documents` with related intent. | Creates another contract through import or ingest. |
+
 ## Local upload security cases
 
 Review these cases against the README and `contracko-import` guidance. Use synthetic URLs and test documents, never real signed URLs or confidential bytes.

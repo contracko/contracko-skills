@@ -211,7 +211,7 @@ class ReleaseArtifactTests(unittest.TestCase):
         self.assertNotIn("`clm_ingest_contract`", upload)
         sync = import_skill.split("## Sync a record from another system\n", 1)[1].split("\n## ", 1)[0]
         self.assertIn("Sync contract from another system", sync)
-        self.assertIn("#add-contract-documents", sync)
+        self.assertIn("#choose-import-or-sync", sync)
         attachments = import_skill.split("### Add contract documents\n", 1)[1].split("\n## ", 1)[0]
         self.assertIn("`clm_add_contract_documents`", attachments)
         for argument in ("`externalSystem`", "`externalId`", "`uploadReference`"):

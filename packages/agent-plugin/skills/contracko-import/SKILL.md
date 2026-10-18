@@ -7,9 +7,17 @@ description: Imports contracts into Contracko from disk, Google Drive, SharePoin
 
 For readiness, product choice and refusals, follow [contracko](../contracko/SKILL.md#connect-and-discover). Imports need `contract:write`. This skill owns transfer and intake; shape types after extraction.
 
+## Choose import or sync
+
+**User-provided documents go to `clm_import_contracts`, never `clm_ingest_contract`.** This includes files from the user's disk, Google Drive or any cloud drive, chat attachments, and URLs. Let Contracko extract the details; do not read the document and extract fields yourself. Follow the [client transfer path](#getting-the-bytes-there): prepare with `clm_create_upload_url`, upload the bytes, then import with `kind: "upload"` and the returned `uploadReference`, or use `kind: "inline"` or `kind: "remote"` for a reachable URL. Client attachment and upload-panel flows below also use managed import, not sync.
+
+Use `clm_ingest_contract` only to sync a record that already exists in another system (DocuSign, a CRM, Zapier), with that system's existing contract details and real record id. Never invent `externalSystem` or `externalId` to file a document. Follow [sync submission](#sync-a-record-from-another-system).
+
+For related documents on an existing contract, use `clm_add_contract_documents`; follow [Add contract documents](#add-contract-documents).
+
 ## Find the files first
 
-Contracko MCP does not browse disks or cloud drives. Use the file, Google Drive, SharePoint, Box or OneDrive tools *you already have*. If you have none, ask the user to share the folder, attach files, or paste a signed download link.
+Contracko MCP does not browse disks or cloud drives. Use the file, Google Drive, SharePoint, Box or OneDrive tools *you already have*. For a cloud-drive file, download or fetch its bytes with those tools, then follow the import transfer path below. A drive connector is a file source, not an external contract record for sync. If you have none, ask the user to share the folder, attach files, or paste a signed download link.
 
 Ask where the contracts live and list supported documents, skipping noise and duplicates. Group related versions, an MSA with its SOWs, and signed with unsigned copies before filing them as unrelated records. Confirm the grouping with the user.
 
@@ -111,7 +119,7 @@ Once documents are in, the questions start: renewals, notice dates, risk, and wh
 
 ## Sync a record from another system
 
-Use `clm_ingest_contract` ("Sync contract from another system") only when an external record already supplies the contract details and its id, for example from DocuSign, a CRM or Zapier. For documents without known details, use [managed import](#managed-import); for related documents, use [Add contract documents](#add-contract-documents).
+For `clm_ingest_contract` ("Sync contract from another system"), first apply [Choose import or sync](#choose-import-or-sync).
 
 Prepare and upload the documents through [Working the upload path](#working-the-upload-path), or reuse their existing references. Submit `externalSystem`, `externalId`, the source's `contract` details, and `files` containing each unchanged `uploadReference`, `fileName`, `mimeType` and `fileSize`; mark the main document `isPrimary`. Discovery requires `uploadReference`; legacy `r2Key` is accepted only for compatibility and is hidden from discovery. Never derive either reference from a storage key.
 
