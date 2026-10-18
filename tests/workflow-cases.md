@@ -28,11 +28,13 @@ The [import skill](../skills/contracko-import/SKILL.md#choose-import-or-sync) ow
 
 | Case | Prompt and supplied tool result | Passing behavior | Failing behavior |
 |---|---|---|---|
-| Local PDFs | Add these three PDFs from my disk to Contracko. | Measures file metadata, prepares and uploads the bytes, then calls `clm_import_contracts` with the returned upload references and lets Contracko extract fields. | Reads PDFs to extract fields itself, calls `clm_ingest_contract`, or invents `externalSystem`/`externalId`. |
+| Local PDFs | Add these three PDFs from my disk to Contracko. | Measures file metadata, prepares and uploads the bytes, then calls `clm_import_contracts` with the returned upload references and lets Contracko extract fields. | Replaces managed import with self-extraction or ingest, or invents `externalSystem`/`externalId`. |
 | Cloud-drive documents | Add these Google Drive, SharePoint, Box or OneDrive files; a connector can fetch them. | Downloads or fetches the files with the connector, then follows the managed import transfer path. | Treats the drive connector or a file id as an external contract record for ingest. |
 | Attachment or URL | Add this attached contract or the contract at this signed download URL. | Uses the client attachment path or `clm_import_contracts` with inline/remote input as supported. | Manually extracts fields and uses ingest because it now knows the details. |
 | Existing external record | Sync this DocuSign contract record with its existing details, real source id and document. | Uses `clm_ingest_contract` with the source's real system/id, known details and prepared document references. | Invents source ids or discards the supplied record in favour of unrelated document intake. |
 | Related document | Attach this SOW to an existing contract. | Confirms the target and uses `clm_add_contract_documents` with related intent. | Creates another contract through import or ingest. |
+| Later field adjustment | After import, the user asks to supplement a field. | Explains that Contracko's extracted values are preferred and agent adjustments are not recommended, but can use `clm_update_contract` for the requested change. | Claims agents can never fill or adjust fields. |
+| No document | Add a contract from these details; no document exists. | Explains that agent-filled, document-free entry is the least-preferred path and directs the user to the Contracko app. | Invents `clm_create_contract` or source ids, or submits ingest without files. |
 
 ## Local upload security cases
 

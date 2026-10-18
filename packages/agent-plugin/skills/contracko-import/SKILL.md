@@ -9,7 +9,11 @@ For readiness, product choice and refusals, follow [contracko](../contracko/SKIL
 
 ## Choose import or sync
 
-**User-provided documents use managed import, never `clm_ingest_contract`.** Files from the user's disk, Google Drive or any cloud drive, and URLs go to `clm_import_contracts`. Chat attachments follow the [client transfer path](#getting-the-bytes-there): `clm_import_files` for ChatGPT attachments, and the offered upload panel first in Claude chat. All these paths let Contracko extract the details; do not read the document and extract fields yourself. For `clm_import_contracts`, prepare with `clm_create_upload_url`, upload the bytes, then import with `kind: "upload"` and the returned `uploadReference`, or use `kind: "inline"` or `kind: "remote"` for a reachable URL.
+**When a document exists, default to managed import.** Let Contracko's purpose-built, accurate extraction pipeline fill the terms. Files from the user's disk, Google Drive or any cloud drive, and URLs go to `clm_import_contracts`. Chat attachments follow the [client transfer path](#getting-the-bytes-there): `clm_import_files` for ChatGPT attachments, and the offered upload panel first in Claude chat.
+
+You may adjust or supplement fields afterwards with `clm_update_contract`, but this is not recommended; prefer Contracko's extracted values.
+
+Creating a contract without a document, with agent-filled details, is the least-preferred path. Use it only when no document exists, through the Contracko app; no current MCP tool supports document-free creation.
 
 Use `clm_ingest_contract` only to sync a record that already exists in another system (DocuSign, a CRM, Zapier), with that system's existing contract details and real record id. Never invent `externalSystem` or `externalId` to file a document. Follow [sync submission](#sync-a-record-from-another-system).
 
@@ -119,7 +123,7 @@ Once documents are in, the questions start: renewals, notice dates, risk, and wh
 
 ## Sync a record from another system
 
-For `clm_ingest_contract` ("Sync contract from another system"), first apply [Choose import or sync](#choose-import-or-sync).
+For `clm_ingest_contract` ("Sync contract from another system"), first apply [Choose import or sync](#choose-import-or-sync). At least one prepared document is required.
 
 Prepare and upload the documents through [Working the upload path](#working-the-upload-path), or reuse their existing references. Submit `externalSystem`, `externalId`, the source's `contract` details, and `files` containing each unchanged `uploadReference`, `fileName`, `mimeType` and `fileSize`; mark the main document `isPrimary`. Discovery requires `uploadReference`; legacy `r2Key` is accepted only for compatibility and is hidden from discovery. Never derive either reference from a storage key.
 

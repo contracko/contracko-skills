@@ -65,7 +65,7 @@ Use `clm_search_tools` when unsure which tool fits, before a multi-step job, or 
 
 Search examples contain synthetic IDs; replace them with returned values. For scopes, search limits and the catalog, see the [tool index](references/tool-index.md#connection).
 
-Before adding documents or syncing a record, apply [Choose import or sync](../contracko-import/SKILL.md#choose-import-or-sync). For cloud-drive files, download or fetch the file with the available connector, then follow that import rule.
+Before adding or syncing contracts, apply [Choose import or sync](../contracko-import/SKILL.md#choose-import-or-sync).
 
 ## Read tool results once
 
