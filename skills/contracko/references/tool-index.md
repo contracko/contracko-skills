@@ -49,7 +49,7 @@ Successful billing-relevant results may include `billingRemaining` (`aiExtractio
 
 | Tool | Scope | Facts |
 |---|---|---|
-| `clm_import_contracts` | `contract:write` | User-provided documents from disk, cloud drives (download/fetch first), chat or URLs; Contracko extracts fields. See [import or sync rule](../../contracko-import/SKILL.md#choose-import-or-sync). |
+| `clm_import_contracts` | `contract:write` | User-provided documents from disk, cloud drives (download/fetch first) or URLs; chat uses the client-specific import path. Contracko extracts fields. See [import or sync rule](../../contracko-import/SKILL.md#choose-import-or-sync). |
 | `clm_import_files` | `contract:write` | ChatGPT attachment intake; see [transfer](../../contracko-import/SKILL.md#getting-the-bytes-there). |
 | `clm_create_upload_session` | `contract:write` | One-hour browser upload link for the signed-in person. |
 | `clm_show_upload_widget` | no required scope; Claude chat only | Opens the panel, uploads nothing itself. Panel import needs write access and reports a processing job. Not available in Claude Code. |

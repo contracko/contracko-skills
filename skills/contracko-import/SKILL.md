@@ -9,7 +9,7 @@ For readiness, product choice and refusals, follow [contracko](../contracko/SKIL
 
 ## Choose import or sync
 
-**User-provided documents go to `clm_import_contracts`, never `clm_ingest_contract`.** This includes files from the user's disk, Google Drive or any cloud drive, chat attachments, and URLs. Let Contracko extract the details; do not read the document and extract fields yourself. Follow the [client transfer path](#getting-the-bytes-there): prepare with `clm_create_upload_url`, upload the bytes, then import with `kind: "upload"` and the returned `uploadReference`, or use `kind: "inline"` or `kind: "remote"` for a reachable URL. Client attachment and upload-panel flows below also use managed import, not sync.
+**User-provided documents use managed import, never `clm_ingest_contract`.** Files from the user's disk, Google Drive or any cloud drive, and URLs go to `clm_import_contracts`. Chat attachments follow the [client transfer path](#getting-the-bytes-there): `clm_import_files` for ChatGPT attachments, and the offered upload panel first in Claude chat. All these paths let Contracko extract the details; do not read the document and extract fields yourself. For `clm_import_contracts`, prepare with `clm_create_upload_url`, upload the bytes, then import with `kind: "upload"` and the returned `uploadReference`, or use `kind: "inline"` or `kind: "remote"` for a reachable URL.
 
 Use `clm_ingest_contract` only to sync a record that already exists in another system (DocuSign, a CRM, Zapier), with that system's existing contract details and real record id. Never invent `externalSystem` or `externalId` to file a document. Follow [sync submission](#sync-a-record-from-another-system).
 
