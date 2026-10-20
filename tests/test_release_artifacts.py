@@ -116,10 +116,18 @@ class ReleaseArtifactTests(unittest.TestCase):
         self.assertLess(len(skill.split()), 1000)
         description = skill.split("description: ", 1)[1].splitlines()[0].strip("'")
         self.assertLessEqual(len(description), 200)
-        for trigger in ("connect", "onboard", "import", "upload", "sync", "notifications",
-                        "reminders", "notice", "end dates", "AI", "portfolio", "reports",
-                        "compare", "folders", "types", "parties", "signed"):
+        self.assertNotIn("/", description)
+        self.assertNotIn(";", description)
+        for trigger in ("import", "upload", "renewal", "notice", "reminders", "AI analysis",
+                        "reports", "folders", "types", "draft new agreements", "Parser jobs"):
             self.assertIn(trigger, description)
+        routing = skill.split("# Contracko\n\n", 1)[1].split("\n\n", 1)[0]
+        for trigger in ("connecting", "onboarding", "importing", "uploading", "syncing",
+                        "other systems", "notifications", "reminders", "notice and end dates",
+                        "AI analysis", "portfolio reports", "comparing contracts", "folders",
+                        "types", "parties", "creating", "drafting", "templates",
+                        "signature handoffs", "filing signed agreements"):
+            self.assertIn(trigger, routing)
 
     def test_preserves_privacy_and_workflow_safety_rules(self) -> None:
         skill_root = ROOT / "skills" / "contracko"
@@ -130,6 +138,10 @@ class ReleaseArtifactTests(unittest.TestCase):
             "in the provider's settings before working with real contracts.",
             core,
         )
+        for rule in ("completed Task", "nested `result`", "current audience-safe message",
+                     "never retry the refused work",
+                     "Use the returned trial date rather than assuming a duration"):
+            self.assertIn(rule, core)
         expected = {
             "onboarding.md": ("Consent belongs to the user", "Connecting imports nothing"),
             "importing-contracts.md": (
@@ -154,6 +166,9 @@ class ReleaseArtifactTests(unittest.TestCase):
             ),
             "new-agreement.md": (
                 "human with legal competence", "Notice period: ask explicitly, never default it",
+                "`clm_update_contract` supports metadata, custom-field and lifecycle-status changes",
+                "`active`, `expired`, `terminated`, `notice-given`",
+                "preference for extracted values over manual supplementation",
             ),
         }
         for reference, phrases in expected.items():

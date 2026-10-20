@@ -37,7 +37,9 @@ For an approved secure destination, record the parties and owned entity, dates/o
 
 ## Drafting and signature: app steps
 
-Creating a contract from a template, filling fields, changing status, sending for signature, checking signature status and chasing signers have no current MCP tool. Name the app step. Do not claim you created or sent anything in Contracko. Text you draft goes with the user and needs legally competent review before signature.
+Creating a contract from a template and signature-workflow operations (sending for signature, checking signature status and chasing signers) have no current MCP tool. Name the app step. Do not claim you created or sent anything in Contracko. Text you draft goes with the user and needs legally competent review before signature.
+
+For an existing contract, `clm_update_contract` supports metadata, custom-field and lifecycle-status changes (`active`, `expired`, `terminated`, `notice-given`). Follow the [preference for extracted values over manual supplementation](importing-contracts.md#choose-import-or-sync).
 
 If the user asks where a contract is, check whether it is already filed but unsigned with `clm_list_contracts` and `clm_get_contract` before assuming it is absent.
 

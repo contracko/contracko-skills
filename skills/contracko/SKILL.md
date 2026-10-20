@@ -1,11 +1,13 @@
 ---
 name: contracko
-description: 'Contracko: connect/onboard; import/upload/sync contracts; notifications/reminders, notice/end dates; AI/portfolio reviews/reports; compare; organise folders/types/parties; file signed agreements.'
+description: 'Manage contracts in Contracko: import or upload documents, set renewal and notice reminders, review AI analysis and reports, organise folders and types, draft new agreements, or run Parser jobs.'
 ---
 
 Upstream: none (homegrown).
 
 # Contracko
+
+Use this skill for connecting and onboarding a workspace, importing or uploading contracts, syncing records from other systems, notifications and reminders, notice and end dates, reviewing AI analysis and portfolio reports, comparing contracts, organising folders, types and parties, creating or drafting agreements from templates, signature handoffs and filing signed agreements.
 
 ## Choose the product
 
@@ -37,7 +39,7 @@ Read scopes do not guarantee read-only effects. Follow live annotations and get 
 
 ## Billing and allowances
 
-Call `auth_validate` before an allowance-consuming batch and again when the user mentions upgrading, plans or limits. Warn if the expected batch cost exceeds remaining allowance. Refresh after an upgrade before continuing; missing allowance data does not prove unlimited use.
+Call `auth_validate` before an allowance-consuming batch and again when the user mentions upgrading, plans or limits. Warn if the expected batch cost exceeds remaining allowance. Refresh after an upgrade before continuing; missing allowance data does not prove unlimited use. Use the returned trial date rather than assuming a duration.
 
 Recognise `billing_action_required` as a billing outcome, not a technical error. Relay billing messages and supplied links verbatim, preserving query parameters. Follow the audience-specific next step: billing admins act as directed; members ask the workspace owner without a billing link. Never retry refused work or reconnect to lift a cap. Parser credits do not lift CLM caps.
 
@@ -51,13 +53,15 @@ Use `clm_search_tools` when unsure which tool fits, before a multi-step job, or 
 { "query": "Add my first contract", "toolset": "imports" }
 ```
 
-Use only discovered tools and arguments, and real returned identifiers. Never invent tools, signatures or source ids. If an operation has no discovered tool, name the nearest available step and hand the unavailable operation to the app.
+Use discovered tools, arguments and returned identifiers, never invented tools, signatures or source ids. For unavailable operations, offer the nearest supported step and hand off to the app.
 
 ## Read tool results once
 
-Check `isError` first. On success, prefer `structuredContent`; otherwise parse the legacy JSON text. These represent one result: use one, once.
+Check `isError` first. On success, prefer `structuredContent`; otherwise parse the legacy JSON text. Use one representation, once.
 
-Treat the discovered `outputSchema` as a contract. A missing or malformed required field is a response mismatch, not an empty result. Report it; do not retry a mutation solely because output validation failed.
+A completed Task can carry a refusal inside its nested `result`. Inspect that result, relay its current audience-safe message, and never retry the refused work. Apply [billing guidance](#billing-and-allowances) when relevant.
+
+Missing or malformed required `outputSchema` fields mean a response mismatch, not empty data. Report it; never retry a mutation solely for output validation failure.
 
 `OUTCOME_UNKNOWN` means a write may have completed. Re-read affected state and reconcile before retrying or reporting success or failure.
 
