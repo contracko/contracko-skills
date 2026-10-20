@@ -1,6 +1,6 @@
 {
   "name": "contracko",
-  "version": "1.1.5",
+  "version": "1.2.0",
   "description": "CLM manages contracts without Parser credits. Separate Parser bulk processing uses credits, not needed to add contracts.",
   "author": {
     "name": "Contracko",
@@ -11,10 +11,7 @@
   "license": "MIT",
   "keywords": ["contracko", "contract-management", "mcp", "legal", "procurement"],
   "skills": [
-    "./skills/contracko",
-    "./skills/contracko-import",
-    "./skills/contracko-review",
-    "./skills/contracko-create"
+    "./skills/contracko"
   ],
   "mcpServers": "./mcp.json"
 }

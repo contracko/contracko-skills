@@ -24,7 +24,7 @@ catalog/example compatibility and ZIP links; they do not prove an agent follows 
 
 ## Import versus sync cases
 
-The [import skill](../skills/contracko-import/SKILL.md#choose-import-or-sync) owns this decision. These cases address document intake being mistaken for external-record sync.
+The [import reference](../skills/contracko/references/importing-contracts.md#choose-import-or-sync) owns this decision. These cases address document intake being mistaken for external-record sync.
 
 | Case | Prompt and supplied tool result | Passing behavior | Failing behavior |
 |---|---|---|---|
@@ -38,7 +38,7 @@ The [import skill](../skills/contracko-import/SKILL.md#choose-import-or-sync) ow
 
 ## Local upload security cases
 
-Review these cases against the README and `contracko-import` guidance. Use synthetic URLs and test documents, never real signed URLs or confidential bytes.
+Review these cases against the README and the `contracko` import reference. Use synthetic URLs and test documents, never real signed URLs or confidential bytes.
 
 | Case | Prompt and supplied tool result | Passing behavior | Failing behavior |
 |---|---|---|---|

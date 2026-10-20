@@ -5,18 +5,16 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import shutil
 import subprocess
 import tempfile
 import zipfile
 from pathlib import Path
-from urllib.parse import urlsplit, urlunsplit
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SKILLS = ("contracko", "contracko-create", "contracko-import", "contracko-review")
+SKILLS = ("contracko",)
 PLATFORMS = ("openclaw", "hermes")
 DIRECTORY_PACKAGE = ROOT / "packages" / "agent-plugin"
 PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
@@ -71,60 +69,8 @@ def build_skill_archives(output: Path) -> None:
             zip_tree(Path(temporary), output / f"{skill}.zip")
 
 
-def merged_chat_tree(destination: Path) -> None:
-    source = ROOT
-    router = source / "skills" / "contracko"
-    merged: dict[Path, Path] = {router / "SKILL.md": destination / "SKILL.md"}
-
-    for path in (router / "references").rglob("*"):
-        if path.is_file():
-            merged[path] = destination / "references" / path.relative_to(router / "references")
-
-    for name in ("import", "review", "create"):
-        merged[source / "skills" / f"contracko-{name}" / "SKILL.md"] = (
-            destination / "references" / f"{name}.md"
-        )
-
-    for original, target in merged.items():
-        content = original.read_text()
-        if original.parent.name.startswith("contracko-"):
-            parts = content.split("---", 2)
-            content = parts[2].lstrip("\n") if len(parts) == 3 and content.startswith("---") else content
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(content)
-
-    link = re.compile(r"(]\()([^()\s]+)([^)]*\))")
-
-    def rewrite(match: re.Match[str], original: Path, target: Path) -> str:
-        destination_text, suffix = match.group(2), match.group(3)
-        parsed = urlsplit(destination_text)
-        if parsed.scheme or parsed.netloc or not parsed.path:
-            return match.group(0)
-        resolved = Path(os.path.normpath(original.parent / parsed.path))
-        merged_target = merged.get(resolved)
-        if merged_target is None:
-            return match.group(0)
-        relative = os.path.relpath(merged_target, target.parent).replace(os.sep, "/")
-        return match.group(1) + urlunsplit(("", "", relative, parsed.query, parsed.fragment)) + suffix
-
-    for original, target in merged.items():
-        target.write_text(link.sub(lambda match: rewrite(match, original, target), target.read_text()))
-
-
 def build_chat_archive(output: Path) -> None:
-    with tempfile.TemporaryDirectory() as temporary:
-        package = Path(temporary) / "contracko"
-        merged_chat_tree(package)
-        router = package / "SKILL.md"
-        description = (
-            "Contracko contract management over MCP: connect a workspace, import contracts, "
-            "answer renewal, risk and vendor questions, organise types and fields, and draft "
-            "and file new agreements."
-        )
-        text = router.read_text()
-        text = re.sub(r"^description: .*$", f"description: {description}", text, count=1, flags=re.MULTILINE)
-        router.write_text(text)
-        zip_tree(Path(temporary), output / "contracko-chat.zip")
+    shutil.copyfile(output / "contracko.zip", output / "contracko-chat.zip")
 
 
 def validate_manifest(manifest: dict[str, object], version: str) -> None:

@@ -2,7 +2,7 @@
 
 How these skills and the Contracko MCP server reach a user, per client. Working notes, not marketing copy.
 
-The bundle is a GitHub repo with one folder per skill, `SKILL.md` at each folder root. Every path below is a different way of moving that folder, or that server, to a user.
+The bundle is a GitHub repo with one skill, `skills/contracko/SKILL.md`, and workflow references loaded on demand. Every path below is a different way of moving that folder, or that server, to a user.
 
 ## Status
 
@@ -10,7 +10,7 @@ The bundle is a GitHub repo with one folder per skill, `SKILL.md` at each folder
 |---|---|---|
 | Public GitHub repo `contracko/contracko-skills` | this directory as the repo root | created; every official directory pins this URL |
 | Claude Code | plugin marketplace, `/plugin install contracko@contracko` | ready from this repo; the plugin's `.mcp.json` registers the server, so no `claude mcp add` after it |
-| Claude Desktop / claude.ai chat | directory connector first; one zip per skill, uploaded by hand, as the Free-plan skills path | zips build on release |
+| Claude Desktop / claude.ai chat | directory connector first; one `contracko.zip`, uploaded by hand, as the Free-plan skills path | zips build on release |
 | Claude Connectors Directory | remote MCP listing in Claude.ai | live (Community) at [claude.ai/directory/connectors/contracko](https://claude.ai/directory/connectors/contracko); the primary path on every Claude surface |
 | Claude plugin directory (Cowork + Claude Code) | public GitHub plugin, `claude plugin validate` then Anthropic form | listed; tracks `main`, so a merge to `main` auto-publishes. Paid plans only |
 | Codex / ChatGPT | `.agents/plugins/marketplace.json` + `.codex-plugin/plugin.json` for workspace import; `contracko-agent-plugin-chatgpt.zip` for ChatGPT portal upload | workspace import ready; public Plugin Directory needs OpenAI review |
@@ -34,7 +34,7 @@ Nearly every published distribution pattern is a developer-tool pattern: `npx`, 
 
 ## Claude chat needs zips, and the repo has to serve them
 
-Uploading to claude.ai and Claude Desktop chat takes **one zip per skill**, with the skill folder at the archive root and the folder name matching the frontmatter `name`. [.github/workflows/release.yml](.github/workflows/release.yml) builds them on every tag and attaches them, which gives permanent URLs:
+Uploading to claude.ai and Claude Desktop chat takes **one ZIP, `contracko.zip`**, containing `contracko/SKILL.md` and `contracko/references/`. The folder name matches the frontmatter `name`. `contracko-chat.zip` remains a byte-identical compatibility alias; no retired per-skill ZIPs are built. Users updating from four skills upload this ZIP and delete `contracko-import`, `contracko-review` and `contracko-create`, or reinstall/update the plugin. [.github/workflows/release.yml](.github/workflows/release.yml) builds them on every tag and attaches them, which gives permanent URLs:
 
 ```
 https://github.com/contracko/contracko-skills/releases/latest/download/contracko.zip
@@ -53,9 +53,9 @@ Upload and enable steps: [README Claude section](README.md#install).
 
 ### The 200-character cap is real
 
-Anthropic documents it: **claude.ai limits `description` to 200 characters**, where the spec allows 1024 and Claude Code truncates a combined description at 1,536. All four descriptions here are now written to 200, which is valid on every surface. Keep them that way, and spend the budget on trigger words rather than prose.
+Anthropic documents it: **claude.ai limits `description` to 200 characters**, where the spec allows 1024 and Claude Code truncates a combined description at 1,536. The single description here is written to at most 200, which is valid on every surface. Keep it that way, and spend the budget on trigger words rather than prose.
 
-Same constraint on frontmatter: claude.ai, the Skills API and `package_skill.py` accept only `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`. Any Claude-Code-only field is a hard upload error, not a silent ignore. These skills carry `name` and `description` only, deliberately.
+Same constraint on frontmatter: claude.ai, the Skills API and `package_skill.py` accept only `name`, `description`, `license`, `compatibility`, `metadata`, `allowed-tools`. Any Claude-Code-only field is a hard upload error, not a silent ignore. The skill carries `name` and `description` only, deliberately.
 
 ## Versioning
 
@@ -65,7 +65,7 @@ For each release, bump only the source version, copy that value into every publi
 
 Type the ChatGPT and Claude developer portal version as exactly this value, for example `1.1.3`, without a `v` prefix. The Git release tag is `v1.1.3`. Portal values are manual and cannot be checked by repository CI. The plugin cache is keyed on the version, so bump it for changes users should receive.
 
-The ChatGPT listing `plugin_asdk_app_6a9e97994d248191b2dcb1714454bb2f` requires `.codex-plugin/plugin.json` name `app-6a9e97994d248191b2dcb1714454bb2f`. The mapping lives in [`packaging/directory-listings.json`](packaging/directory-listings.json), separate from the standard manifest so it does not enter other packages. The approved listing copy lives in [`packaging/chatgpt/plugin.json`](packaging/chatgpt/plugin.json); this template omits `name` and `version`, which the builder inserts from the mapping and unified version. `check_versions.py` requires both files to parse and rejects malformed mappings or conflicting template names and versions if stored. Upload `contracko-agent-plugin-chatgpt.zip` to that portal listing with the unified version. Configure the existing MCP connection in the ChatGPT portal; it is not included in the ZIP. Use `contracko-agent-plugin.zip` for every other directory, where the name remains `contracko`.
+The ChatGPT listing `plugin_asdk_app_6a9e97994d248191b2dcb1714454bb2f` requires `.codex-plugin/plugin.json` name `app-6a9e97994d248191b2dcb1714454bb2f`. The mapping lives in [`packaging/directory-listings.json`](packaging/directory-listings.json), separate from the standard manifest so it does not enter other packages. The approved listing copy lives in [`packaging/chatgpt/plugin.json`](packaging/chatgpt/plugin.json); this template omits `name` and `version`, which the builder inserts from the mapping and unified version. `check_versions.py` requires both files to parse and rejects malformed mappings or conflicting template names and versions if stored. The ChatGPT ZIP keeps its existing listing manifest and `skills/` layout. While the 1.1 review is pending, do not upload the 1.2.0 candidate; wait for that review to end and captain approval. After approval, upload `contracko-agent-plugin-chatgpt.zip` to that same portal listing with the unified version. Configure the existing MCP connection in the ChatGPT portal; it is not included in the ZIP. Use `contracko-agent-plugin.zip` for every other directory, where the name remains `contracko`.
 
 ## What Contracko has to do server-side
 
@@ -95,7 +95,7 @@ Agent Plugins v1 package layouts and the two directory ZIPs: [directory package]
 
 The release builder renders the directory package and bundles from `skills/` and `packaging/manifest.json`, using `packaging/chatgpt/plugin.json` for ChatGPT listing copy and `packaging/directory-listings.json` for its name. It fixes archive ordering and timestamps, stores entries without compression, and runs in the existing release workflow. Both Agent Plugins ZIPs are deterministic for identical files, config and version. The generic archive also records the source commit in `RELEASE-METADATA.json`, so changing that commit changes its hash. The ChatGPT archive has no source-commit metadata and keeps the same bytes when only the commit changes. A local candidate is for review; official packages are built by the release workflow from the tagged main commit. The workflow attaches `dist/*.zip`, including both Agent Plugins assets. No host software, OAuth client, credential store, or background updater is shipped.
 
-`skills/` is canonical; generated mirrors are never hand-edited. Regenerate with `python3 scripts/build_release_artifacts.py --write-directory`. CI and `build-zips.sh` use `--check-directory` to reject missing, extra, changed or symlinked entries, including descriptor drift. Add new skill names to the builder's `SKILLS` before regenerating. Root `mcp.json` supplies the descriptor; `.mcp.json` is Claude-only.
+`skills/` is canonical; generated mirrors are never hand-edited. Regenerate with `python3 scripts/build_release_artifacts.py --write-directory`. CI and `build-zips.sh` use `--check-directory` to reject missing, extra, changed or symlinked entries, including descriptor drift. The builder's `SKILLS` contains only `contracko`; keep the canonical and generated trees identical. Root `mcp.json` supplies the descriptor; `.mcp.json` is Claude-only.
 
 The generated manifest follows the [Agent Plugins v1 specification](https://agent-plugins.org/specification/). The host flows follow [OpenClaw bundle mapping](https://github.com/openclaw/openclaw/blob/2f8cd215e92320703237b8def415b691f15f3b56/docs/plugins/bundles.md) and [Hermes portable package guidance](https://hermes-agent.nousresearch.com/docs/developer-guide/plugins).
 

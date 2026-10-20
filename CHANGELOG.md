@@ -4,7 +4,13 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
-- Made [import versus sync](skills/contracko-import/SKILL.md#choose-import-or-sync) explicit: default to Contracko's extraction pipeline when a document exists; later agent field updates are possible but not recommended. Document-free entry in the app is the least-preferred path; sync requires an existing external record with real source identifiers.
+- **Breaking, 1.2.0:** consolidated four skills into one `contracko` skill with on-demand workflow references. Retired `contracko-import` (now `references/importing-contracts.md` and `references/onboarding.md`), `contracko-review` (now `references/notifications.md`, `references/reviewing-ai-analysis.md` and `references/portfolio-review.md`), and `contracko-create` (now `references/new-agreement.md`), all under `skills/contracko/`. Workspace organisation moved from the core into `references/organising-the-workspace.md`.
+- **Migration:** reinstall or update the plugin. Claude chat users upload the single `contracko.zip` and can delete the old three skills. The core now relays server billing guidance instead of duplicating envelope fields.
+- Bumped every public version to 1.2.0 and regenerated the directory package. The ChatGPT listing manifest and ZIP layout remain unchanged; do not upload the candidate until its 1.1 review ends and the captain approves.
+
+## 1.1.5, 2026-10-20
+
+- Made [import versus sync](skills/contracko/references/importing-contracts.md#choose-import-or-sync) explicit: default to Contracko's extraction pipeline when a document exists; later agent field updates are possible but not recommended. Document-free entry in the app is the least-preferred path; sync requires an existing external record with real source identifiers.
 - Clarified cloud-drive download/fetch before import and routed tool-choice guidance to the import skill.
 - Bumped the unified public version to 1.1.5 and regenerated the directory package.
 
@@ -21,7 +27,7 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## 1.1.2, 2026-10-14
 
-- Synced Release 15 intake wording and read-only Parser balance checks; see [import and sync](skills/contracko-import/SKILL.md) and [Parser effects](skills/contracko/references/tool-index.md#contracko-parser-separate-bulk-document-processing).
+- Synced Release 15 intake wording and read-only Parser balance checks; see [import and sync](skills/contracko/references/importing-contracts.md) and [Parser effects](skills/contracko/references/tool-index.md#contracko-parser-separate-bulk-document-processing).
 - Bumped the unified public version to 1.1.2 and regenerated the directory package.
 - Added the [ChatGPT portal package](packaging/directory/README.md), separate from the generic directory ZIP.
 
@@ -30,7 +36,7 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 - Synced Release 11 [workspace consent](README.md#install) and [Contract Management refusal recovery](skills/contracko/SKILL.md#errors).
 - Synced Release 12 part 1 [CIMD/DCR compatibility](README.md#install) and immediate refusal of revoked credentials.
 - Added the missing generation, type re-read and upload-panel tools to the [tool index](skills/contracko/references/tool-index.md), including costs and saved-state effects.
-- Corrected [Claude chat transfer order](skills/contracko-import/SKILL.md#claude-chat-transfer-order) and [ChatGPT ZIP guidance](packaging/directory/README.md).
+- Corrected [Claude chat transfer order](skills/contracko/references/importing-contracts.md#claude-chat-transfer-order) and [ChatGPT ZIP guidance](packaging/directory/README.md).
 - Unified public versions and regenerated mirrors at 1.1.1; deduplicated instructions and trimmed the install prompt.
 
 ## 1.1.0, 2026-10-09

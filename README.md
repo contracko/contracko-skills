@@ -10,7 +10,7 @@
 - **Set automated reminders.** Add notifications to contract events so the right person hears about them in time.
 - **Track renewal and notice deadlines.** List what ends, auto-renews, or needs notice in a given window, across the whole portfolio.
 
-These skills teach the assistant how to import, review, organise, and file that work. The MCP server is the live connection to your workspace.
+The single `contracko` skill teaches the assistant how to import, review, organise, and file that work, loading workflow references only when needed. The MCP server is the live connection to your workspace.
 
 **No account yet?** Start a [7-day free trial](https://contracko.com) (no credit card). You can also create the trial account on the OAuth screen the first time you connect the server.
 
@@ -39,7 +39,7 @@ Connecting this plugin is different: when Claude, ChatGPT, Codex, or another ass
 
 ### Local upload policy
 
-Local uploads and client network settings: [import skill](skills/contracko-import/SKILL.md#working-the-upload-path).
+Local uploads and client network settings: [import reference](skills/contracko/references/importing-contracts.md#working-the-upload-path).
 
 ## Install
 
@@ -47,7 +47,7 @@ Local uploads and client network settings: [import skill](skills/contracko-impor
 
 For every other assistant, you connect to Contracko in two steps:
 
-1. **Add the skills** (this repo) so it knows how to help with contracts.
+1. **Add the skill** (this repo) so it knows how to help with contracts.
 2. **Add the connection** so it can reach your workspace. Paste this address when asked:
 
 ```
@@ -70,15 +70,15 @@ Open the section for the product you use.
 <summary><strong>Claude</strong> (web, desktop, mobile, Cowork)</summary>
 
 1. Open [https://claude.ai/directory/connectors/contracko](https://claude.ai/directory/connectors/contracko), choose **Connect to Claude** and sign in to Contracko.
-2. On Pro and above you can also install the **Contracko** plugin (**Customize, Plugins**) for the four contract skills, then connect from its **Connectors** tab.
+2. On Pro and above you can also install the **Contracko** plugin (**Customize, Plugins**) for the single contract skill, then connect from its **Connectors** tab.
 
 The directory connector works on every Claude plan, including Free. On Team and Enterprise, an Owner enables it first. Once connected on web or desktop, it also works in the Claude mobile app.
 
 Added Contracko as a custom connector before? Remove that one, or you will see every tool twice.
 
-Contract uploads: [import skill](skills/contracko-import/SKILL.md#getting-the-bytes-there).
+Contract uploads: [import reference](skills/contracko/references/importing-contracts.md#getting-the-bytes-there).
 
-On the Free plan you can still add the skills by hand: download them from [Releases](https://github.com/contracko/contracko-skills/releases/latest) and upload each one under **Customize, Skills**.
+On the Free plan, download [contracko.zip](https://github.com/contracko/contracko-skills/releases/latest/download/contracko.zip) and upload that single ZIP under **Customize, Skills**. Do not use GitHub's **Download ZIP** button. Enable the skill and start a new conversation. Updating from four skills? Upload the new ZIP and delete the old `contracko-import`, `contracko-review` and `contracko-create` skills.
 
 </details>
 
@@ -104,7 +104,7 @@ claude mcp add --transport http contracko https://app.contracko.com/mcp
 
 If you installed the older `contracko-skills` plugin, remove that plugin and install `contracko@contracko` after updating the marketplace. The GitHub repository remains `contracko/contracko-skills`; the MCP connection remains `contracko`.
 
-Contract uploads: [import skill](skills/contracko-import/SKILL.md#getting-the-bytes-there).
+Contract uploads: [import reference](skills/contracko/references/importing-contracts.md#getting-the-bytes-there).
 
 </details>
 
@@ -118,7 +118,7 @@ Contract uploads: [import skill](skills/contracko-import/SKILL.md#getting-the-by
 
 ChatGPT has no settings file for this. Use the screens above.
 
-Contract uploads: [import skill](skills/contracko-import/SKILL.md#getting-the-bytes-there).
+Contract uploads: [import reference](skills/contracko/references/importing-contracts.md#getting-the-bytes-there).
 
 </details>
 
@@ -254,16 +254,22 @@ For agents, use the [hosted setup prompt](https://contracko.com/mcp/install/prom
 
 </details>
 
-## Skills
+## Skill
 
-Four playbooks. You do not have to pick one; asking in plain language is enough.
+One skill, [contracko](skills/contracko/SKILL.md), routes each job to a reference loaded on demand:
 
-| Skill | Use it for |
+| Workflow | Reference |
 |---|---|
-| [contracko](skills/contracko/SKILL.md) | Connecting, then organising types, fields, and counterparties |
-| [contracko-import](skills/contracko-import/SKILL.md) | Bringing PDFs and Word files in from disk, Drive, SharePoint, Box, or a link |
-| [contracko-review](skills/contracko-review/SKILL.md) | Notice dates, notifications, comparisons, risk language, and what to look at next |
-| [contracko-create](skills/contracko-create/SKILL.md) | A new agreement, from questions through filing the signed PDF |
+| Connecting and first contract | [Onboarding](skills/contracko/references/onboarding.md) |
+| Files and external-record sync | [Importing contracts](skills/contracko/references/importing-contracts.md) |
+| Events and email reminders | [Notifications](skills/contracko/references/notifications.md) |
+| Risks, obligations and evidence | [Reviewing AI analysis](skills/contracko/references/reviewing-ai-analysis.md) |
+| Calendar, audits, reports and comparisons | [Portfolio review](skills/contracko/references/portfolio-review.md) |
+| Folders, types, fields and parties | [Organising the workspace](skills/contracko/references/organising-the-workspace.md) |
+| Drafting handoff and filing the signed copy | [New agreement](skills/contracko/references/new-agreement.md) |
+| Available tools and effects | [Tool index](skills/contracko/references/tool-index.md) |
+
+For 1.2.0, reinstall or update the plugin to replace the three retired skill names. Their content now lives in these references, not in separate skills.
 
 ## Get help
 

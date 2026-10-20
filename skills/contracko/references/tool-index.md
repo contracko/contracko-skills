@@ -1,15 +1,13 @@
 # Contracko MCP tool index
 
-60 definitions: 58 normal tools plus two Claude-chat upload-panel tools. Availability depends on scopes, capability policy and client. [Readiness and tool choice](../SKILL.md#connect-and-discover), [billing and allowances](../SKILL.md#billing-and-allowances), [imports](../../contracko-import/SKILL.md), and [review](../../contracko-review/SKILL.md) own the instructions.
+60 definitions: 58 normal tools plus two Claude-chat upload-panel tools. Availability depends on scopes, capability policy and client. [Readiness and tool choice](../SKILL.md#connect-and-discover), [billing behaviour](../SKILL.md#billing-and-allowances), [imports](importing-contracts.md), [AI review](reviewing-ai-analysis.md), and [portfolio review](portfolio-review.md) own the instructions.
 
 ## Connection
 
 | Tool | Scope | Facts |
 |---|---|---|
-| `auth_validate` | any valid credential | Workspace, scopes, access refusals and optional audience-safe `billing` summary. |
+| `auth_validate` | any valid credential | Workspace, scopes, access refusals and audience-safe allowance guidance. |
 | `clm_search_tools` | any valid credential | Searches listed tools; up to five results with purpose, scopes, examples, related tools and sequences. Optional `toolset`: contracts, parties, folders, events, imports, parser, connection. Reads no workspace data and calls nothing. |
-
-Successful billing-relevant results may include `billingRemaining` (`aiExtractions` or `parserCredits`).
 
 ## Contracts and folders
 
@@ -49,15 +47,15 @@ Successful billing-relevant results may include `billingRemaining` (`aiExtractio
 
 | Tool | Scope | Facts |
 |---|---|---|
-| `clm_import_contracts` | `contract:write` | Managed document intake; see [import or sync rule](../../contracko-import/SKILL.md#choose-import-or-sync). |
-| `clm_import_files` | `contract:write` | ChatGPT attachment intake; see [transfer](../../contracko-import/SKILL.md#getting-the-bytes-there). |
+| `clm_import_contracts` | `contract:write` | Managed document intake; see [import or sync rule](importing-contracts.md#choose-import-or-sync). |
+| `clm_import_files` | `contract:write` | ChatGPT attachment intake; see [transfer](importing-contracts.md#getting-the-bytes-there). |
 | `clm_create_upload_session` | `contract:write` | One-hour browser upload link for the signed-in person. |
 | `clm_show_upload_widget` | no required scope; Claude chat only | Opens the panel, uploads nothing itself. Panel import needs write access and reports a processing job. Not available in Claude Code. |
 | `clm_prepare_widget_upload` | `contract:write`; Claude chat panel only | Panel-internal, not a direct agent call; single-use document destination expires within five minutes. |
 | `clm_get_import_status` | `contract:read` | Import/ingest snapshot; `wait: true` waits at most 25 seconds. |
 | `clm_create_upload_url` | `contract:write` | Short-lived upload destination; `ifUploadUrlUnreachable` supplies a fallback. |
-| `clm_ingest_contract` | `contract:write` | Existing external-record sync; see [import or sync rule](../../contracko-import/SKILL.md#choose-import-or-sync). |
-| `clm_add_contract_documents` | `contract:write` | Existing-contract documents; see [attachments](../../contracko-import/SKILL.md#add-contract-documents). |
+| `clm_ingest_contract` | `contract:write` | Existing external-record sync; see [import or sync rule](importing-contracts.md#choose-import-or-sync). |
+| `clm_add_contract_documents` | `contract:write` | Existing-contract documents; see [attachments](importing-contracts.md#add-contract-documents). |
 | `clm_update_contract` | `contract:write` | Partial update with latest `updatedAt`. |
 | `clm_bulk_update_contracts` | `contract:write` | Up to 100 independent updates. |
 | `clm_add_contract_comment` | `contract:write` | Adds a comment and emails followers. |
@@ -94,6 +92,8 @@ Successful billing-relevant results may include `billingRemaining` (`aiExtractio
 | `clm_delete_event_reminders` | `contract:write` | Stops notification emails; leaves the event. |
 
 ## Contracko Parser: separate bulk document processing
+
+Before a job, check balance and preflight, confirm the estimated cost, and retrieve exports before retention expires. Apply [core allowance and approval rules](../SKILL.md#billing-and-allowances).
 
 | Tool | Scope | Facts |
 |---|---|---|
