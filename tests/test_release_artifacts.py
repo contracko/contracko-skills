@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SKILLS = ("contracko", "contracko-create", "contracko-import", "contracko-review")
+SKILLS = ("contracko",)
 PLUGIN_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json"
 MCP_SCHEMA = "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json"
 CLAUDE_DIRECTORY_URL = "https://claude.ai/directory/connectors/contracko"
@@ -101,67 +101,81 @@ class ReleaseArtifactTests(unittest.TestCase):
                                 archive_name = f"skills/{skill}/{path.relative_to(ROOT / 'skills' / skill).as_posix()}"
                                 self.assertEqual(archive.read(archive_name), path.read_bytes())
 
-    def test_canonical_skills_use_approved_product_vocabulary(self) -> None:
-        expected_lines = {
-            "skills/contracko/SKILL.md": (
-                "| `parser:compute` | separate Contracko Parser bulk processing using Parser credits, not contract intake |",
-                "| `contract:write` | contract and folder changes, import and ingest, documents, comments, events, notifications, types, and parties |",
-                "| notice dates, notifications, comparisons, risk, priorities, or gaps | [contracko-review](../contracko-review/SKILL.md) |",
-                "| standalone bulk extraction without a managed contract | Contracko Parser, using Parser credits, in [references/tool-index.md](references/tool-index.md) |",
-                "### Notifications and registers",
-                "A notification hangs from a contract event. [contracko-review](../contracko-review/SKILL.md) owns date queries and notification writes. Renewal notifications use the existing `end` system event.",
-                "SaaS subscriptions, leases, permits, certificates, insurance policies, warranties, and domains use the same pattern: a type, countable fields, native renewal dates, and a notification. Use supported filters first, then complete the required pages before local filtering.",
+    def test_single_skill_routes_every_workflow_reference(self) -> None:
+        skill_root = ROOT / "skills" / "contracko"
+        self.assertEqual({path.name for path in (ROOT / "skills").iterdir()}, {"contracko"})
+        skill = (skill_root / "SKILL.md").read_text()
+        references = {
+            "onboarding.md", "importing-contracts.md", "notifications.md",
+            "reviewing-ai-analysis.md", "portfolio-review.md",
+            "organising-the-workspace.md", "new-agreement.md", "tool-index.md",
+        }
+        self.assertEqual({path.name for path in (skill_root / "references").iterdir()}, references)
+        for name in references:
+            self.assertIn(f"](references/{name})", skill)
+        self.assertLess(len(skill.split()), 1000)
+        description = skill.split("description: ", 1)[1].splitlines()[0].strip("'")
+        self.assertLessEqual(len(description), 200)
+        self.assertNotIn("/", description)
+        self.assertNotIn(";", description)
+        for trigger in ("import", "upload", "renewal", "notice", "reminders", "AI analysis",
+                        "reports", "folders", "types", "draft new agreements", "Parser jobs"):
+            self.assertIn(trigger, description)
+        routing = skill.split("# Contracko\n\n", 1)[1].split("\n\n", 1)[0]
+        for trigger in ("connecting", "onboarding", "importing", "uploading", "syncing",
+                        "other systems", "notifications", "reminders", "notice and end dates",
+                        "AI analysis", "portfolio reports", "comparing contracts", "folders",
+                        "types", "parties", "creating", "drafting", "templates",
+                        "signature handoffs", "filing signed agreements"):
+            self.assertIn(trigger, routing)
+
+    def test_preserves_privacy_and_workflow_safety_rules(self) -> None:
+        skill_root = ROOT / "skills" / "contracko"
+        core = (skill_root / "SKILL.md").read_text()
+        self.assertIn(
+            "> Contract data will be sent to the AI provider running this session. "
+            "Contracko cannot control what that provider does with it. Turn off model training "
+            "in the provider's settings before working with real contracts.",
+            core,
+        )
+        for rule in ("completed Task", "nested `result`", "current audience-safe message",
+                     "never retry the refused work",
+                     "Use the returned trial date rather than assuming a duration"):
+            self.assertIn(rule, core)
+        expected = {
+            "onboarding.md": ("Consent belongs to the user", "Connecting imports nothing"),
+            "importing-contracts.md": (
+                "Never invent `externalSystem` or `externalId`",
+                "Never upload contract bytes to third-party hosts",
+                "Confirm the grouping with the user",
+                "Before a bulk import",
             ),
-            "skills/contracko-create/SKILL.md": (
-                "6. **Set the notification** that will matter in a year — [contracko-review](../contracko-review/SKILL.md).",
-                "## Step 6: the notification",
-                "A filed contract with no notification is a renewal nobody sees coming. After import, list events, then add a notification on the `end` system event (renewal) or `notice` if they care about the notice window. [contracko-review](../contracko-review/SKILL.md) has the calls. Prefer notice over end when both exist and they asked not to miss the window to get out.",
+            "notifications.md": (
+                "say who will be emailed and when", "`expectedUpdatedAt`",
+                "Changing notifications on a custom event advances that event's version",
             ),
-            "skills/contracko-review/SKILL.md": (
-                "description: Reviews Contracko contracts. Use for notice dates, end dates, annual review, notifications (reminders), risk audits, comparing proposals or redlines, or portfolio priorities and gaps.",
-                "Requires `contract:read`; notifications need `contract:write`.",
-                "[readiness and recovery](../contracko/SKILL.md#connect-and-discover)",
-                "## Events and notifications",
-                "A notification hangs off an event. List first: `clm_list_contract_events`.",
-                "**System events** (`notice`, `end`, `open_ended_review`) already exist. You do not create them. Renewal alerts target `end`. Attach a notification with `clm_create_event_reminders`, `anchorType: \"system\"`, and that `systemType`.",
-                "**Custom events** (a review meeting, an option window, an insurance expiry) are created with `clm_create_contract_events`: `title`, `date` as `YYYY-MM-DD`, optional recurrence (`recurrenceInterval` and `recurrenceUnit` together), optional nested `reminders` (max 25 per event). Batches are max 100 events or notifications, each item independent.",
-                "A notification needs `offsetValue`, `offsetUnit` (`days` | `weeks` | `months` | `quarters` | `years`), `offsetDirection` (`before` | `on` | `after`), and `recipient` (`{ \"type\": \"contract_owner\" }` or `{ \"type\": \"user\", \"userId\" }`). `on` requires `offsetValue: 0`. Optional `message`.",
-                "Mutations need `idempotencyKey` (8–128 characters). Update and delete need `expectedUpdatedAt` as a UTC timestamp ending in `Z`. Changing notifications on a custom event advances that event's version: relist before you replace its notification set. Deleting an event deletes its notifications; deleting a notification leaves the event.",
-                "**Two files not in Contracko.** Import them with CLM without Parser credits, then compare. If the user explicitly wants standalone bulk processing instead of filing, Contracko Parser uses Parser credits. A vendor A/B belongs as two contracts, not one.",
+            "reviewing-ai-analysis.md": (
+                "Explain that write and get approval before calling it",
+                "a person approves each finding in Contracko",
+                "Use `exact` when external query transfer is not authorised",
             ),
-            "skills/contracko/references/tool-index.md": (
-                "## CLM events and notifications",
-                "| `clm_list_contract_events` | `contract:read` | Custom and supported system events with notifications. |",
-                "| `clm_create_event_reminders` | `contract:write` | Schedules notification emails on events. |",
-                "| `clm_delete_event_reminders` | `contract:write` | Stops notification emails; leaves the event. |",
+            "organising-the-workspace.md": (
+                "wait for confirmation before creating or changing it",
+                "Confirm the destination and every bulk change before writing",
+                "never put a personal identifier in them",
             ),
-            "skills/contracko/references/workflows.md": (
-                "[calendar](../../contracko-review/SKILL.md#calendar-notice-end-annual-review)",
-                "**Done when:** the user has the urgent bucket, its dates, and any requested notification confirmed as created.",
-                "**They say:** notice dates, end dates, renewals, annual review, reminders, notifications.",
-            ),
-            "README.md": (
-                "| I do not want silent renewals. What needs notice, ends, or auto-renews in the next quarter? Set reminders for all of it. | Lists the dates that matter today, then creates notifications on those contracts so you are notified in time. |",
-                "| [contracko-review](skills/contracko-review/SKILL.md) | Notice dates, notifications, comparisons, risk language, and what to look at next |",
-            ),
-            ".claude-plugin/plugin.json": (
-                '"description": "CLM: add, import, review and manage contracts without Parser credits. Separate Contracko Parser: bulk document processing using Parser credits, not needed to add contracts.",',
-            ),
-            ".codex-plugin/plugin.json": (
-                '"description": "CLM: add, import, review and manage contracts without Parser credits. Separate Contracko Parser: bulk document processing using Parser credits, not needed to add contracts.",',
+            "new-agreement.md": (
+                "human with legal competence", "Notice period: ask explicitly, never default it",
+                "`clm_update_contract` supports metadata, custom-field and lifecycle-status changes",
+                "`active`, `expired`, `terminated`, `notice-given`",
+                "preference for extracted values over manual supplementation",
             ),
         }
-
-        for relative, lines in expected_lines.items():
-            with self.subTest(path=relative):
-                text = (ROOT / relative).read_text()
-                for line in lines:
-                    self.assertIn(line, text)
-
-        claude_plugin = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())
-        claude_marketplace = json.loads((ROOT / ".claude-plugin/marketplace.json").read_text())
-        self.assertEqual(claude_plugin["version"], VERSION)
-        self.assertEqual(claude_marketplace["metadata"]["version"], claude_plugin["version"])
+        for reference, phrases in expected.items():
+            text = (skill_root / "references" / reference).read_text()
+            for phrase in phrases:
+                with self.subTest(reference=reference, phrase=phrase):
+                    self.assertIn(phrase, text)
 
     def test_claude_connect_copy_is_directory_first(self) -> None:
         readme = (ROOT / "README.md").read_text()
@@ -204,7 +218,7 @@ class ReleaseArtifactTests(unittest.TestCase):
         rows = [line for line in index.splitlines() if line.startswith("| `")]
         self.assertEqual(len(rows), len(names))
         self.assertEqual({line.split("`")[1] for line in rows}, names)
-        import_skill = (ROOT / "skills/contracko-import/SKILL.md").read_text()
+        import_skill = (ROOT / "skills/contracko/references/importing-contracts.md").read_text()
         upload = import_skill.split("## Working the upload path\n", 1)[1].split("\n## ", 1)[0]
         self.assertIn("#managed-import", upload)
         self.assertIn("#sync-a-record-from-another-system", upload)
@@ -216,9 +230,8 @@ class ReleaseArtifactTests(unittest.TestCase):
         self.assertIn("`clm_add_contract_documents`", attachments)
         for argument in ("`externalSystem`", "`externalId`", "`uploadReference`"):
             self.assertIn(argument, sync)
-        workflows = (ROOT / "skills/contracko/references/workflows.md").read_text()
-        self.assertIn("../../contracko-import/SKILL.md#managed-import", workflows)
-        self.assertNotIn("clm_create_upload_url", workflows)
+        onboarding = (ROOT / "skills/contracko/references/onboarding.md").read_text()
+        self.assertIn("importing-contracts.md", onboarding)
 
     def test_connect_copy_matches_released_consent(self) -> None:
         text = (ROOT / "README.md").read_text()
@@ -611,7 +624,7 @@ class ReleaseArtifactTests(unittest.TestCase):
             self.assertIn("hermes mcp login contracko", hermes_readme)
 
     def test_create_handoff_requires_destination_and_consent(self) -> None:
-        text = (ROOT / "skills/contracko-create/SKILL.md").read_text()
+        text = (ROOT / "skills/contracko/references/new-agreement.md").read_text()
         lowered = text.lower()
         self.assertIn("choose a destination", lowered)
         self.assertIn("explicit consent", lowered)

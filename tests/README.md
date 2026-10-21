@@ -7,7 +7,7 @@ python3 -m unittest discover -s tests -v
 ```
 
 The checks verify unified public versions and release tags, tool names across skill Markdown, annotated MCP examples, selected obsolete
-claims, and links inside the merged chat ZIP. Example arguments are checked against the pinned input
+claims, and links inside the single-skill ZIP and its chat compatibility alias. Example arguments are checked against the pinned input
 schemas, including types, enums, bounds, string patterns, nullable branches, and date windows. This
 is a targeted documentation check, not a general JSON Schema validator or a live MCP integration test.
 The release tests also build the OpenClaw and Hermes bundles from the canonical skill directories,

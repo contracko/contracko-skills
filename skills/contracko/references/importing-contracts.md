@@ -1,11 +1,6 @@
----
-name: contracko-import
-description: Imports contracts into Contracko from disk, Google Drive, SharePoint, Box or a URL. Use to onboard, migrate, bulk-upload, or file a signed PDF.
----
+# Importing contracts
 
-# Importing contracts into Contracko
-
-For readiness, product choice and refusals, follow [contracko](../contracko/SKILL.md#connect-and-discover). Imports need `contract:write`. This skill owns transfer and intake; shape types after extraction.
+Follow [core readiness and billing checks](../SKILL.md#connect-and-discover). Imports need `contract:write`.
 
 ## Choose import or sync
 
@@ -69,7 +64,7 @@ Before a bulk import, put three things in front of the user and wait: the worksp
 
 ## Managed import
 
-For a first contract, ask the user to attach their own file or give its path, explain that Contracko will extract dates and terms, and ask permission before reading or uploading. Connecting imports nothing.
+For a first contract, start with [onboarding and file consent](onboarding.md#add-your-first-contract).
 
 One call per batch, up to 100 documents, one managed contract per document.
 
@@ -105,21 +100,7 @@ The wording follows the count: one contract reads "Your contract is still being 
 
 Per document you get `status`, a `contractId` as soon as the record exists, and on failure an `errorCode` with a `retryable` flag. Retry what is marked retryable, under a new key, and treat the rest as documents that need a human.
 
-### What extraction gives you for free
-
-Worth telling the user, because it changes what they should do first. On a plain NDA, in a workspace with no configuration at all, the import produced:
-
-- title, start and end dates, renewal and notice terms
-- both parties, created as counterparty records and linked with roles
-- a new contract type, with custom fields inferred from the document
-- governing law, jurisdiction, liability summary, notice instructions
-- a full analysis with obligations and risks, through `clm_get_contract_analysis`
-
-So for a first-time user with a folder of contracts: import first, configure after. Hand-built contract types are work the extraction was going to do, and then has to reconcile against. After the batch lands, list types and make them comprehensive — [contracko](../contracko/SKILL.md) owns that half.
-
-New contracts land as `entityStatus: "pending-review"`. Say so. A human is expected to confirm the extraction, and nothing about a successful import marks the data as verified.
-
-Once documents are in, the questions start: renewals, notice dates, risk, and what the workspace now holds. That is [contracko-review](../contracko-review/SKILL.md). If the user also asks to place imported contracts in folders, use the confirmed filing workflow in [contracko](../contracko/SKILL.md).
+After filing, explain [what extraction provides and import before modelling](onboarding.md#what-extraction-gives-you-for-free), and the [pending-review status](reviewing-ai-analysis.md#pending-review-and-reconciliations). For questions use [portfolio review](portfolio-review.md); for requested filing changes use [workspace organisation](organising-the-workspace.md#folders-and-filing).
 
 ## Sync a record from another system
 
@@ -168,4 +149,6 @@ Cursor, Codex and Claude must restrict upload egress to `app.contracko.com`, not
 | stuck in `extracting` | normal for minutes; keep honouring `pollAfterMs` before calling it stuck |
 | `retryable: false` on an item | the document itself is the problem, so surface it to the user |
 | 400 `code: "custom"` on `endDate` | the open-ended rule above |
-| the tools are missing entirely | follow [readiness and recovery](../contracko/SKILL.md#errors) |
+| the tools are missing entirely | follow [readiness and recovery](../SKILL.md#errors) |
+
+**Done when:** the requested files read back as contracts in the intended workspace, with per-item failures reported and extraction-review status explained.

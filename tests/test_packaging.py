@@ -14,12 +14,12 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-SKILLS = ("contracko", "contracko-create", "contracko-import", "contracko-review")
+SKILLS = ("contracko",)
 MARKDOWN_LINK = re.compile(r"!?\[[^]]*]\(([^)\s]+)(?:\s+[^)]*)?\)")
 
 
 class PackagingTests(unittest.TestCase):
-    def test_builds_portable_archives_with_resolved_merged_links(self) -> None:
+    def test_builds_one_portable_skill_with_resolved_links_and_chat_alias(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             copied_repo = Path(temp_dir) / "repo"
             shutil.copytree(REPO_ROOT, copied_repo, ignore=shutil.ignore_patterns(".git", "dist"))
@@ -51,7 +51,16 @@ class PackagingTests(unittest.TestCase):
                 with zipfile.ZipFile(copied_repo / "dist" / f"{skill}.zip") as archive:
                     self.assertIn(f"{skill}/SKILL.md", archive.namelist())
 
-            with zipfile.ZipFile(copied_repo / "dist" / "contracko-chat.zip") as archive:
+            self.assertEqual(
+                {path.name for path in (copied_repo / "dist").glob("*.zip")},
+                {"contracko.zip", "contracko-chat.zip", "contracko-agent-plugin.zip",
+                 "contracko-agent-plugin-chatgpt.zip", "contracko-openclaw.zip", "contracko-hermes.zip"},
+            )
+            self.assertEqual(
+                (copied_repo / "dist" / "contracko.zip").read_bytes(),
+                (copied_repo / "dist" / "contracko-chat.zip").read_bytes(),
+            )
+            with zipfile.ZipFile(copied_repo / "dist" / "contracko.zip") as archive:
                 markdown = {
                     name: archive.read(name).decode("utf-8")
                     for name in archive.namelist()
