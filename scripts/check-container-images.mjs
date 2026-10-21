@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// Source: contracko/agent-scripts/scripts/check-container-images.mjs at a467d36a74d98dd8f33ea36b3a984d16765b0b0a
+// Source: contracko/agent-scripts/scripts/check-container-images.mjs at 45622a104b471eb2e7922d0d560f7c925481c879
 import { YAML } from "bun";
 import { execFileSync } from "node:child_process";
 import { lstatSync, readFileSync } from "node:fs";
@@ -92,6 +92,36 @@ function commandImage(source) {
   return "";
 }
 
+function launchImage(tokens) {
+  const globalValues = new Set([
+    "--config",
+    "--context",
+    "-c",
+    "--host",
+    "-H",
+    "--log-level",
+    "-l",
+    "--tlscacert",
+    "--tlscert",
+    "--tlskey",
+    "--connection",
+    "--url",
+    "--identity",
+  ]);
+  let index = 0;
+  while (tokens[index]?.startsWith("-")) {
+    index += globalValues.has(tokens[index]) ? 2 : 1;
+  }
+  if (tokens[index] === "container") index += 1;
+  if (!["run", "pull", "create"].includes(tokens[index])) return null;
+  return commandImage(
+    tokens
+      .slice(index + 1)
+      .map((token) => JSON.stringify(token))
+      .join(" "),
+  );
+}
+
 function parseJsonc(source) {
   const withoutComments = source.replace(
     /("(?:\\.|[^"\\])*")|\/\/[^\r\n]*|\/\*[\s\S]*?\*\//g,
@@ -121,6 +151,10 @@ export function scanImageSource(file, source) {
     ) ||
     (/\.ya?ml$/.test(file) &&
       /^\s*(?:apiVersion|services|jobs):/m.test(source));
+  const helmTemplate =
+    /(?:^|\/)(?:charts|helm)\//.test(file) &&
+    /(?:^|\/)templates\//.test(file) &&
+    source.includes("{{");
   const add = (reference, line, kind) => {
     if (typeof reference !== "string") return;
     const resolved = reference.replace(
@@ -193,23 +227,31 @@ export function scanImageSource(file, source) {
       );
       if (assignment && !["|", ">", "false", "true"].includes(assignment[1]))
         add(assignment[1], i + 1, "config");
+      if (helmTemplate && !assignment && /{{/.test(line)) {
+        const image = line.match(/^\s*(?:-\s+)?image\s*:\s*(.+)$/);
+        if (image) add(image[1].replace(/^["']|["']$/g, ""), i + 1, "helm");
+      }
     }
     if (!/\.[cm]?[jt]sx?$/.test(file)) {
       const driver = line.match(/--driver-opt(?:=|\s+)["']?image=([^\s"',]+)/);
       if (driver) add(driver[1], i + 1, "builder");
     }
-    if (
-      !/\.[cm]?[jt]sx?$/.test(file) &&
-      /\b(?:docker|podman)\s+(?:container\s+)?(?:run|pull|create)\s+/.test(line)
-    ) {
+    if (!/\.[cm]?[jt]sx?$/.test(file) && /\b(?:docker|podman)\s+/.test(line)) {
       const start = i;
+      let end = i;
       let command = line;
-      while (/\\\s*$/.test(command) && i + 1 < lines.length)
-        command = command.replace(/\\\s*$/, " ") + lines[++i].trim();
-      const match = command.match(
-        /\b(?:docker|podman)\s+(?:container\s+)?(?:run|pull|create)\s+(.+)/,
-      );
-      if (match) add(commandImage(match[1]), start + 1, "command");
+      while (/\\\s*$/.test(command) && end + 1 < lines.length)
+        command = command.replace(/\\\s*$/, " ") + lines[++end].trim();
+      for (const match of command.matchAll(/\b(?:docker|podman)\s+/g)) {
+        const image = launchImage(
+          words(command.slice(match.index + match[0].length)),
+        );
+        if (image !== null) {
+          add(image, start + 1, "command");
+          i = end;
+          break;
+        }
+      }
     }
     if (
       !/\.[cm]?[jt]sx?$/.test(file) &&
@@ -243,17 +285,8 @@ export function scanImageSource(file, source) {
       ].map((token) =>
         /^["'`]/.test(token[0]) ? token[0].slice(1, -1) : "$" + token[0],
       );
-      if (["run", "pull", "create"].includes(tokens[0]))
-        add(
-          commandImage(
-            tokens
-              .slice(1)
-              .map((token) => JSON.stringify(token))
-              .join(" "),
-          ),
-          lineAt(match.index),
-          "command",
-        );
+      const image = launchImage(tokens);
+      if (image !== null) add(image, lineAt(match.index), "command");
     }
     if (/["'](?:docker|podman)["']/.test(source)) {
       for (const definition of source.matchAll(
@@ -277,7 +310,7 @@ export function scanImageSource(file, source) {
     }
   }
   if (
-    (structured && /\.(?:ya?ml|jsonc?)$/.test(file)) ||
+    (structured && !helmTemplate && /\.(?:ya?ml|jsonc?)$/.test(file)) ||
     /image-inputs\.lock\.json$/.test(file)
   ) {
     let document;
@@ -292,9 +325,31 @@ export function scanImageSource(file, source) {
         parseError: file + ": invalid image configuration",
       };
     }
+    const inlineLines = lines.flatMap((text, index) =>
+      /^\s*dockerfile_inline\s*:/.test(text) ? [index + 1] : [],
+    );
+    let inlineIndex = 0;
     const visit = (value, keys = []) => {
       if (!value || typeof value !== "object") return;
       for (const [key, child] of Object.entries(value)) {
+        if (key === "dockerfile_inline" && typeof child === "string") {
+          const nested = scanImageSource("Dockerfile", child);
+          const offset = inlineLines[inlineIndex++] ?? 0;
+          references.push(
+            ...nested.references.map((row) => ({
+              ...row,
+              file,
+              line: row.line + offset,
+            })),
+          );
+          dynamic.push(
+            ...nested.dynamic.map((row) => ({
+              ...row,
+              file,
+              line: row.line + offset,
+            })),
+          );
+        }
         if (
           ["image", "container", "builder_container", "dockerImage"].includes(
             key,
