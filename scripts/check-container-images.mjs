@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// Source: contracko/agent-scripts/scripts/check-container-images.mjs at 45622a104b471eb2e7922d0d560f7c925481c879
+// Source: contracko/agent-scripts/scripts/check-container-images.mjs at b17815443d7f58d9ad297b4dda89e3baac22b6de
 import { YAML } from "bun";
 import { execFileSync } from "node:child_process";
 import { lstatSync, readFileSync } from "node:fs";
@@ -67,6 +67,7 @@ function commandImage(source) {
     "--add-host",
     "--memory",
     "--cpus",
+    "--pids-limit",
     "--shm-size",
     "--pull",
     "--restart",
@@ -150,7 +151,25 @@ export function scanImageSource(file, source) {
       file,
     ) ||
     (/\.ya?ml$/.test(file) &&
-      /^\s*(?:apiVersion|services|jobs):/m.test(source));
+      /^\s*(?:apiVersion|services|jobs):/m.test(source)) ||
+    /(?:^|\/)action\.ya?ml$/i.test(file);
+  let localActionImage = null;
+  if (/(?:^|\/)action\.ya?ml$/i.test(file)) {
+    try {
+      const action = YAML.parse(source);
+      const image = action?.runs?.image;
+      if (
+        action?.runs?.using === "docker" &&
+        typeof image === "string" &&
+        !image.startsWith("docker://") &&
+        !protectedSearchText(image) &&
+        /(?:^|\/)(?:Dockerfile[^/]*|[^/]*\.Dockerfile|Containerfile[^/]*)$/i.test(
+          image,
+        )
+      )
+        localActionImage = image;
+    } catch {}
+  }
   const helmTemplate =
     /(?:^|\/)(?:charts|helm)\//.test(file) &&
     /(?:^|\/)templates\//.test(file) &&
@@ -161,10 +180,18 @@ export function scanImageSource(file, source) {
       /\$\{([A-Za-z_]\w*)\}|\$([A-Za-z_]\w*)/g,
       (whole, a, b) => bindings.get(a ?? b) ?? whole,
     );
-    if (stages.has(resolved.toLowerCase()) || /^\d+$/.test(resolved)) return;
+    if (
+      stages.has(resolved.toLowerCase()) ||
+      (["copy", "mount"].includes(kind) && /^\d+$/.test(resolved))
+    )
+      return;
     const row = { file, line, kind, reference: resolved };
     if (/[${}`]/.test(resolved)) {
-      dynamic.push(row);
+      dynamic.push({
+        ...row,
+        error:
+          "dynamic image needs a tracked validation boundary in container-image-provenance.json",
+      });
       return;
     }
     if (
@@ -225,7 +252,11 @@ export function scanImageSource(file, source) {
       const assignment = line.match(
         /^\s*(?:-\s+)?(?:image|container|builder_container)\s*:\s*["']?([^\s"'#]+)["']?\s*(?:#.*)?$/,
       );
-      if (assignment && !["|", ">", "false", "true"].includes(assignment[1]))
+      if (
+        assignment &&
+        assignment[1] !== localActionImage &&
+        !["|", ">", "false", "true"].includes(assignment[1])
+      )
         add(assignment[1], i + 1, "config");
       if (helmTemplate && !assignment && /{{/.test(line)) {
         const image = line.match(/^\s*(?:-\s+)?image\s*:\s*(.+)$/);
@@ -242,6 +273,27 @@ export function scanImageSource(file, source) {
       let command = line;
       while (/\\\s*$/.test(command) && end + 1 < lines.length)
         command = command.replace(/\\\s*$/, " ") + lines[++end].trim();
+      if (/\bbuildx\s+create\b/.test(command)) {
+        const driver =
+          command.match(/--driver(?:=|\s+)["']?([^\s"']+)/)?.[1] ??
+          "docker-container";
+        if (driver === "docker-container") {
+          const image = command.match(
+            /--driver-opt(?:=|\s+)["']?image=([^\s"',]+)/,
+          )?.[1];
+          if (image) add(image, start + 1, "builder");
+          else
+            references.push({
+              file,
+              line: start + 1,
+              kind: "builder",
+              reference: "moby/buildkit:buildx-stable-1",
+              error:
+                "docker-container builder needs explicit pinned --driver-opt image=",
+            });
+        }
+        i = end;
+      }
       for (const match of command.matchAll(/\b(?:docker|podman)\s+/g)) {
         const image = launchImage(
           words(command.slice(match.index + match[0].length)),
@@ -252,21 +304,6 @@ export function scanImageSource(file, source) {
           break;
         }
       }
-    }
-    if (
-      !/\.[cm]?[jt]sx?$/.test(file) &&
-      /\bbuildx\s+create\b/.test(line) &&
-      /--driver(?:=|\s+)docker-container/.test(line) &&
-      !/--driver-opt(?:=|\s+)["']?image=/.test(line)
-    ) {
-      references.push({
-        file,
-        line: i + 1,
-        kind: "builder",
-        reference: "moby/buildkit:buildx-stable-1",
-        error:
-          "docker-container builder needs explicit pinned --driver-opt image=",
-      });
     }
   }
   if (/\.[cm]?[jt]sx?$/.test(file)) {
@@ -355,6 +392,12 @@ export function scanImageSource(file, source) {
             key,
           ) &&
           typeof child === "string" &&
+          !(
+            key === "image" &&
+            keys.length === 1 &&
+            keys[0] === "runs" &&
+            child === localActionImage
+          ) &&
           !references.some((row) => row.reference === child) &&
           !dynamic.some((row) => row.reference === child)
         ) {
@@ -415,6 +458,11 @@ export function scanRepository(root) {
     .split("\0")
     .filter(Boolean);
   const result = { references: [], dynamic: [], parseErrors: [] };
+  const trackedFile = (file) =>
+    typeof file === "string" &&
+    !protectedSearchText(file) &&
+    files.includes(file) &&
+    lstatSync(path.join(root, file)).isFile();
   let provenance = [];
   if (files.includes("container-image-provenance.json")) {
     try {
@@ -426,13 +474,14 @@ export function scanRepository(root) {
         provenance.some(
           (row) =>
             !row ||
-            typeof row.file !== "string" ||
-            !files.includes(row.file) ||
+            !trackedFile(row.file) ||
             typeof row.reference !== "string" ||
-            !/^[^@]+@sha256:[a-f0-9]{64}$/.test(row.reference) ||
-            !/^[^\s@]+:[^\s@]+$/.test(row.resolvedFrom ?? "") ||
-            !files.includes(row.evidence) ||
-            protectedSearchText(row.evidence),
+            !trackedFile(row.evidence) ||
+            !(
+              (/^[^@]+@sha256:[a-f0-9]{64}$/.test(row.reference) &&
+                /^[^\s@]+:[^\s@]+$/.test(row.resolvedFrom ?? "")) ||
+              (/[${}`]/.test(row.reference) && trackedFile(row.validatedBy))
+            ),
         )
       )
         throw new Error("invalid provenance");
@@ -464,6 +513,17 @@ export function scanRepository(root) {
         row.error = null;
     }
     result.references.push(...scan.references);
+    for (const row of scan.dynamic) {
+      if (
+        provenance.some(
+          (entry) =>
+            entry.file === row.file &&
+            entry.reference === row.reference &&
+            trackedFile(entry.validatedBy),
+        )
+      )
+        row.error = null;
+    }
     result.dynamic.push(...scan.dynamic);
     if (scan.parseError) result.parseErrors.push(scan.parseError);
   }
@@ -476,11 +536,14 @@ if (
 ) {
   const root = path.resolve(process.argv[2] ?? ".");
   const result = scanRepository(root);
-  for (const row of result.references.filter((row) => row.error))
+  for (const row of [...result.references, ...result.dynamic].filter(
+    (row) => row.error,
+  ))
     console.error(`${row.file}:${row.line}: ${row.reference}: ${row.error}`);
   for (const error of result.parseErrors) console.error(error);
   const failures =
     result.references.filter((row) => row.error).length +
+    result.dynamic.filter((row) => row.error).length +
     result.parseErrors.length;
   console.log(
     JSON.stringify({
