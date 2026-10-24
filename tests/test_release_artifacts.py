@@ -573,7 +573,7 @@ class ReleaseArtifactTests(unittest.TestCase):
             self.assertEqual(chatgpt_zip.read_bytes(), (third / chatgpt_zip.name).read_bytes())
 
     def test_chatgpt_archive_has_no_commerce_or_parser_content(self) -> None:
-        pattern = re.compile(r"credit|trial|subscrib|upgrad|pricing|checkout|billing|parser", re.I)
+        pattern = re.compile(r"credit|trial|subscrib|subscription|upgrad|pricing|checkout|billing|parser", re.I)
         allowlist = {
             "skills/contracko/references/new-agreement.md": {
                 "2. What is bought or sold, for what value, currency and billing rhythm?",
