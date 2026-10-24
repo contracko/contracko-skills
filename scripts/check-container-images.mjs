@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-// Source: contracko/agent-scripts@b350297fcdf6a0e309b9d993685aad7f259eba11, scripts/check-container-images.mjs
+// Source: contracko/agent-scripts@c1421917d1c9321e1ff97f4a86baaaa7328a1faa, scripts/check-container-images.mjs
 import { YAML } from "bun";
 import { execFileSync } from "node:child_process";
 import { lstatSync, readFileSync } from "node:fs";
@@ -11,7 +11,6 @@ function protectedSearchText(text) {
         /docker-compose\.override\.ya?ml|op-run-service-account/.test(text)
     )
 }
-
 
 export function imageVerdict(reference, source = "") {
   if (!/@sha256:[a-f0-9]{64}$/.test(reference)) return "missing SHA-256 digest";
@@ -142,6 +141,13 @@ export function scanImageSource(file, source) {
   const stages = new Set(["scratch"]);
   const bindings = new Map();
   const lines = source.split(/\r?\n/);
+  const lineAt = (offset) => source.slice(0, offset).split("\n").length;
+  const containerCalls = [
+    ...source.matchAll(
+      /(?:new\s+\w*Container|DockerImageName\.parse|withDockerImage)\s*\(\s*["'`]([^"'`]+)["'`]/g,
+    ),
+  ].map((match) => ({ reference: match[1], line: lineAt(match.index) }));
+  let containerIndex = 0;
   const dockerfile =
     /(?:^|\/)(?:Dockerfile[^/]*|[^/]*\.Dockerfile|Containerfile[^/]*)$/i.test(
       file,
@@ -268,10 +274,10 @@ export function scanImageSource(file, source) {
     if (/\.ya?ml$/.test(file))
       for (const match of line.matchAll(/docker:\/\/([^\s"'`]+)/g))
         add(match[1], i + 1, "action");
-    for (const match of line.matchAll(
-      /(?:new\s+\w*Container|DockerImageName\.parse|withDockerImage)\s*\(\s*["'`]([^"'`]+)["'`]/g,
-    ))
-      add(match[1], i + 1, "testcontainer");
+    while (containerCalls[containerIndex]?.line <= lineNumber) {
+      const call = containerCalls[containerIndex++];
+      add(call.reference, call.line, "testcontainer");
+    }
     if (structured) {
       const assignment = line.match(
         /^\s*(?:-\s+)?(?:image|container|builder_container)\s*:\s*["']?([^\s"'#]+)["']?\s*(?:#.*)?$/,
@@ -326,18 +332,31 @@ export function scanImageSource(file, source) {
         if (image !== null) {
           add(image, start + 1, "command");
           i = end;
-          break;
         }
       }
     }
   }
   if (/\.[cm]?[jt]sx?$/.test(file)) {
-    const lineAt = (offset) => source.slice(0, offset).split("\n").length;
     for (const match of source.matchAll(
       /(?:const|let|var)\s+(\w*IMAGE)\s*=\s*["'`]([^"'`]+)["'`]/g,
     )) {
       bindings.set(match[1], match[2]);
       if (/[:/]/.test(match[2])) add(match[2], lineAt(match.index), "binding");
+    }
+    for (const call of source.matchAll(
+      /\b(?:execSync|exec)\s*\(\s*("(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|`(?:\\[\s\S]|[^`\\])*`)/g,
+    )) {
+      const command = call[1]
+        .slice(1, -1)
+        .replace(/\\([\\"'`])/g, "$1")
+        .replace(/\\\r?\n/g, "")
+        .replace(/\\n/g, "\n");
+      for (const match of command.matchAll(/\b(?:docker|podman)\s+/g)) {
+        const image = launchImage(
+          words(command.slice(match.index + match[0].length)),
+        );
+        if (image !== null) add(image, lineAt(call.index), "command");
+      }
     }
     for (const match of source.matchAll(
       /(?:execFileSync|execFile|spawnSync|spawn|run)\s*\(\s*["'](?:docker|podman)["']\s*,\s*\[([\s\S]*?)\]/g,
