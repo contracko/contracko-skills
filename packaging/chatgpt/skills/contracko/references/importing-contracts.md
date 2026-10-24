@@ -8,7 +8,7 @@ Follow [core readiness checks](../SKILL.md#connect-and-discover). Imports need `
 
 You may adjust or supplement fields afterwards with `clm_update_contract`, but this is not recommended; prefer Contracko's extracted values.
 
-Creating a contract without a document, with agent-filled details, is the least-preferred path. Use it only when no document exists, through the Contracko app; no current MCP tool supports document-free creation.
+Creating a contract without a document, with agent-filled details, is the least-preferred path. Use it only when no document exists, through the Contracko app; no current MCP tool supports creation without a document.
 
 Use `clm_ingest_contract` only to sync a record that already exists in another system (DocuSign, a CRM, Zapier), with that system's existing contract details and real record id. Never invent `externalSystem` or `externalId` to file a document. Follow [sync submission](#sync-a-record-from-another-system).
 
@@ -100,7 +100,7 @@ The wording follows the count: one contract reads "Your contract is still being 
 
 Per document you get `status`, a `contractId` as soon as the record exists, and on failure an `errorCode` with a `retryable` flag. Retry what is marked retryable, under a new key, and treat the rest as documents that need a human.
 
-After filing, explain [what extraction provides and import before modelling](onboarding.md#what-extraction-gives-you-for-free), and the [pending-review status](reviewing-ai-analysis.md#pending-review-and-reconciliations). For questions use [portfolio review](portfolio-review.md); for requested filing changes use [workspace organisation](organising-the-workspace.md#folders-and-filing).
+After filing, explain [what extraction provides and import before modelling](onboarding.md#what-extraction-gives-you-automatically), and the [pending-review status](reviewing-ai-analysis.md#pending-review-and-reconciliations). For questions use [portfolio review](portfolio-review.md); for requested filing changes use [workspace organisation](organising-the-workspace.md#folders-and-filing).
 
 ## Sync a record from another system
 

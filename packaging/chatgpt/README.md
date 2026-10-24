@@ -6,6 +6,8 @@ The public 1.2.0 candidate is newer than the rejected 1.1.0 submission. All publ
 
 `skills/` holds complete ChatGPT variants of canonical files that contain product commerce or standalone processing instructions. The builder copies the canonical skill tree, then overlays only these files for `contracko-agent-plugin-chatgpt.zip`. Edit both versions when changing a shared workflow in an overridden file. Other archives continue to use canonical skill bytes.
 
+ChatGPT calls the extraction section “What extraction gives you automatically” and uses matching anchors. The archive scan also rejects `free` as a whole word.
+
 `plugin.json` embeds the five positive and four negative submission cases. The fourth negative asks to change the plan and expects no plans, prices or purchase links. The default example-contract expectation no longer mentions a trial. Automated checks prove content and package behavior, not model execution of these cases.
 
 The archive-wide case-insensitive scan permits these exact contract-vocabulary occurrences:

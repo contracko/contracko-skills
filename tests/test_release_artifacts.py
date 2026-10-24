@@ -573,7 +573,7 @@ class ReleaseArtifactTests(unittest.TestCase):
             self.assertEqual(chatgpt_zip.read_bytes(), (third / chatgpt_zip.name).read_bytes())
 
     def test_chatgpt_archive_has_no_commerce_or_parser_content(self) -> None:
-        pattern = re.compile(r"credit|trial|subscrib|subscription|upgrad|pricing|checkout|billing|parser", re.I)
+        pattern = re.compile(r"\bfree\b|credit|trial|subscrib|subscription|upgrad|pricing|checkout|billing|parser", re.I)
         allowlist = {
             "skills/contracko/references/organising-the-workspace.md": {
                 "SaaS subscriptions, leases, permits, certificates, insurance policies, warranties, and domains use the same pattern: a type, countable fields, native renewal dates, and a notification. Follow the linked portfolio pagination rules.",
