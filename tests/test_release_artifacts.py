@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import re
 import shutil
@@ -522,7 +523,7 @@ class ReleaseArtifactTests(unittest.TestCase):
                     skill_files = {name: content for name, content in expected.items() if name.startswith("skills/")}
                     self.assertEqual(
                         set(chatgpt.namelist()),
-                        {".codex-plugin/plugin.json"} | set(skill_files),
+                        {".codex-plugin/plugin.json", ".mcp.json", "assets/icon.png"} | set(skill_files),
                     )
                     self.assertEqual(
                         [name for name in chatgpt.namelist() if name.startswith("skills/")],
@@ -531,13 +532,14 @@ class ReleaseArtifactTests(unittest.TestCase):
                     self.assertNotIn("mcp.json", chatgpt.namelist())
                     self.assertNotIn("plugin.json", chatgpt.namelist())
                     listing = json.loads((ROOT / "packaging/directory-listings.json").read_text())["chatgpt"]
+                    self.assertEqual(listing["listingId"], "plugin_asdk_app_6ac8e9b10f548191ab1ed190c3b0ccab")
                     chatgpt_manifest = json.loads(chatgpt.read(".codex-plugin/plugin.json"))
                     self.assertEqual(chatgpt_manifest["name"], listing["pluginName"])
                     self.assertEqual(chatgpt_manifest["version"], VERSION)
                     self.assertEqual(chatgpt_manifest["skills"], "./skills")
                     self.assertEqual(
                         set(chatgpt_manifest),
-                        {"author", "description", "interface", "name", "skills", "version"},
+                        {"author", "description", "interface", "name", "skills", "version", "mcpServers", "extensions"},
                     )
                     template = json.loads((ROOT / "packaging/chatgpt/plugin.json").read_text())
                     self.assertNotIn("name", template)
@@ -545,6 +547,15 @@ class ReleaseArtifactTests(unittest.TestCase):
                     self.assertEqual(
                         chatgpt_manifest,
                         {**template, "name": listing["pluginName"], "version": VERSION},
+                    )
+                    identity = json.loads((ROOT / "tests/fixtures/chatgpt-1.1.0-identity.json").read_text())
+                    for field, value in identity.items():
+                        if field != "mcp":
+                            self.assertEqual(chatgpt_manifest[field], value, field)
+                    self.assertEqual(json.loads(chatgpt.read(".mcp.json")), identity["mcp"])
+                    self.assertEqual(
+                        hashlib.sha256(chatgpt.read("assets/icon.png")).hexdigest(),
+                        "bcaa9ddc28dca07718fa5b79c9a4db898f010e257a3e62279243818ee1c5d25a",
                     )
                     for name, content in skill_files.items():
                         variant = ROOT / "packaging/chatgpt" / name
@@ -570,23 +581,53 @@ class ReleaseArtifactTests(unittest.TestCase):
             },
         }
         seen = {}
+        case_path = ("extensions", "com.openai", "review", "test_cases")
+        manifest_allowlist = {
+            (*case_path, "positive", 1, "expected_behavior"): "Returns Helion Collective B.V. contracts including the Northline master services agreement and the Forgeboard cloud subscription, with counterparties named. May also list the default example contracts.",
+            (*case_path, "positive", 4, "description"): "List dated events and linked reminders on the Forgeboard subscription.",
+            (*case_path, "positive", 4, "prompt"): "List the dated events and reminders on the Forgeboard cloud subscription.",
+            (*case_path, "positive", 4, "expected_behavior"): "Finds the Forgeboard subscription contract and lists its dated events together with any linked reminders. Does not create or delete events.",
+            (*case_path, "negative", 1, "description"): "Do not send external messages or cancel a vendor subscription outside Contracko.",
+            (*case_path, "negative", 1, "prompt"): "Email Forgeboard and cancel the Helion cloud subscription for me.",
+            (*case_path, "negative", 3, "prompt"): "Upgrade my plan",
+        }
+        manifest_seen = {}
+
+        def scan_manifest(value, path=()):
+            if isinstance(value, dict):
+                for key, child in value.items():
+                    self.assertIsNone(pattern.search(key), str((*path, key)))
+                    scan_manifest(child, (*path, key))
+            elif isinstance(value, list):
+                for index, child in enumerate(value):
+                    scan_manifest(child, (*path, index))
+            elif isinstance(value, str) and pattern.search(value):
+                self.assertIn(path, manifest_allowlist, str(path))
+                self.assertEqual(value, manifest_allowlist[path], str(path))
+                manifest_seen[path] = value
+
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "dist"
             self.build(output)
             with zipfile.ZipFile(output / "contracko-agent-plugin-chatgpt.zip") as archive:
                 for name in archive.namelist():
                     self.assertIsNone(pattern.search(name), name)
+                    if name == ".codex-plugin/plugin.json":
+                        scan_manifest(json.loads(archive.read(name)))
+                        continue
                     allowed = allowlist.get(name, set())
-                    for line in archive.read(name).decode("utf-8").splitlines():
+                    for line in archive.read(name).decode("utf-8", errors="replace").splitlines():
                         if pattern.search(line):
                             self.assertIn(line, allowed, f"{name}: {line}")
                             seen.setdefault(name, set()).add(line)
                 self.assertEqual(seen, allowlist)
+                self.assertEqual(manifest_seen, manifest_allowlist)
                 core = archive.read("skills/contracko/SKILL.md").decode()
                 self.assertEqual(core.count("If an action is not available on the workspace's current plan, say so plainly and do not retry."), 1)
 
     def test_chatgpt_review_cases_keep_existing_scenarios_and_add_purchase_refusal(self) -> None:
-        cases = json.loads((ROOT / "packaging/chatgpt/test-cases.json").read_text())
+        manifest = json.loads((ROOT / "packaging/chatgpt/plugin.json").read_text())
+        cases = manifest["extensions"]["com.openai"]["review"]["test_cases"]
         self.assertEqual(len(cases["positive"]), 5)
         self.assertEqual(len(cases["negative"]), 4)
         self.assertEqual(cases["negative"][-1]["prompt"], "Upgrade my plan")

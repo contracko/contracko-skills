@@ -90,7 +90,7 @@ class PublicVersionTests(unittest.TestCase):
                 {"chatgpt": {**listing, "listingId": "plugin_asdk_app_"}},
                 {"chatgpt": {**listing, "listingId": "other_" + "a" * 32}},
                 {"chatgpt": {**listing, "pluginName": 123}},
-                {"chatgpt": {**listing, "pluginName": "contracko"}},
+                {"chatgpt": {**listing, "pluginName": "other"}},
                 {"chatgpt": {**listing, "pluginName": "app-" + "a" * 32}},
             )
             for document in cases:
@@ -152,7 +152,7 @@ class PublicVersionTests(unittest.TestCase):
             listing = json.loads((root / "packaging/directory-listings.json").read_text())["chatgpt"]
             version = json.loads((root / "packaging/manifest.json").read_text())["version"]
             for field, correct, incorrect in (
-                ("name", listing["pluginName"], "contracko"),
+                ("name", listing["pluginName"], "app-" + "a" * 32),
                 ("version", version, "9.9.9"),
             ):
                 with self.subTest(field=field):
