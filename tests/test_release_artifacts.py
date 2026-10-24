@@ -575,6 +575,9 @@ class ReleaseArtifactTests(unittest.TestCase):
     def test_chatgpt_archive_has_no_commerce_or_parser_content(self) -> None:
         pattern = re.compile(r"credit|trial|subscrib|subscription|upgrad|pricing|checkout|billing|parser", re.I)
         allowlist = {
+            "skills/contracko/references/organising-the-workspace.md": {
+                "SaaS subscriptions, leases, permits, certificates, insurance policies, warranties, and domains use the same pattern: a type, countable fields, native renewal dates, and a notification. Follow the linked portfolio pagination rules.",
+            },
             "skills/contracko/references/new-agreement.md": {
                 "2. What is bought or sold, for what value, currency and billing rhythm?",
                 "For an approved secure destination, record the parties and owned entity, dates/open-ended status, renewal term, notice period and deadline, value/currency/billing rhythm, liability cap, governing law/jurisdiction, filing type, and rejected terms with reasons. In a later conversation, read that handoff before repeating questions.",

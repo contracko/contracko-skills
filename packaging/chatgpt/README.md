@@ -14,6 +14,7 @@ The archive-wide case-insensitive scan permits these exact contract-vocabulary o
 |---|---|---|
 | `skills/contracko/references/new-agreement.md`, intake question | `billing rhythm` | Payment schedule of the user's agreement |
 | Same file, handoff fields | `value/currency/billing rhythm` | Recorded terms of the user's agreement |
+| `skills/contracko/references/organising-the-workspace.md`, register examples | `SaaS subscriptions` | Contract type managed by the user |
 | `extensions.com.openai.review.test_cases.positive[1].expected_behavior` | `Forgeboard cloud subscription` | Seeded user's contract |
 | `extensions.com.openai.review.test_cases.positive[4].description` | `Forgeboard subscription` | Seeded user's contract |
 | `extensions.com.openai.review.test_cases.positive[4].prompt` | `Forgeboard cloud subscription` | Seeded user's contract |
