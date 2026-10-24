@@ -306,6 +306,13 @@ def build_agent_plugin_archive(output: Path, version: str, source_commit: str) -
             (json.dumps(chatgpt_manifest, indent=2) + "\n").encode(),
         )
         copy_tree(DIRECTORY_PACKAGE / "skills", chatgpt_package / "skills")
+        variants = ROOT / "packaging" / "chatgpt" / "skills"
+        reject_symlink_entries(variants, label="ChatGPT skill variants")
+        for relative in directory_files(variants):
+            destination = chatgpt_package / "skills" / relative
+            if not destination.is_file():
+                raise ValueError(f"ChatGPT variant has no canonical skill file: {relative}")
+            write_bytes(destination, (variants / relative).read_bytes())
         zip_tree(chatgpt_package, output / "contracko-agent-plugin-chatgpt.zip")
 
 

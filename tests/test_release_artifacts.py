@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -546,8 +547,9 @@ class ReleaseArtifactTests(unittest.TestCase):
                         {**template, "name": listing["pluginName"], "version": VERSION},
                     )
                     for name, content in skill_files.items():
-                        self.assertEqual(chatgpt.read(name), content)
-                        self.assertEqual(chatgpt.read(name), archive.read(name))
+                        variant = ROOT / "packaging/chatgpt" / name
+                        expected_content = variant.read_bytes() if variant.is_file() else content
+                        self.assertEqual(chatgpt.read(name), expected_content)
                     for entry in chatgpt.infolist():
                         with self.subTest(entry=entry.filename):
                             self.assertEqual(entry.date_time, (1980, 1, 1, 0, 0, 0))
@@ -558,6 +560,41 @@ class ReleaseArtifactTests(unittest.TestCase):
             self.build(third, source_commit="abcdef0123456789abcdef0123456789abcdef01")
             self.assertNotEqual(first_zip.read_bytes(), (third / first_zip.name).read_bytes())
             self.assertEqual(chatgpt_zip.read_bytes(), (third / chatgpt_zip.name).read_bytes())
+
+    def test_chatgpt_archive_has_no_commerce_or_parser_content(self) -> None:
+        pattern = re.compile(r"credit|trial|subscrib|upgrad|pricing|checkout|billing|parser", re.I)
+        allowlist = {
+            "skills/contracko/references/new-agreement.md": {
+                "2. What is bought or sold, for what value, currency and billing rhythm?",
+                "For an approved secure destination, record the parties and owned entity, dates/open-ended status, renewal term, notice period and deadline, value/currency/billing rhythm, liability cap, governing law/jurisdiction, filing type, and rejected terms with reasons. In a later conversation, read that handoff before repeating questions.",
+            },
+        }
+        seen = {}
+        with tempfile.TemporaryDirectory() as temporary:
+            output = Path(temporary) / "dist"
+            self.build(output)
+            with zipfile.ZipFile(output / "contracko-agent-plugin-chatgpt.zip") as archive:
+                for name in archive.namelist():
+                    self.assertIsNone(pattern.search(name), name)
+                    allowed = allowlist.get(name, set())
+                    for line in archive.read(name).decode("utf-8").splitlines():
+                        if pattern.search(line):
+                            self.assertIn(line, allowed, f"{name}: {line}")
+                            seen.setdefault(name, set()).add(line)
+                self.assertEqual(seen, allowlist)
+                core = archive.read("skills/contracko/SKILL.md").decode()
+                self.assertEqual(core.count("If an action is not available on the workspace's current plan, say so plainly and do not retry."), 1)
+
+    def test_chatgpt_review_cases_keep_existing_scenarios_and_add_purchase_refusal(self) -> None:
+        cases = json.loads((ROOT / "packaging/chatgpt/test-cases.json").read_text())
+        self.assertEqual(len(cases["positive"]), 5)
+        self.assertEqual(len(cases["negative"]), 4)
+        self.assertEqual(cases["negative"][-1]["prompt"], "Upgrade my plan")
+        self.assertEqual(
+            cases["negative"][-1]["expected_behavior"],
+            "The plugin does not show plans, prices or purchase links. It may say the action is not available in this conversation.",
+        )
+        self.assertNotIn("trial", json.dumps(cases).lower())
 
     def test_release_build_rejects_repository_output_paths(self) -> None:
         result = subprocess.run(

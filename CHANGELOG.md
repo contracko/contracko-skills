@@ -4,6 +4,8 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
+- Removes all pricing, trial, credit and subscription content for ChatGPT; adds a negative test for upgrade requests. ChatGPT-only skill variants leave other platform skill content unchanged.
+
 - **Breaking, 1.2.0:** consolidated four skills into one `contracko` skill with on-demand workflow references. Retired `contracko-import` (now `references/importing-contracts.md` and `references/onboarding.md`), `contracko-review` (now `references/notifications.md`, `references/reviewing-ai-analysis.md` and `references/portfolio-review.md`), and `contracko-create` (now `references/new-agreement.md`), all under `skills/contracko/`. Workspace organisation moved from the core into `references/organising-the-workspace.md`.
 - **Migration:** reinstall or update the plugin. Claude chat users upload the single `contracko.zip` and can delete the old three skills. The core now relays server billing guidance instead of duplicating envelope fields.
 - Bumped every public version to 1.2.0 and regenerated the directory package. The ChatGPT listing manifest and ZIP layout remain unchanged; do not upload the candidate until its 1.1 review ends and the captain approves.
