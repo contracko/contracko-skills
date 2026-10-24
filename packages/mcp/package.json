@@ -1,6 +1,6 @@
 {
   "name": "@contracko/mcp",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "mcpName": "com.contracko/contracko",
   "description": "npx launcher for the Contracko MCP server (stdio to Streamable HTTP).",
   "license": "MIT",
