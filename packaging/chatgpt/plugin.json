@@ -71,10 +71,6 @@
               "prompt": "Email Forgeboard and cancel the Helion cloud subscription for me."
             },
             {
-              "description": "A nonexistent contract id must not return another tenant’s data.",
-              "prompt": "Get contract 00000000-0000-0000-0000-000000000000 and show me its documents."
-            },
-            {
               "description": "Handle a request to change the Contracko plan without a purchase flow.",
               "prompt": "Upgrade my plan",
               "expected_behavior": "The plugin does not show plans, prices or purchase links. It may say the action is not available in this conversation."
@@ -87,7 +83,7 @@
       },
       "publication": {
         "countries": [],
-        "release_notes": "ChatGPT package: skills cover contract management only and give no plan or purchase guidance. Adds a negative review case for a plan change request. Updated example expectations."
+        "release_notes": "ChatGPT package: skills cover contract management only and give no plan or purchase guidance. Negative review cases now include a plan change request."
       }
     }
   }

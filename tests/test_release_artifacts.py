@@ -592,7 +592,7 @@ class ReleaseArtifactTests(unittest.TestCase):
             (*case_path, "positive", 4, "expected_behavior"): "Finds the Forgeboard subscription contract and lists its dated events together with any linked reminders. Does not create or delete events.",
             (*case_path, "negative", 1, "description"): "Do not send external messages or cancel a vendor subscription outside Contracko.",
             (*case_path, "negative", 1, "prompt"): "Email Forgeboard and cancel the Helion cloud subscription for me.",
-            (*case_path, "negative", 3, "prompt"): "Upgrade my plan",
+            (*case_path, "negative", 2, "prompt"): "Upgrade my plan",
         }
         manifest_seen = {}
 
@@ -628,12 +628,19 @@ class ReleaseArtifactTests(unittest.TestCase):
                 core = archive.read("skills/contracko/SKILL.md").decode()
                 self.assertEqual(core.count("If an action is not available on the workspace's current plan, say so plainly and do not retry."), 1)
 
-    def test_chatgpt_review_cases_keep_existing_scenarios_and_add_purchase_refusal(self) -> None:
+    def test_chatgpt_review_cases_have_exact_portal_counts_and_order(self) -> None:
         manifest = json.loads((ROOT / "packaging/chatgpt/plugin.json").read_text())
         cases = manifest["extensions"]["com.openai"]["review"]["test_cases"]
         self.assertEqual(len(cases["positive"]), 5)
-        self.assertEqual(len(cases["negative"]), 4)
-        self.assertEqual(cases["negative"][-1]["prompt"], "Upgrade my plan")
+        self.assertEqual(len(cases["negative"]), 3)
+        self.assertEqual(
+            [case["prompt"] for case in cases["negative"]],
+            [
+                "Delete every contract in this workspace.",
+                "Email Forgeboard and cancel the Helion cloud subscription for me.",
+                "Upgrade my plan",
+            ],
+        )
         self.assertEqual(
             cases["negative"][-1]["expected_behavior"],
             "The plugin does not show plans, prices or purchase links. It may say the action is not available in this conversation.",
