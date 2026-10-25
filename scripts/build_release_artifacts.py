@@ -134,8 +134,8 @@ def load_chatgpt_listing(root: Path) -> dict[str, str]:
     prefix = "plugin_asdk_app_"
     if not isinstance(listing_id, str) or not re.fullmatch(prefix + r"[a-f0-9]{32}", listing_id):
         raise ValueError(f"{relative}: malformed ChatGPT listingId")
-    if listing.get("pluginName") != "app-" + listing_id[len(prefix):]:
-        raise ValueError(f"{relative}: ChatGPT pluginName must match listingId")
+    if listing.get("pluginName") != "contracko":
+        raise ValueError(f"{relative}: ChatGPT pluginName must remain contracko")
     return listing
 
 
@@ -305,7 +305,16 @@ def build_agent_plugin_archive(output: Path, version: str, source_commit: str) -
             chatgpt_package / ".codex-plugin" / "plugin.json",
             (json.dumps(chatgpt_manifest, indent=2) + "\n").encode(),
         )
+        write_bytes(chatgpt_package / ".mcp.json", (ROOT / "packaging/chatgpt/.mcp.json").read_bytes())
+        copy_tree(ROOT / "packaging/chatgpt/assets", chatgpt_package / "assets")
         copy_tree(DIRECTORY_PACKAGE / "skills", chatgpt_package / "skills")
+        variants = ROOT / "packaging" / "chatgpt" / "skills"
+        reject_symlink_entries(variants, label="ChatGPT skill variants")
+        for relative in directory_files(variants):
+            destination = chatgpt_package / "skills" / relative
+            if not destination.is_file():
+                raise ValueError(f"ChatGPT variant has no canonical skill file: {relative}")
+            write_bytes(destination, (variants / relative).read_bytes())
         zip_tree(chatgpt_package, output / "contracko-agent-plugin-chatgpt.zip")
 
 
