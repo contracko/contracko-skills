@@ -30,8 +30,10 @@ The accepted 1.1.0 ZIP is the compatibility baseline. Its identity is captured i
 
 | Identity field | Accepted 1.1.0 versus new package |
 |---|---|
-| `name`, `author`, `description`, `skills` | Identical |
-| Complete `interface`, including legal URLs, logo and composer icon | Identical |
+| `name`, `skills` | Identical |
+| `author`, `interface.developerName` | `Budi Voogt` to `Contracko`; the organisation's business verification is approved |
+| `description`, `interface.longDescription`, `interface.shortDescription`, `interface.capabilities`, `keywords` | Listing copy; may change between uploads |
+| Rest of `interface`, including category, prompts, legal URLs, logo and composer icon | Identical |
 | `mcpServers` | Identical: `./.mcp.json` |
 | `.mcp.json` | Identical bytes: key `contracko`, URL `https://app.contracko.com/mcp`, no explicit transport |
 | `assets/icon.png` | Identical bytes |
