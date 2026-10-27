@@ -279,13 +279,13 @@ class ReleaseArtifactTests(unittest.TestCase):
         self.assertEqual(len(expected), len(set(normalized)))
         self.assertTrue(all(keyword and keyword == keyword.lower() for keyword in expected))
         self.assertTrue({
-            "contracko", "mcp", "clm", "contract lifecycle management",
-            "contract management software", "contract management", "ai contract management",
+            "contracko", "clm", "contract lifecycle management",
+            "contract management software", "contract management", "contracts", "ai contract management",
             "contract repository", "contract reminder software", "contract renewal reminders",
             "contract expiration tracking", "ai contract review", "ai contract analysis",
             "contract data extraction", "contract review", "contract analysis",
-            "obligation tracking", "renewal tracking", "notice deadlines", "legal", "procurement",
-        } <= set(expected))
+            "obligation tracking", "renewal tracking", "notice deadlines", "legal", "compliance", "procurement",
+        } == set(expected))
         for relative in (
             ".cursor-plugin/plugin.json", ".claude-plugin/plugin.json",
             ".codex-plugin/plugin.json", "packages/agent-plugin/plugin.json",
