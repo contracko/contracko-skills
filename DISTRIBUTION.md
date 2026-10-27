@@ -14,6 +14,7 @@ The bundle is a GitHub repo with one skill, `skills/contracko/SKILL.md`, and wor
 | Claude Connectors Directory | remote MCP listing in Claude.ai | live (Community) at [claude.ai/directory/connectors/contracko](https://claude.ai/directory/connectors/contracko); the primary path on every Claude surface |
 | Claude plugin directory (Cowork + Claude Code) | public GitHub plugin, `claude plugin validate` then Anthropic form | listed; tracks `main`, so a merge to `main` auto-publishes. Paid plans only |
 | Codex / ChatGPT | `.agents/plugins/marketplace.json` + `.codex-plugin/plugin.json` for workspace import; `contracko-agent-plugin-chatgpt.zip` for ChatGPT portal upload | workspace import ready; public Plugin Directory needs OpenAI review |
+| Cursor Marketplace | [Contracko listing](https://cursor.com/marketplace/contracko) | live; published by the Cursor team on 2026-10-02; manual refresh on request to marketplace-publishing@cursor.com. Updates are not pulled automatically from GitHub; resubmitting creates duplicates. |
 | GitHub Copilot CLI | `.github/plugin/marketplace.json` | ready for `copilot plugin marketplace add contracko/contracko-skills` |
 | Gemini CLI | install skills from the public GitHub repo | no third-party marketplace; GitHub install only |
 | OpenClaw | generated Agent Plugins v1 content bundle | release artifact; native MCP registration and OAuth remain user-owned |
@@ -66,6 +67,14 @@ For each release, bump only the source version, copy that value into every publi
 Type the ChatGPT and Claude developer portal version as exactly this value, for example `1.1.3`, without a `v` prefix. The Git release tag is `v1.1.3`. Portal values are manual and cannot be checked by repository CI. The plugin cache is keyed on the version, so bump it for changes users should receive.
 
 The live ChatGPT listing is `plugin_asdk_app_6ac8e9b10f548191ab1ed190c3b0ccab`; its accepted 1.1.0 ZIP uses `.codex-plugin/plugin.json` name `contracko`. The former listing and its `app-...` naming rule are retired. The mapping lives in [`packaging/directory-listings.json`](packaging/directory-listings.json), separate from the standard manifest so it does not enter other packages. The approved listing copy lives in [`packaging/chatgpt/plugin.json`](packaging/chatgpt/plugin.json); this template omits `name` and `version`, which the builder inserts from the mapping and unified version. `check_versions.py` requires both files to parse and rejects malformed mappings or conflicting template names and versions if stored. The ChatGPT ZIP preserves the accepted manifest identity, icon and `.mcp.json` declaration for the existing MCP connection. It embeds corrected review cases and publication release notes. After captain approval to submit, upload `contracko-agent-plugin-chatgpt.zip` to that same portal listing with the unified version. Use `contracko-agent-plugin.zip` for every other directory, where the name remains `contracko`.
+
+### Manual release checklist
+
+After each release, complete the manual steps for these surfaces:
+
+- **Cursor Marketplace:** request a refresh of the [existing listing](https://cursor.com/marketplace/contracko) from Cursor's marketplace team at marketplace-publishing@cursor.com. GitHub updates are not pulled automatically. Do not resubmit: that creates duplicate listings.
+- **ChatGPT portal:** after approval to submit, upload `contracko-agent-plugin-chatgpt.zip` to the existing listing with the unified version.
+- **npm:** after release CI stages `@contracko/mcp`, a maintainer runs `npm stage approve` with 2FA.
 
 ## What Contracko has to do server-side
 

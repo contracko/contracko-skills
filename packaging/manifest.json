@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "contracko",
-  "version": "1.2.1",
-  "description": "CLM: add, import, review and manage contracts without Parser credits. Separate Contracko Parser: bulk document processing using Parser credits, not needed to add contracts.",
+  "version": "1.2.2",
+  "description": "Contracko contract-management skills with guided native MCP setup.",
   "author": {
     "name": "Contracko",
     "url": "https://contracko.com"

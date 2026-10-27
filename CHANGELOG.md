@@ -4,6 +4,9 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
+- Restored buyer-facing listing descriptions, including Cursor's shorter copy, while retaining CLM and Parser guidance in the skills. Bumped public versions to 1.2.2 and regenerated the directory package.
+- Corrected the live Cursor Marketplace listing and its manual refresh process. Added the per-release Cursor, ChatGPT portal and npm manual checklist.
+
 - Bumped public versions to 1.2.1 for a distinct ChatGPT upload. Matched the portal's required five positive and three negative review cases, retaining the plan-change refusal and keeping cross-tenant isolation in server tests.
 
 - Removes all pricing, trial, credit and subscription content for ChatGPT; adds a negative test for upgrade requests. ChatGPT-only skill variants leave other platform skill content unchanged.
