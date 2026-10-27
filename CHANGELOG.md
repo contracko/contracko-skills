@@ -6,7 +6,7 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## 1.2.4, 2026-10-27
 
-- Unified marketplace and npm search keywords around CLM, contract management, repository search, AI review and analysis, data extraction, reminders and deadline tracking. ChatGPT keeps its approved listing copy and keywords; Cursor keeps its short description.
+- Unified marketplace and npm search keywords around CLM, contract management, repository search, AI review and analysis, data extraction, reminders and deadline tracking. Included legal, compliance and procurement; removed the protocol terms `mcp` and `modelcontextprotocol`. ChatGPT keeps its approved listing copy and keywords; Cursor keeps its short description.
 - Bumped all public package versions to 1.2.4 and regenerated the directory package.
 - Restored separate changelog headings for 1.2.1 and 1.2.0.
 
