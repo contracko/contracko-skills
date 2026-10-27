@@ -6,13 +6,13 @@
   },
   "metadata": {
     "description": "Agent skills for Contracko contract management",
-    "version": "1.2.1"
+    "version": "1.2.2"
   },
   "plugins": [
     {
       "name": "contracko",
       "source": "./",
-      "description": "CLM: add, import, review and manage contracts without Parser credits. Separate Contracko Parser: bulk document processing using Parser credits, not needed to add contracts.",
+      "description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",
       "category": "productivity",
       "keywords": [
         "contracko",

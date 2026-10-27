@@ -270,10 +270,12 @@ class ReleaseArtifactTests(unittest.TestCase):
                 self.assertEqual(version, expected)
 
     def test_client_manifests_mirror_claude_plugin_description_except_cursor(self) -> None:
-        # Cursor's marketplace truncates long descriptions, so Cursor carries its own shorter one.
-        # server.json keeps its own MCP Registry description and is not checked here.
-        expected = json.loads((ROOT / ".claude-plugin/plugin.json").read_text())["description"]
+        expected = (
+            "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, "
+            "contract data extraction and parsing, automated reminders and renewal and notice deadline tracking."
+        )
         descriptions = {
+            ".claude-plugin/plugin.json": json.loads((ROOT / ".claude-plugin/plugin.json").read_text())["description"],
             ".codex-plugin/plugin.json": json.loads((ROOT / ".codex-plugin/plugin.json").read_text())["description"],
             "gemini-extension.json": json.loads((ROOT / "gemini-extension.json").read_text())["description"],
         }
@@ -288,10 +290,25 @@ class ReleaseArtifactTests(unittest.TestCase):
         cursor = json.loads((ROOT / ".cursor-plugin/plugin.json").read_text())["description"]
         self.assertEqual(
             cursor,
-            "CLM manages contracts without Parser credits. Separate Parser bulk processing uses credits, "
-            "not needed to add contracts.",
+            "AI contract management: contract review and analysis, data extraction, automated reminders, "
+            "and renewal and notice deadline tracking.",
         )
+        self.assertLessEqual(len(cursor), 133)
         self.assertLess(len(cursor), len(expected))
+
+        registry = json.loads((ROOT / "server.json").read_text())["description"]
+        self.assertEqual(
+            registry,
+            "AI contract management (CLM): contract review, data extraction, reminders and renewal deadlines.",
+        )
+        self.assertLessEqual(len(registry), 100)
+        for relative in ("packaging/manifest.json", "packages/agent-plugin/plugin.json"):
+            with self.subTest(path=relative):
+                manifest = json.loads((ROOT / relative).read_text())
+                self.assertEqual(
+                    manifest["description"],
+                    "Contracko contract-management skills with guided native MCP setup.",
+                )
 
     def test_committed_directory_package_exposes_canonical_skills(self) -> None:
         package = ROOT / "packages" / "agent-plugin"

@@ -149,7 +149,9 @@ Follow the [sign-in and consent steps](#install).
 <details>
 <summary><strong>Cursor</strong></summary>
 
-The Cursor plugin is not yet listed in the public Marketplace. [Distribution status](DISTRIBUTION.md#status).
+Install [Contracko from the Cursor Marketplace](https://cursor.com/marketplace/contracko), then follow the [sign-in and consent steps](#install).
+
+The Cursor team published the listing on 2026-10-02. Updates are manual: request a refresh from Cursor's marketplace team at marketplace-publishing@cursor.com. Updates are not pulled automatically from GitHub, and resubmitting creates duplicate listings. [Distribution status](DISTRIBUTION.md#status).
 
 To test the plugin locally, clone this repository into `~/.cursor/plugins/local/contracko-skills`, reload Cursor, and check **Customize**. Follow the [sign-in and consent steps](#install).
 
