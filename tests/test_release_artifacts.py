@@ -275,7 +275,8 @@ class ReleaseArtifactTests(unittest.TestCase):
 
     def test_public_listings_share_ordered_canonical_keywords(self) -> None:
         expected = json.loads((ROOT / "packaging/manifest.json").read_text())["keywords"]
-        self.assertEqual(len(expected), len(set(expected)))
+        normalized = [" ".join(keyword.lower().replace("-", " ").split()) for keyword in expected]
+        self.assertEqual(len(expected), len(set(normalized)))
         self.assertTrue(all(keyword and keyword == keyword.lower() for keyword in expected))
         self.assertTrue({
             "contracko", "mcp", "clm", "contract lifecycle management",
