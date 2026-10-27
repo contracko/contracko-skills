@@ -111,8 +111,7 @@ Contract uploads: [import reference](skills/contracko/references/importing-contr
 <details>
 <summary><strong>ChatGPT</strong></summary>
 
-<!-- CTD-6316: replace with the published Contracko listing URL -->
-1. Open [https://chatgpt.com/plugins](https://chatgpt.com/plugins), add Contracko from the ChatGPT plugin directory and sign in to Contracko.
+1. Open [https://chatgpt.com/plugins/plugin_asdk_app_6ac8e9b10f548191ab1ed190c3b0ccab](https://chatgpt.com/plugins/plugin_asdk_app_6ac8e9b10f548191ab1ed190c3b0ccab), add Contracko from the ChatGPT plugin directory and sign in to Contracko.
 2. Follow the [sign-in and consent steps](#install).
 
 Workspace blocks directory apps? Add it manually instead:
