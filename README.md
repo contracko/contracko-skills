@@ -111,6 +111,12 @@ Contract uploads: [import reference](skills/contracko/references/importing-contr
 <details>
 <summary><strong>ChatGPT</strong></summary>
 
+<!-- CTD-6316: replace with the published Contracko listing URL -->
+1. Open [https://chatgpt.com/plugins](https://chatgpt.com/plugins), add Contracko from the ChatGPT plugin directory and sign in to Contracko.
+2. Follow the [sign-in and consent steps](#install).
+
+Workspace blocks directory apps? Add it manually instead:
+
 1. In the workspace, go to **Settings → Plugins → Import marketplace** and enter `contracko/contracko-skills`.
 2. Turn on **Developer mode**.
 3. Go to **Settings → Apps → Create** and paste `https://app.contracko.com/mcp`.
