@@ -1,6 +1,6 @@
 {
   "name": "@contracko/mcp",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "mcpName": "com.contracko/contracko",
   "description": "npx launcher for the Contracko MCP server (stdio to Streamable HTTP).",
   "license": "MIT",
@@ -22,9 +22,29 @@
     "url": "https://github.com/contracko/contracko-skills/issues"
   },
   "keywords": [
-    "mcp",
     "contracko",
-    "modelcontextprotocol"
+    "mcp",
+    "modelcontextprotocol",
+    "clm",
+    "contract lifecycle management",
+    "contract management software",
+    "contract management",
+    "contracts",
+    "ai contract management",
+    "contract repository",
+    "contract reminder software",
+    "contract renewal reminders",
+    "contract expiration tracking",
+    "ai contract review",
+    "ai contract analysis",
+    "contract data extraction",
+    "contract review",
+    "contract analysis",
+    "obligation tracking",
+    "renewal tracking",
+    "notice deadlines",
+    "legal",
+    "procurement"
   ],
   "engines": {
     "node": ">=20.18.1"

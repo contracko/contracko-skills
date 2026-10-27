@@ -4,6 +4,12 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
+## 1.2.4, 2026-10-27
+
+- Unified marketplace and npm search keywords around CLM, contract management, repository search, AI review and analysis, data extraction, reminders and deadline tracking. ChatGPT keeps its approved listing copy and keywords; Cursor keeps its short description.
+- Bumped all public package versions to 1.2.4 and regenerated the directory package.
+- Restored separate changelog headings for 1.2.1 and 1.2.0.
+
 ## 1.2.3, 2026-10-27
 
 - ChatGPT listing: developer name changes from Budi Voogt to Contracko. Description and subtitle now lead with AI contract lifecycle management (CLM), a searchable contract repository, AI contract review and analysis, and renewal and expiration reminders. Adds search keywords and a capabilities list. Tests still pin the connection identity (name, MCP declaration, legal URLs, icon) while the listing copy may change. The subtitle stays within OpenAI's 30-character public-submission limit.
@@ -13,9 +19,13 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 - Restored buyer-facing listing descriptions, including Cursor's shorter copy, while retaining CLM and Parser guidance in the skills. Bumped public versions to 1.2.2 and regenerated the directory package.
 - Corrected the live Cursor Marketplace listing and its manual refresh process. Added the per-release Cursor, ChatGPT portal and npm manual checklist.
 
+## 1.2.1, 2026-10-25
+
 - Bumped public versions to 1.2.1 for a distinct ChatGPT upload. Matched the portal's required five positive and three negative review cases, retaining the plan-change refusal and keeping cross-tenant isolation in server tests.
 
 - Removes all pricing, trial, credit and subscription content for ChatGPT; adds a negative test for upgrade requests. ChatGPT-only skill variants leave other platform skill content unchanged.
+
+## 1.2.0, 2026-10-21
 
 - **Breaking, 1.2.0:** consolidated four skills into one `contracko` skill with on-demand workflow references. Retired `contracko-import` (now `references/importing-contracts.md` and `references/onboarding.md`), `contracko-review` (now `references/notifications.md`, `references/reviewing-ai-analysis.md` and `references/portfolio-review.md`), and `contracko-create` (now `references/new-agreement.md`), all under `skills/contracko/`. Workspace organisation moved from the core into `references/organising-the-workspace.md`.
 - **Migration:** reinstall or update the plugin. Claude chat users upload the single `contracko.zip` and can delete the old three skills. The core now relays server billing guidance instead of duplicating envelope fields.

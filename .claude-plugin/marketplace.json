@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Agent skills for Contracko contract management",
-    "version": "1.2.3"
+    "version": "1.2.4"
   },
   "plugins": [
     {
@@ -16,9 +16,28 @@
       "category": "productivity",
       "keywords": [
         "contracko",
-        "contract-management",
+        "mcp",
+        "modelcontextprotocol",
         "clm",
-        "mcp"
+        "contract lifecycle management",
+        "contract management software",
+        "contract management",
+        "contracts",
+        "ai contract management",
+        "contract repository",
+        "contract reminder software",
+        "contract renewal reminders",
+        "contract expiration tracking",
+        "ai contract review",
+        "ai contract analysis",
+        "contract data extraction",
+        "contract review",
+        "contract analysis",
+        "obligation tracking",
+        "renewal tracking",
+        "notice deadlines",
+        "legal",
+        "procurement"
       ]
     }
   ]
