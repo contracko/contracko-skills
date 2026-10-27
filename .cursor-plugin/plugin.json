@@ -1,6 +1,6 @@
 {
   "name": "contracko",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "AI contract management: contract review and analysis, data extraction, automated reminders, and renewal and notice deadline tracking.",
   "author": {
     "name": "Contracko",
@@ -9,7 +9,32 @@
   "homepage": "https://contracko.com/mcp/contract-management",
   "repository": "https://github.com/contracko/contracko-skills",
   "license": "MIT",
-  "keywords": ["contracko", "contract-management", "mcp", "legal", "procurement"],
+  "keywords": [
+    "contracko",
+    "mcp",
+    "modelcontextprotocol",
+    "clm",
+    "contract lifecycle management",
+    "contract management software",
+    "contract management",
+    "contract-management",
+    "contracts",
+    "ai contract management",
+    "contract repository",
+    "contract reminder software",
+    "contract renewal reminders",
+    "contract expiration tracking",
+    "ai contract review",
+    "ai contract analysis",
+    "contract data extraction",
+    "contract review",
+    "contract analysis",
+    "obligation tracking",
+    "renewal tracking",
+    "notice deadlines",
+    "legal",
+    "procurement"
+  ],
   "skills": [
     "./skills/contracko"
   ],

@@ -8,13 +8,33 @@
     {
       "name": "contracko",
       "description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",
-      "version": "1.2.3",
+      "version": "1.2.4",
       "source": "./",
       "keywords": [
         "contracko",
-        "contract-management",
+        "mcp",
+        "modelcontextprotocol",
         "clm",
-        "mcp"
+        "contract lifecycle management",
+        "contract management software",
+        "contract management",
+        "contract-management",
+        "contracts",
+        "ai contract management",
+        "contract repository",
+        "contract reminder software",
+        "contract renewal reminders",
+        "contract expiration tracking",
+        "ai contract review",
+        "ai contract analysis",
+        "contract data extraction",
+        "contract review",
+        "contract analysis",
+        "obligation tracking",
+        "renewal tracking",
+        "notice deadlines",
+        "legal",
+        "procurement"
       ]
     }
   ]

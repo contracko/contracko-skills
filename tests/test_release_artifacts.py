@@ -74,6 +74,10 @@ class ReleaseArtifactTests(unittest.TestCase):
                     self.assertEqual(manifest["name"], "contracko")
                     self.assertEqual(manifest["version"], VERSION)
                     self.assertEqual(
+                        manifest["keywords"],
+                        json.loads((ROOT / "packaging/manifest.json").read_text())["keywords"],
+                    )
+                    self.assertEqual(
                         set(manifest),
                         {
                             "$schema",
@@ -268,6 +272,48 @@ class ReleaseArtifactTests(unittest.TestCase):
         for relative, version in versions.items():
             with self.subTest(path=relative):
                 self.assertEqual(version, expected)
+
+    def test_public_listings_share_ordered_canonical_keywords(self) -> None:
+        expected = json.loads((ROOT / "packaging/manifest.json").read_text())["keywords"]
+        self.assertEqual(len(expected), len(set(expected)))
+        self.assertTrue(all(keyword and keyword == keyword.lower() for keyword in expected))
+        self.assertTrue({
+            "contracko", "mcp", "clm", "contract lifecycle management",
+            "contract management software", "contract management", "ai contract management",
+            "contract repository", "contract reminder software", "contract renewal reminders",
+            "contract expiration tracking", "ai contract review", "ai contract analysis",
+            "contract data extraction", "contract review", "contract analysis",
+            "obligation tracking", "renewal tracking", "notice deadlines", "legal", "procurement",
+        } <= set(expected))
+        for relative in (
+            ".cursor-plugin/plugin.json", ".claude-plugin/plugin.json",
+            ".codex-plugin/plugin.json", "packages/agent-plugin/plugin.json",
+            "packages/mcp/package.json",
+        ):
+            with self.subTest(path=relative):
+                manifest = json.loads((ROOT / relative).read_text())
+                self.assertEqual(manifest["keywords"], expected)
+        for relative in (".claude-plugin/marketplace.json", ".github/plugin/marketplace.json"):
+            plugins = json.loads((ROOT / relative).read_text())["plugins"]
+            self.assertTrue(plugins)
+            for plugin in plugins:
+                with self.subTest(path=relative, plugin=plugin["name"]):
+                    self.assertEqual(plugin["keywords"], expected)
+
+    def test_chatgpt_keeps_approved_keywords_separate_from_shared_list(self) -> None:
+        manifest = json.loads((ROOT / "packaging/chatgpt/plugin.json").read_text())
+        self.assertEqual(manifest["keywords"], [
+            "CLM",
+            "contract lifecycle management",
+            "contract management software",
+            "contract repository",
+            "contract reminder software",
+            "contract renewal reminders",
+            "contract expiration tracking",
+            "AI contract review",
+            "AI contract analysis",
+            "contract data extraction",
+        ])
 
     def test_client_manifests_mirror_claude_plugin_description_except_cursor(self) -> None:
         expected = (
