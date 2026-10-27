@@ -1,21 +1,38 @@
 {
   "author": {
-    "name": "Budi Voogt"
+    "name": "Contracko"
   },
-  "description": "Contracko is where you keep the contracts that run the business. Use it from ChatGPT to extract key data (dates, values, counterparties), review risks and liabilities, and set reminders for renewal and notice deadlines. Import PDFs and Word files, search the source text, and answer what you actually signed. You choose read or write access when you connect, and changes go through ChatGPT's approval step before they run.",
+  "description": "Contracko is an AI contract lifecycle management (CLM) platform for the contracts that run your business. Keep every agreement in one searchable contract repository, use AI contract review and analysis to extract key data (dates, values, counterparties) and flag risks and liabilities, and get renewal and expiration reminders before notice deadlines pass. Import PDFs and Word files, then ask what you actually signed. You choose read or write access when you connect, and changes go through ChatGPT's approval step before they run.",
+  "keywords": [
+    "CLM",
+    "contract lifecycle management",
+    "contract management software",
+    "contract repository",
+    "contract reminder software",
+    "contract renewal reminders",
+    "contract expiration tracking",
+    "AI contract review",
+    "AI contract analysis",
+    "contract data extraction"
+  ],
   "interface": {
-    "capabilities": [],
+    "capabilities": [
+      "AI contract review",
+      "Contract analysis",
+      "Renewal and expiration reminders",
+      "Contract repository and search"
+    ],
     "category": "Business & Operations",
     "defaultPrompt": [
       "Review the risks and liabilities in my contracts",
       "What renewals and notice dates are coming up?",
       "Search my contracts for termination terms"
     ],
-    "developerName": "Budi Voogt",
+    "developerName": "Contracko",
     "displayName": "Contracko",
-    "longDescription": "Contracko is where you keep the contracts that run the business. Use it from ChatGPT to extract key data (dates, values, counterparties), review risks and liabilities, and set reminders for renewal and notice deadlines. Import PDFs and Word files, search the source text, and answer what you actually signed. You choose read or write access when you connect, and changes go through ChatGPT's approval step before they run.",
+    "longDescription": "Contracko is an AI contract lifecycle management (CLM) platform for the contracts that run your business. Keep every agreement in one searchable contract repository, use AI contract review and analysis to extract key data (dates, values, counterparties) and flag risks and liabilities, and get renewal and expiration reminders before notice deadlines pass. Import PDFs and Word files, then ask what you actually signed. You choose read or write access when you connect, and changes go through ChatGPT's approval step before they run.",
     "privacyPolicyURL": "https://contracko.com/legal/privacy-policy",
-    "shortDescription": "AI contract management",
+    "shortDescription": "AI contract management (CLM)",
     "supportURL": "https://contracko.com/docs",
     "termsOfServiceURL": "https://contracko.com/legal/terms-of-service",
     "websiteURL": "https://contracko.com",
@@ -83,7 +100,7 @@
       },
       "publication": {
         "countries": [],
-        "release_notes": "ChatGPT package: skills cover contract management only and give no plan or purchase guidance. Negative review cases now include a plan change request."
+        "release_notes": "Developer name is now Contracko. Listing text highlights AI contract lifecycle management (CLM), contract review and analysis, a searchable repository, and renewal and expiration reminders. Added discovery keywords and capabilities."
       }
     }
   }

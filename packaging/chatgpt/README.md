@@ -1,8 +1,8 @@
-# ChatGPT package 1.2.2
+# ChatGPT package 1.2.3
 
-Release notes: ChatGPT package: skills cover contract management only and give no plan or purchase guidance. Negative review cases now include a plan change request.
+Release notes: Developer name is now Contracko. Listing text highlights AI contract lifecycle management (CLM), contract review and analysis, a searchable repository, and renewal and expiration reminders. Added discovery keywords and capabilities.
 
-Version 1.2.1 was a distinct upload after the 1.2.0 draft failed the portal case-count requirement. Version 1.2.2 retains that commerce-safe content and review cases while the other listings restore buyer-facing descriptions. All public versions remain aligned with `packaging/manifest.json`.
+Version 1.2.1 was a distinct upload after the 1.2.0 draft failed the portal case-count requirement. Version 1.2.2 retained that commerce-safe content and review cases while the other listings restored buyer-facing descriptions. Version 1.2.3 updates the ChatGPT developer name and listing copy without changing those skills or review cases. All public versions remain aligned with `packaging/manifest.json`.
 
 `skills/` holds complete ChatGPT variants of canonical files that contain product commerce or standalone processing instructions. The builder copies the canonical skill tree, then overlays only these files for `contracko-agent-plugin-chatgpt.zip`. Edit both versions when changing a shared workflow in an overridden file. Other archives continue to use canonical skill bytes.
 
@@ -30,13 +30,16 @@ The accepted 1.1.0 ZIP is the compatibility baseline. Its identity is captured i
 
 | Identity field | Accepted 1.1.0 versus new package |
 |---|---|
-| `name`, `author`, `description`, `skills` | Identical |
-| Complete `interface`, including legal URLs, logo and composer icon | Identical |
+| `name`, `skills` | Identical |
+| `author`, `interface.developerName` | `Budi Voogt` to `Contracko`; the organisation's business verification is approved |
+| `description`, `interface.longDescription`, `interface.capabilities`, `keywords` | Listing copy; may change between uploads |
+| `interface.shortDescription` | `AI contract management` to `AI contract management (CLM)`; within the 30-character public-submission limit |
+| Rest of `interface`, including category, prompts, legal URLs, logo and composer icon | Identical |
 | `mcpServers` | Identical: `./.mcp.json` |
 | `.mcp.json` | Identical bytes: key `contracko`, URL `https://app.contracko.com/mcp`, no explicit transport |
 | `assets/icon.png` | Identical bytes |
-| `version` | `1.1.0` to `1.2.2` |
+| `version` | `1.1.0` to `1.2.3` |
 
 The review cases and publication release notes change as described above. Other review metadata and country settings are preserved. This updates the same plugin and keeps its existing MCP connection.
 
-Build with `bash build-zips.sh`. The PR's `ChatGPT package` CI job runs that command, uploads the ZIP as `contracko-chatgpt-plugin-<head SHA>`, and records its SHA-256 in the job summary. Download the ZIP from that exact candidate run. Upload only `contracko-agent-plugin-chatgpt.zip` to the live listing with version `1.2.2`, after approval to submit. Official release assets still come from the tagged release workflow.
+Build with `bash build-zips.sh`. The PR's `ChatGPT package` CI job runs that command, uploads the ZIP as `contracko-chatgpt-plugin-<head SHA>`, and records its SHA-256 in the job summary. Download the ZIP from that exact candidate run. Upload only `contracko-agent-plugin-chatgpt.zip` to the live listing with version `1.2.3`, after approval to submit. Official release assets still come from the tagged release workflow.

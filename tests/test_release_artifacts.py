@@ -556,7 +556,7 @@ class ReleaseArtifactTests(unittest.TestCase):
                     self.assertEqual(chatgpt_manifest["skills"], "./skills")
                     self.assertEqual(
                         set(chatgpt_manifest),
-                        {"author", "description", "interface", "name", "skills", "version", "mcpServers", "extensions"},
+                        {"author", "description", "keywords", "interface", "name", "skills", "version", "mcpServers", "extensions"},
                     )
                     template = json.loads((ROOT / "packaging/chatgpt/plugin.json").read_text())
                     self.assertNotIn("name", template)
@@ -566,9 +566,21 @@ class ReleaseArtifactTests(unittest.TestCase):
                         {**template, "name": listing["pluginName"], "version": VERSION},
                     )
                     identity = json.loads((ROOT / "tests/fixtures/chatgpt-1.1.0-identity.json").read_text())
+                    listing_copy = {"author", "description"}
+                    interface_copy = {"capabilities", "developerName", "longDescription", "shortDescription"}
                     for field, value in identity.items():
-                        if field != "mcp":
+                        if field == "interface":
+                            for key, expected_value in value.items():
+                                if key not in interface_copy:
+                                    self.assertEqual(chatgpt_manifest["interface"][key], expected_value, key)
+                            self.assertEqual(set(chatgpt_manifest["interface"]), set(value))
+                        elif field not in listing_copy | {"mcp"}:
                             self.assertEqual(chatgpt_manifest[field], value, field)
+                    self.assertEqual(chatgpt_manifest["author"], {"name": "Contracko"})
+                    self.assertEqual(chatgpt_manifest["interface"]["developerName"], "Contracko")
+                    self.assertLessEqual(len(chatgpt_manifest["interface"]["shortDescription"]), 30)
+                    self.assertEqual(chatgpt_manifest["description"], chatgpt_manifest["interface"]["longDescription"])
+                    self.assertIn("contract lifecycle management", chatgpt_manifest["keywords"])
                     self.assertEqual(json.loads(chatgpt.read(".mcp.json")), identity["mcp"])
                     self.assertEqual(
                         hashlib.sha256(chatgpt.read("assets/icon.png")).hexdigest(),
