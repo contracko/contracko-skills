@@ -566,7 +566,6 @@ class ReleaseArtifactTests(unittest.TestCase):
                         {**template, "name": listing["pluginName"], "version": VERSION},
                     )
                     identity = json.loads((ROOT / "tests/fixtures/chatgpt-1.1.0-identity.json").read_text())
-                    # Listing copy and the developer name may change between uploads; connection identity may not.
                     listing_copy = {"author", "description"}
                     interface_copy = {"capabilities", "developerName", "longDescription", "shortDescription"}
                     for field, value in identity.items():
@@ -579,6 +578,7 @@ class ReleaseArtifactTests(unittest.TestCase):
                             self.assertEqual(chatgpt_manifest[field], value, field)
                     self.assertEqual(chatgpt_manifest["author"], {"name": "Contracko"})
                     self.assertEqual(chatgpt_manifest["interface"]["developerName"], "Contracko")
+                    self.assertLessEqual(len(chatgpt_manifest["interface"]["shortDescription"]), 30)
                     self.assertEqual(chatgpt_manifest["description"], chatgpt_manifest["interface"]["longDescription"])
                     self.assertIn("contract lifecycle management", chatgpt_manifest["keywords"])
                     self.assertEqual(json.loads(chatgpt.read(".mcp.json")), identity["mcp"])
