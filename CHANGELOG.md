@@ -4,6 +4,7 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
+- ChatGPT listing: developer name changes from Budi Voogt to Contracko. Description and subtitle now lead with AI contract lifecycle management (CLM), a searchable contract repository, AI contract review and analysis, and renewal and expiration reminders. Adds search keywords and a capabilities list. Tests still pin the connection identity (name, MCP declaration, legal URLs, icon) while the listing copy may change.
 - Restored buyer-facing listing descriptions, including Cursor's shorter copy, while retaining CLM and Parser guidance in the skills. Bumped public versions to 1.2.2 and regenerated the directory package.
 - Corrected the live Cursor Marketplace listing and its manual refresh process. Added the per-release Cursor, ChatGPT portal and npm manual checklist.
 
