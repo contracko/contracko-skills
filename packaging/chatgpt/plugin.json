@@ -44,63 +44,9 @@
   "mcpServers": "./.mcp.json",
   "extensions": {
     "com.openai": {
-      "review": {
-        "test_cases": {
-          "positive": [
-            {
-              "description": "Confirm the OAuth connection is authenticated and healthy.",
-              "prompt": "Confirm this Contracko connection is working.",
-              "tools_triggered": "auth_validate",
-              "expected_behavior": "The connection succeeds. auth_validate reports that authentication worked and returns the granted scopes. It does not return the workspace name. Helion Collective B.V. is confirmed in the next test by listing contracts."
-            },
-            {
-              "description": "List workspace contracts and name counterparties from the seeded Helion fixtures.",
-              "prompt": "List the contracts in this workspace and name the counterparties.",
-              "tools_triggered": "clm_list_contracts",
-              "expected_behavior": "Returns Helion Collective B.V. contracts including the Northline master services agreement and the Forgeboard cloud subscription, with counterparties named. May also list the default example contracts."
-            },
-            {
-              "description": "Open the Northline MSA and summarise renewal and termination from stored details and analysis.",
-              "prompt": "Open the Northline master services agreement and summarise the renewal and termination terms.",
-              "tools_triggered": "clm_list_contracts, clm_get_contract, clm_get_contract_analysis",
-              "expected_behavior": "Identifies the Helion–Northline MSA, returns contract details, and summarises renewal/termination from extracted fields and stored AI analysis without inventing clauses."
-            },
-            {
-              "description": "Search contract document text for termination language and cite passages.",
-              "prompt": "Search the contract documents for “termination” and cite the passages.",
-              "tools_triggered": "clm_search_contract_documents",
-              "expected_behavior": "Returns cited passages from accessible Helion documents that contain termination language, with enough context to see which contract they came from."
-            },
-            {
-              "description": "List dated events and linked reminders on the Forgeboard subscription.",
-              "prompt": "List the dated events and reminders on the Forgeboard cloud subscription.",
-              "tools_triggered": "clm_list_contracts, clm_list_contract_events",
-              "expected_behavior": "Finds the Forgeboard subscription contract and lists its dated events together with any linked reminders. Does not create or delete events."
-            }
-          ],
-          "negative": [
-            {
-              "description": "Refuse a request to delete every contract. There is no bulk-delete-contracts tool.",
-              "prompt": "Delete every contract in this workspace."
-            },
-            {
-              "description": "Do not send external messages or cancel a vendor subscription outside Contracko.",
-              "prompt": "Email Forgeboard and cancel the Helion cloud subscription for me."
-            },
-            {
-              "description": "Handle a request to change the Contracko plan without a purchase flow.",
-              "prompt": "Upgrade my plan",
-              "expected_behavior": "The plugin does not show plans, prices or purchase links. It may say the action is not available in this conversation."
-            }
-          ]
-        },
-        "commerce": false,
-        "commerce_description": "Contracko does not sell products or process payments inside ChatGPT.",
-        "demo_recording_url": "https://customer-e7965mxzw0ouruhe.cloudflarestream.com/6a2cefc63944fd8cd19659074c55ddef/downloads/default.mp4"
-      },
       "publication": {
         "countries": [],
-        "release_notes": "Developer name is now Contracko. Listing text highlights AI contract lifecycle management (CLM), contract review and analysis, a searchable repository, and renewal and expiration reminders. Added discovery keywords and capabilities."
+        "release_notes": "Updated contract review, repository search and deadline reminder descriptions."
       }
     }
   }
