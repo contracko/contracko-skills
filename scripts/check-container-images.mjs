@@ -173,7 +173,7 @@ export function scanImageSource(file, source) {
         action?.runs?.using === "docker" &&
         typeof image === "string" &&
         !image.startsWith("docker://") &&
-        !protectedSearchText(image) &&
+        !isExcludedPath(image) &&
         /(?:^|\/)(?:Dockerfile[^/]*|[^/]*\.Dockerfile|Containerfile[^/]*)$/i.test(
           image,
         )
