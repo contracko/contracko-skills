@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Public contracts for the @contracko/mcp npx launcher (CTD-4486)."""
+"""Public contracts for the @contracko/mcp npx launcher."""
 
 from __future__ import annotations
 

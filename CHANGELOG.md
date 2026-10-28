@@ -6,30 +6,25 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## 1.2.4, 2026-10-27
 
-- Unified marketplace and npm search keywords around CLM, contract management, repository search, AI review and analysis, data extraction, reminders and deadline tracking. Included legal, compliance and procurement; removed the protocol terms `mcp` and `modelcontextprotocol`. ChatGPT keeps its approved listing copy and keywords; Cursor keeps its short description.
-- Bumped all public package versions to 1.2.4 and regenerated the directory package.
-- Restored separate changelog headings for 1.2.1 and 1.2.0.
+- Updated package metadata and aligned public package versions at 1.2.4.
 
 ## 1.2.3, 2026-10-27
 
-- ChatGPT listing: developer name changes from Budi Voogt to Contracko. Description and subtitle now lead with AI contract lifecycle management (CLM), a searchable contract repository, AI contract review and analysis, and renewal and expiration reminders. Adds search keywords and a capabilities list. Tests still pin the connection identity (name, MCP declaration, legal URLs, icon) while the listing copy may change. The subtitle stays within OpenAI's 30-character public-submission limit.
+- Updated the ChatGPT description, subtitle and capabilities list for contract review, repository search and deadline reminders.
 
 ## 1.2.2, 2026-10-27
 
-- Restored buyer-facing listing descriptions, including Cursor's shorter copy, while retaining CLM and Parser guidance in the skills. Bumped public versions to 1.2.2 and regenerated the directory package.
-- Corrected the live Cursor Marketplace listing and its manual refresh process. Added the per-release Cursor, ChatGPT portal and npm manual checklist.
+- Updated plugin descriptions, including Cursor's shorter description, and aligned public package versions at 1.2.2. CLM and Parser guidance in the skills is unchanged.
 
 ## 1.2.1, 2026-10-25
 
-- Bumped public versions to 1.2.1 for a distinct ChatGPT upload. Matched the portal's required five positive and three negative review cases, retaining the plan-change refusal and keeping cross-tenant isolation in server tests.
-
-- Removes all pricing, trial, credit and subscription content for ChatGPT; adds a negative test for upgrade requests. ChatGPT-only skill variants leave other platform skill content unchanged.
+- Added ChatGPT-specific skill variants without product purchasing instructions. Other platforms retain their existing skill content.
 
 ## 1.2.0, 2026-10-21
 
 - **Breaking, 1.2.0:** consolidated four skills into one `contracko` skill with on-demand workflow references. Retired `contracko-import` (now `references/importing-contracts.md` and `references/onboarding.md`), `contracko-review` (now `references/notifications.md`, `references/reviewing-ai-analysis.md` and `references/portfolio-review.md`), and `contracko-create` (now `references/new-agreement.md`), all under `skills/contracko/`. Workspace organisation moved from the core into `references/organising-the-workspace.md`.
 - **Migration:** reinstall or update the plugin. Claude chat users upload the single `contracko.zip` and can delete the old three skills. The core now relays server billing guidance instead of duplicating envelope fields.
-- Bumped every public version to 1.2.0 and regenerated the directory package. The ChatGPT listing manifest and ZIP layout remain unchanged; do not upload the candidate until its 1.1 review ends and the captain approves.
+- Aligned public package versions at 1.2.0 and regenerated the directory package. The ChatGPT manifest and ZIP layout are unchanged.
 
 ## 1.1.5, 2026-10-20
 
@@ -52,7 +47,7 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 - Synced Release 15 intake wording and read-only Parser balance checks; see [import and sync](skills/contracko/references/importing-contracts.md) and [Parser effects](skills/contracko/references/tool-index.md#contracko-parser-separate-bulk-document-processing).
 - Bumped the unified public version to 1.1.2 and regenerated the directory package.
-- Added the [ChatGPT portal package](packaging/directory/README.md), separate from the generic directory ZIP.
+- Added the [ChatGPT package](packaging/chatgpt/README.md), separate from the generic directory ZIP.
 
 ## 1.1.1, 2026-10-13
 
@@ -64,9 +59,9 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## 1.1.0, 2026-10-09
 
-- All public plugin, extension, MCP Registry and npm package versions now use 1.1.0. Release tags and manually entered ChatGPT and Claude portal versions use that same value.
-- Added the deterministic `contracko-agent-plugin.zip` ChatGPT submission package with canonical skills, an MCP descriptor and metadata pinning the source commit.
-- Skills match Contracko production catalog `4cc991bb3`: reprocess and reconciliation checks can change saved state, filing moves can remove inherited access and reassign notifications, and Parser balance/preflight can initialize the credit ledger. Document search and extraction guidance identifies external AI processing.
+- Aligned public plugin, extension, MCP Registry and npm package versions at 1.1.0.
+- Added the deterministic `contracko-agent-plugin.zip` package with canonical skills, an MCP descriptor and source metadata.
+- Updated tool guidance: reprocess and reconciliation checks can change saved state, filing moves can remove inherited access and reassign notifications, and Parser balance/preflight can initialize the credit ledger. Document search and extraction guidance identifies external AI processing.
 
 ## 0.7.12 (Agent Plugins 0.8.7), 2026-10-08
 
@@ -91,7 +86,7 @@ Matches the Contracko MCP behaviour live in production on 2026-10-07. Agents see
 - Upload errors have recovery steps: `UPLOAD_NOT_RECEIVED` (run the upload again, or send a tiny file inline), `UPLOAD_EXPIRED` (prepare again) and `INVALID_FILE_CONTENT` (ask for the file again).
 - Claude chat (web and desktop) order: upload from the sandbox with one `curl -T`, then inline base64 if the network is blocked, and the upload link only if neither works.
 - Contracko serves MCP protocol 2026-07-28 alongside the earlier versions. No skill change is needed.
-- The README now says to open a skills-bundle sync PR after each MCP release reaches production.
+- Updated skill maintenance instructions.
 
 ## 0.7.9 (Agent Plugins 0.8.4), 2026-10-04
 

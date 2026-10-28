@@ -1,15 +1,15 @@
 #!/usr/bin/env bun
-// Source: contracko/agent-scripts@c1421917d1c9321e1ff97f4a86baaaa7328a1faa, scripts/check-container-images.mjs
+// Checker version: 1
 import { YAML } from "bun";
 import { execFileSync } from "node:child_process";
 import { lstatSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-function protectedSearchText(text) {
-    return (
-        text.includes("." + "env") ||
-        /docker-compose\.override\.ya?ml|op-run-service-account/.test(text)
-    )
+function isExcludedPath(text) {
+  return (
+    text.includes("." + "env") ||
+    /docker-compose\.override\.ya?ml/.test(text)
+  );
 }
 
 export function imageVerdict(reference, source = "") {
@@ -173,7 +173,7 @@ export function scanImageSource(file, source) {
         action?.runs?.using === "docker" &&
         typeof image === "string" &&
         !image.startsWith("docker://") &&
-        !protectedSearchText(image) &&
+        !isExcludedPath(image) &&
         /(?:^|\/)(?:Dockerfile[^/]*|[^/]*\.Dockerfile|Containerfile[^/]*)$/i.test(
           image,
         )
@@ -527,7 +527,7 @@ export function scanRepository(root) {
   const result = { references: [], dynamic: [], parseErrors: [] };
   const trackedFile = (file) =>
     typeof file === "string" &&
-    !protectedSearchText(file) &&
+    !isExcludedPath(file) &&
     files.includes(file) &&
     lstatSync(path.join(root, file)).isFile();
   let provenance = [];
@@ -558,7 +558,7 @@ export function scanRepository(root) {
   }
   for (const file of files) {
     if (
-      protectedSearchText(file) ||
+      isExcludedPath(file) ||
       /(?:^|\/)(?:node_modules|vendor|dist|memory|knowledge)\//.test(file) ||
       /\.(?:md|mdx|txt|lock|jsonl|svg|html|csv)$/.test(file)
     )

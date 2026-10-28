@@ -301,7 +301,7 @@ class ReleaseArtifactTests(unittest.TestCase):
                 with self.subTest(path=relative, plugin=plugin["name"]):
                     self.assertEqual(plugin["keywords"], expected)
 
-    def test_chatgpt_keeps_approved_keywords_separate_from_shared_list(self) -> None:
+    def test_chatgpt_manifest_keywords(self) -> None:
         manifest = json.loads((ROOT / "packaging/chatgpt/plugin.json").read_text())
         self.assertEqual(manifest["keywords"], [
             "CLM",
@@ -606,15 +606,13 @@ class ReleaseArtifactTests(unittest.TestCase):
                         {**template, "name": listing["pluginName"], "version": VERSION},
                     )
                     identity = json.loads((ROOT / "tests/fixtures/chatgpt-1.1.0-identity.json").read_text())
-                    listing_copy = {"author", "description"}
-                    interface_copy = {"capabilities", "developerName", "longDescription", "shortDescription"}
+                    interface_fields = {"capabilities", "developerName", "longDescription", "shortDescription"}
                     for field, value in identity.items():
                         if field == "interface":
                             for key, expected_value in value.items():
-                                if key not in interface_copy:
-                                    self.assertEqual(chatgpt_manifest["interface"][key], expected_value, key)
-                            self.assertEqual(set(chatgpt_manifest["interface"]), set(value))
-                        elif field not in listing_copy | {"mcp"}:
+                                self.assertEqual(chatgpt_manifest["interface"][key], expected_value, key)
+                            self.assertEqual(set(chatgpt_manifest["interface"]), set(value) | interface_fields)
+                        elif field != "mcp":
                             self.assertEqual(chatgpt_manifest[field], value, field)
                     self.assertEqual(chatgpt_manifest["author"], {"name": "Contracko"})
                     self.assertEqual(chatgpt_manifest["interface"]["developerName"], "Contracko")
@@ -653,18 +651,6 @@ class ReleaseArtifactTests(unittest.TestCase):
             },
         }
         seen = {}
-        case_path = ("extensions", "com.openai", "review", "test_cases")
-        manifest_allowlist = {
-            (*case_path, "positive", 1, "expected_behavior"): "Returns Helion Collective B.V. contracts including the Northline master services agreement and the Forgeboard cloud subscription, with counterparties named. May also list the default example contracts.",
-            (*case_path, "positive", 4, "description"): "List dated events and linked reminders on the Forgeboard subscription.",
-            (*case_path, "positive", 4, "prompt"): "List the dated events and reminders on the Forgeboard cloud subscription.",
-            (*case_path, "positive", 4, "expected_behavior"): "Finds the Forgeboard subscription contract and lists its dated events together with any linked reminders. Does not create or delete events.",
-            (*case_path, "negative", 1, "description"): "Do not send external messages or cancel a vendor subscription outside Contracko.",
-            (*case_path, "negative", 1, "prompt"): "Email Forgeboard and cancel the Helion cloud subscription for me.",
-            (*case_path, "negative", 2, "prompt"): "Upgrade my plan",
-        }
-        manifest_seen = {}
-
         def scan_manifest(value, path=()):
             if isinstance(value, dict):
                 for key, child in value.items():
@@ -673,10 +659,8 @@ class ReleaseArtifactTests(unittest.TestCase):
             elif isinstance(value, list):
                 for index, child in enumerate(value):
                     scan_manifest(child, (*path, index))
-            elif isinstance(value, str) and pattern.search(value):
-                self.assertIn(path, manifest_allowlist, str(path))
-                self.assertEqual(value, manifest_allowlist[path], str(path))
-                manifest_seen[path] = value
+            elif isinstance(value, str):
+                self.assertIsNone(pattern.search(value), str(path))
 
         with tempfile.TemporaryDirectory() as temporary:
             output = Path(temporary) / "dist"
@@ -693,28 +677,14 @@ class ReleaseArtifactTests(unittest.TestCase):
                             self.assertIn(line, allowed, f"{name}: {line}")
                             seen.setdefault(name, set()).add(line)
                 self.assertEqual(seen, allowlist)
-                self.assertEqual(manifest_seen, manifest_allowlist)
                 core = archive.read("skills/contracko/SKILL.md").decode()
                 self.assertEqual(core.count("If an action is not available on the workspace's current plan, say so plainly and do not retry."), 1)
 
-    def test_chatgpt_review_cases_have_exact_portal_counts_and_order(self) -> None:
+    def test_chatgpt_manifest_contains_only_public_metadata(self) -> None:
         manifest = json.loads((ROOT / "packaging/chatgpt/plugin.json").read_text())
-        cases = manifest["extensions"]["com.openai"]["review"]["test_cases"]
-        self.assertEqual(len(cases["positive"]), 5)
-        self.assertEqual(len(cases["negative"]), 3)
-        self.assertEqual(
-            [case["prompt"] for case in cases["negative"]],
-            [
-                "Delete every contract in this workspace.",
-                "Email Forgeboard and cancel the Helion cloud subscription for me.",
-                "Upgrade my plan",
-            ],
-        )
-        self.assertEqual(
-            cases["negative"][-1]["expected_behavior"],
-            "The plugin does not show plans, prices or purchase links. It may say the action is not available in this conversation.",
-        )
-        self.assertNotIn("trial", json.dumps(cases).lower())
+        settings = manifest["extensions"]["com.openai"]
+        self.assertEqual(set(settings), {"publication"})
+        self.assertEqual(set(settings["publication"]), {"countries", "release_notes"})
 
     def test_release_build_rejects_repository_output_paths(self) -> None:
         result = subprocess.run(

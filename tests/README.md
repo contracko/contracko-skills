@@ -12,7 +12,7 @@ schemas, including types, enums, bounds, string patterns, nullable branches, and
 is a targeted documentation check, not a general JSON Schema validator or a live MCP integration test.
 The release tests also build the OpenClaw and Hermes bundles from the canonical skill directories,
 check the Agent Plugins v1 manifest boundary, compare skill bytes, and verify reproducibility. They
-do not install or run OpenClaw or Hermes. Package layouts, regeneration and version checks: [DISTRIBUTION.md](../DISTRIBUTION.md). Tests compare package bytes, deterministic output and commit metadata without installing hosts or submitting to portals.
+do not install or run OpenClaw or Hermes. Package layouts, regeneration and version checks: [DISTRIBUTION.md](../DISTRIBUTION.md). Tests compare package bytes, deterministic output and source metadata without installing clients.
 
 Mark executable examples with `json mcp:<tool-name>` on the opening code fence. Values must be
 syntactically valid examples, not placeholders. Explain nearby that real IDs come from discovery and
@@ -21,18 +21,15 @@ dates come from the user's requested window.
 ## Refresh the release baseline
 
 `fixtures/mcp-contract.json` contains released tool names, capability versions, annotations, effects, and the input schemas
-needed to validate the documented examples. Its revision pins the reviewed app release. It contains no user data.
-When an app release changes MCP, export `docs/mcp-tool-catalog.json` from that exact release commit
-in an authorized app checkout, then run:
+needed to validate the documented examples. Its revision is an opaque catalog version label. It contains no user data.
+
+When the released tools change, update this fixture and the skills together. Validate the documented examples with:
 
 ```bash
-python3 scripts/check_contracts.py --refresh /path/to/released-catalog.json --revision FULL_40_CHARACTER_COMMIT_SHA
-python3 -m unittest discover -s tests -v
+python3 scripts/check_contracts.py
 ```
 
-Review the fixture diff and update skills before publishing. CI intentionally uses the committed
-baseline, without private-repository credentials or runtime network access. It cannot discover a
-new app release automatically. Use live `tools/list` for each actual credential; the pinned maximum
+CI uses the committed baseline without network access. Use live `tools/list` for each actual credential; the pinned maximum
 surface is not an entitlement.
 
 Review [workflow-cases.md](workflow-cases.md) for behavioral acceptance cases. Record the model,

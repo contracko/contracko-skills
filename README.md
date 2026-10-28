@@ -62,7 +62,7 @@ OAuth prefers Client ID Metadata Documents (CIMD) for HTTPS metadata-document cl
 
 Clients without OAuth can use a workspace-bound key created in Contracko for purpose **MCP server**, stored in the client's secret settings. Never paste the credential into chat, source code or logs.
 
-Release bundles and directory submissions: [Distribution](DISTRIBUTION.md).
+Release bundles and versioning: [Package maintenance](DISTRIBUTION.md).
 
 Open the section for the product you use.
 
@@ -155,8 +155,6 @@ Follow the [sign-in and consent steps](#install).
 <summary><strong>Cursor</strong></summary>
 
 Install [Contracko from the Cursor Marketplace](https://cursor.com/marketplace/contracko), then follow the [sign-in and consent steps](#install).
-
-The Cursor team published the listing on 2026-10-02. Updates are manual: request a refresh from Cursor's marketplace team at marketplace-publishing@cursor.com. Updates are not pulled automatically from GitHub, and resubmitting creates duplicate listings. [Distribution status](DISTRIBUTION.md#status).
 
 To test the plugin locally, clone this repository into `~/.cursor/plugins/local/contracko-skills`, reload Cursor, and check **Customize**. Follow the [sign-in and consent steps](#install).
 
@@ -293,6 +291,6 @@ See [validation and catalog refresh](tests/README.md) and the [workflow regressi
 
 ### Release sync
 
-After each MCP release reaches production, check the app's `main`, sync the skills, follow [Versioning](DISTRIBUTION.md#versioning), add [release notes](CHANGELOG.md), and run the checks above. The app checklist is tracked in CTD-5544.
+Keep the skills aligned with the released MCP tools. Follow [Versioning](DISTRIBUTION.md#versioning), add user-visible [release notes](CHANGELOG.md), and run the checks above.
 
 MIT licensed.

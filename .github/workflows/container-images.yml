@@ -22,4 +22,5 @@ jobs:
         with:
           bun-version: 1.4.2
           no-cache: true
+      - run: bun test tests/container-images.test.mjs
       - run: bun scripts/check-container-images.mjs .
