@@ -12,7 +12,7 @@
     {
       "name": "contracko",
       "source": "./",
-      "description": "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, contract data extraction and parsing, automated reminders and renewal and notice deadline tracking.",
+      "description": "AI contract management and CLM: AI contract review and analysis, a contract repository, data extraction, and reminders for renewals and notice deadlines.",
       "category": "productivity",
       "keywords": [
         "contracko",

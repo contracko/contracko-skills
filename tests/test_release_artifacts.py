@@ -316,14 +316,16 @@ class ReleaseArtifactTests(unittest.TestCase):
             "contract data extraction",
         ])
 
-    def test_client_manifests_mirror_claude_plugin_description_except_cursor(self) -> None:
+    def test_client_manifests_share_listing_description_except_registry(self) -> None:
         expected = (
-            "AI contract management (CLM): AI contract review and analysis of risks, liabilities and obligations, "
-            "contract data extraction and parsing, automated reminders and renewal and notice deadline tracking."
+            "AI contract management and CLM: AI contract review and analysis, a contract repository, "
+            "data extraction, and reminders for renewals and notice deadlines."
         )
+        self.assertEqual(len(expected), 153)
         descriptions = {
             ".claude-plugin/plugin.json": json.loads((ROOT / ".claude-plugin/plugin.json").read_text())["description"],
             ".codex-plugin/plugin.json": json.loads((ROOT / ".codex-plugin/plugin.json").read_text())["description"],
+            ".cursor-plugin/plugin.json": json.loads((ROOT / ".cursor-plugin/plugin.json").read_text())["description"],
             "gemini-extension.json": json.loads((ROOT / "gemini-extension.json").read_text())["description"],
         }
         for relative in (".claude-plugin/marketplace.json", ".github/plugin/marketplace.json"):
@@ -333,15 +335,6 @@ class ReleaseArtifactTests(unittest.TestCase):
         for relative, description in descriptions.items():
             with self.subTest(path=relative):
                 self.assertEqual(description, expected)
-
-        cursor = json.loads((ROOT / ".cursor-plugin/plugin.json").read_text())["description"]
-        self.assertEqual(
-            cursor,
-            "AI contract management: contract review and analysis, data extraction, automated reminders, "
-            "and renewal and notice deadline tracking.",
-        )
-        self.assertLessEqual(len(cursor), 133)
-        self.assertLess(len(cursor), len(expected))
 
         registry = json.loads((ROOT / "server.json").read_text())["description"]
         self.assertEqual(
