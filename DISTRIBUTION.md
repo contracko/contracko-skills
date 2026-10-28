@@ -28,7 +28,7 @@ Build release archives with `bash build-zips.sh`. Archive paths and timestamps a
 - [Cursor Marketplace](https://cursor.com/marketplace/contracko)
 - [Codex, Copilot, Gemini CLI, Cline and other clients](README.md#install)
 - [OpenClaw setup](packaging/openclaw/README.md) and [Hermes setup](packaging/hermes/README.md)
-- [npm launcher for stdio clients](https://www.npmjs.com/package/@contracko/mcp)
+- [npm launcher for stdio clients](https://www.npmjs.com/package/@contracko/mcp): `npx -y @contracko/mcp` connects to `https://app.contracko.com/mcp`.
 - [Copyable setup prompt](https://contracko.com/mcp/install/prompt.md)
 - [Release downloads](https://github.com/contracko/contracko-skills/releases/latest)
 
