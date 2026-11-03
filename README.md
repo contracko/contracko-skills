@@ -43,9 +43,15 @@ Local uploads and client network settings: [import reference](skills/contracko/r
 
 ## Install
 
-**Using Claude?** Add Contracko from Claude's connector directory: [claude.ai/directory/connectors/contracko](https://claude.ai/directory/connectors/contracko). Open the **Claude** or **Claude Code** section below for the details.
+**Start with the official listing** for your assistant. Each one installs Contracko and connects it in one step:
 
-For every other assistant, you connect to Contracko in two steps:
+- Claude: [claude.ai/directory/connectors/contracko](https://claude.ai/directory/connectors/contracko)
+- ChatGPT: [Contracko in the ChatGPT plugin directory](https://chatgpt.com/plugins/plugin_asdk_app_6ac8e9b10f548191ab1ed190c3b0ccab)
+- Cursor: [cursor.com/marketplace/contracko](https://cursor.com/marketplace/contracko) (the plugin includes the skill and the connection)
+
+Open the **Claude**, **Claude Code**, **ChatGPT** or **Cursor** section below for the details.
+
+For every other assistant, or if your workspace blocks these listings, connect to Contracko in two steps:
 
 1. **Add the skill** (this repo) so it knows how to help with contracts.
 2. **Add the connection** so it can reach your workspace. Paste this address when asked:
@@ -158,7 +164,7 @@ Install [Contracko from the Cursor Marketplace](https://cursor.com/marketplace/c
 
 To test the plugin locally, clone this repository into `~/.cursor/plugins/local/contracko-skills`, reload Cursor, and check **Customize**. Follow the [sign-in and consent steps](#install).
 
-For manual installation without the plugin:
+Fallback, only if you cannot use the Marketplace plugin:
 
 ```bash
 npx skills@latest add contracko/contracko-skills

@@ -4,6 +4,8 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
+- The README install section now lists the Claude, ChatGPT and Cursor listings first and marks the manual skill and endpoint steps as the fallback.
+
 ## 1.2.4, 2026-10-27
 
 - Updated package metadata and aligned public package versions at 1.2.4.
