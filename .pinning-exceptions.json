@@ -1,0 +1,14 @@
+[
+  {
+    "rule": "node-version",
+    "match": "packages/mcp/package.json:engines.node=>=20.18.1",
+    "reason": "Owner @budi, accepted 2026-11-03: this published launcher declares supported Node compatibility, not the build runtime. Preserve existing client support; review replacement when the engine policy distinguishes compatibility from runtime selection.",
+    "expires": "2026-12-01"
+  },
+  {
+    "rule": "tool-version",
+    "match": "CHANGELOG.md:npx @contracko/mcp",
+    "reason": "Owner @budi, accepted 2026-11-03: historical release notes record the command shipped at that time. Current installation examples use an exact version. Remove when historical command examples are excluded from source auditing.",
+    "expires": "2026-12-01"
+  }
+]

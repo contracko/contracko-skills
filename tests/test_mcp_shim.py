@@ -54,7 +54,7 @@ class McpShimTests(unittest.TestCase):
 
     def test_distribution_docs_name_the_npx_command(self) -> None:
         docs = (REPO_ROOT / "DISTRIBUTION.md").read_text()
-        self.assertIn("npx -y @contracko/mcp", docs)
+        self.assertIn("npx -y @contracko/mcp@1.2.4", docs)
         self.assertIn(MCP_URL, docs)
 
     def test_lockfile_pins_patched_proxy_addr_and_qs(self) -> None:

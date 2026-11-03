@@ -18,6 +18,11 @@ jobs:
           python-version: '3.12'
       - name: Check unified public version
         run: python3 scripts/check_versions.py
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24.22.1'
+      - name: Check dependency pinning
+        run: node scripts/check-dependency-pinning.mjs
       - name: Check complete skill tree parity and generated Agent Plugins package
         run: python3 scripts/build_release_artifacts.py --check-directory
       - name: Check released tool contracts and packaged skill links
