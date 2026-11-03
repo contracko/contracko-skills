@@ -52,7 +52,7 @@ for (const file of commandFiles) {
   const source = readFileSync(new URL('../' + file, import.meta.url), 'utf8');
   for (const match of source.matchAll(/(?:^|[\n`])\s*npx\s+(?:-y\s+)?((?:@[a-z0-9_.-]+\/)?[a-z0-9_.-]+(?:@[^\s`"'\)]+)?)/gi)) {
     const separator = match[1].lastIndexOf('@');
-    if (separator <= 0 || !exactVersion.test(match[1].slice(separator + 1))) finding('tool-version', file, 'npx ' + match[1]);
+    if (separator <= 0 || !exactVersion.test(match[1].slice(separator + 1))) finding('tool-version', file, ['npx', match[1]].join(' '));
   }
 }
 for (const row of findings) {
