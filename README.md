@@ -142,7 +142,7 @@ For Grok in the terminal, see **Any other assistant** below.
 <summary><strong>Codex</strong></summary>
 
 ```bash
-npx skills@latest add contracko/contracko-skills
+npx skills@1.7.4 add contracko/contracko-skills
 codex mcp add contracko --url https://app.contracko.com/mcp
 codex mcp login contracko
 ```
@@ -161,7 +161,7 @@ To test the plugin locally, clone this repository into `~/.cursor/plugins/local/
 For manual installation without the plugin:
 
 ```bash
-npx skills@latest add contracko/contracko-skills
+npx skills@1.7.4 add contracko/contracko-skills
 ```
 
 Then add this to `.cursor/mcp.json` in your project (create the file if it is not there):
@@ -178,7 +178,7 @@ Restart Cursor if it does not pick up the connection, then follow the [sign-in a
 <summary><strong>Cline</strong></summary>
 
 ```bash
-npx skills@latest add contracko/contracko-skills
+npx skills@1.7.4 add contracko/contracko-skills
 ```
 
 Then open the Cline panel, go to the **Configure** tab, and add this to the MCP settings JSON (the CLI reads `~/.cline/mcp.json`):
@@ -195,7 +195,7 @@ Follow the [sign-in and consent steps](#install). Set `"type": "streamableHttp"`
 <summary><strong>GitHub Copilot</strong> (VS Code)</summary>
 
 ```bash
-npx skills@latest add contracko/contracko-skills
+npx skills@1.7.4 add contracko/contracko-skills
 ```
 
 Then add this to `.vscode/mcp.json` in your project:
@@ -212,7 +212,7 @@ Follow the [sign-in and consent steps](#install).
 <summary><strong>Gemini CLI</strong></summary>
 
 ```bash
-npx skills@latest add contracko/contracko-skills
+npx skills@1.7.4 add contracko/contracko-skills
 ```
 
 Then add this to `~/.gemini/settings.json`:
@@ -245,10 +245,10 @@ Use the [Hermes setup](packaging/hermes/README.md) for its native configuration 
 These clients spawn a local process instead of opening the HTTP endpoint themselves:
 
 ```bash
-npx -y @contracko/mcp
+npx -y @contracko/mcp@1.2.4
 ```
 
-That package only launches the hosted server at `https://app.contracko.com/mcp`. It is not a second MCP implementation. Skills still install with `npx skills add https://contracko.com`.
+That package only launches the hosted server at `https://app.contracko.com/mcp`. It is not a second MCP implementation. Skills still install with `npx skills@1.7.4 add https://contracko.com`.
 
 </details>
 
