@@ -4,6 +4,10 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
+## 1.2.5, 2026-11-03
+
+- Clarified the Cursor plugin description for the single `contracko` skill and aligned public package versions at 1.2.5.
+
 ## 1.2.4, 2026-10-27
 
 - Updated package metadata and aligned public package versions at 1.2.4.
