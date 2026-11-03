@@ -4,6 +4,7 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
+- Added [Reports](skills/contracko/references/reports.md) guidance and 18 `report_*` tools to the [tool index](skills/contracko/references/tool-index.md#reports): list and read dashboards, preview and edit blocks, rename, duplicate, share, start and check Clara generation, and delete with approval. Reads need `contract:read`, changes need `contract:write`; deletion needs the proposal revision and sharing replaces the whole grant set.
 ## 1.2.4, 2026-10-27
 
 - Updated package metadata and aligned public package versions at 1.2.4.

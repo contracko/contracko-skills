@@ -32,8 +32,8 @@ Use `auth_validate` to confirm workspace, access and scopes match the requested 
 |---|---|
 | any valid credential | connection validation and tool search |
 | `parser:compute` | separate Contracko Parser bulk processing using Parser credits, not contract intake |
-| `contract:read` | contracts, folders, access overviews, types, parties, comments, events, document search and reads, document re-read results |
-| `contract:write` | contract and folder changes, import and ingest, documents, comments, events, notifications, types, and parties |
+| `contract:read` | contracts, folders, access overviews, types, parties, comments, events, document search and reads, document re-read results, Reports dashboards |
+| `contract:write` | contract and folder changes, import and ingest, documents, comments, events, notifications, types, parties, and Reports dashboard changes |
 
 Read scopes do not guarantee read-only effects. Follow live annotations and get approval before saved-state changes; the [tool index](references/tool-index.md) records those effects.
 
@@ -81,6 +81,7 @@ Load only the references needed for the job.
 | AI analysis, evidence, pending-review, re-read reconciliation | [reviewing AI analysis](references/reviewing-ai-analysis.md) |
 | notice/end dates, portfolio audits/reports, vendors, comparisons, redlines | [portfolio review](references/portfolio-review.md) |
 | folders, filing, types, custom fields, parties, registers | [organising the workspace](references/organising-the-workspace.md) |
+| Reports dashboards: list, build, edit, share, generate with Clara, delete | [reports](references/reports.md) |
 | draft a new agreement, legal review, signature handoff, file the signed copy | [new agreement](references/new-agreement.md) |
 | tool catalog, saved-state effects, standalone Parser processing | [tool index](references/tool-index.md) |
 

@@ -1,6 +1,6 @@
 # Contracko MCP tool index
 
-60 definitions: 58 normal tools plus two Claude-chat upload-panel tools. Availability depends on scopes, capability policy and client. [Readiness and tool choice](../SKILL.md#connect-and-discover), [billing behaviour](../SKILL.md#billing-and-allowances), [imports](importing-contracts.md), [AI review](reviewing-ai-analysis.md), and [portfolio review](portfolio-review.md) own the instructions.
+78 definitions: 76 normal tools plus two Claude-chat upload-panel tools. Availability depends on scopes, capability policy and client. [Readiness and tool choice](../SKILL.md#connect-and-discover), [billing behaviour](../SKILL.md#billing-and-allowances), [imports](importing-contracts.md), [AI review](reviewing-ai-analysis.md), and [portfolio review](portfolio-review.md) own the instructions.
 
 ## Connection
 
@@ -90,6 +90,31 @@
 | `clm_create_event_reminders` | `contract:write` | Schedules notification emails on events. |
 | `clm_update_event_reminders` | `contract:write` | Changes scheduled notifications. |
 | `clm_delete_event_reminders` | `contract:write` | Stops notification emails; leaves the event. |
+
+## Reports
+
+Reports must be enabled for the organisation. Scope does not grant dashboard edit or sharing rights; the member's current rights apply. Workflow and limits: [reports](reports.md).
+
+| Tool | Scope | Facts |
+|---|---|---|
+| `report_list_dashboards` | `contract:read` | Visible pinned, owned, shared and workspace dashboards; optional title search. |
+| `report_get_dashboard` | `contract:read` | Details, blocks and current rights. |
+| `report_list_templates` | `contract:read` | Complete block templates and layout defaults. |
+| `report_describe_fields` | `contract:read` | Standard and custom field references with supported operations. |
+| `report_preview_block` | `contract:read` | Validates and previews a block without saving. |
+| `report_create_dashboard` | `contract:write` | Creates a private dashboard with 1 to 50 validated blocks. |
+| `report_add_block` | `contract:write` | Adds one valid block to an editable dashboard. |
+| `report_update_block` | `contract:write` | Replaces one block's configuration. |
+| `report_remove_block` | `contract:write` | Permanently removes one block; ask for explicit approval. |
+| `report_rename_dashboard` | `contract:write` | Renames an editable dashboard. |
+| `report_duplicate_dashboard` | `contract:write` | Copies a visible dashboard and its blocks into a new private dashboard you own. |
+| `report_propose_dashboard_deletion` | `contract:read` | Ownership, sharing state, block count and revision; deletes nothing. |
+| `report_delete_dashboard` | `contract:write` | Permanent. Needs `approved: true` and the proposal's exact `expectedRevision`. |
+| `report_get_sharing` | `contract:read` | Visibility, grants and whether you can manage sharing. |
+| `report_list_sharing_principals` | `contract:read` | Members and groups eligible for a dashboard you can share. |
+| `report_set_sharing` | `contract:write` | Replaces visibility and the whole grant set; omitted grants are revoked. Explicit approval and sharing rights required. |
+| `report_start_generation` | `contract:write` | Starts a `dashboard`, `blocks` or `adjust` generation from a 1 to 2,000 character prompt; saves automatically. |
+| `report_get_generation_status` | `contract:read` | Your generation's status, with an optional bounded wait. |
 
 ## Contracko Parser: separate bulk document processing
 
