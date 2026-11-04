@@ -8,12 +8,12 @@ CLM (`clm_*`) adds, imports and manages contracts without Parser credits. Contra
 
 For connection-time allowance checks and billing notices, follow [billing and allowances](https://github.com/contracko/contracko-skills/blob/main/skills/contracko/SKILL.md#billing-and-allowances).
 
-Use `npx -y @contracko/mcp@1.2.4 --help` for launcher help without connecting.
+Use `npx -y @contracko/mcp@1.2.5 --help` for launcher help without connecting.
 
 ## Run
 
 ```bash
-npx -y @contracko/mcp@1.2.4
+npx -y @contracko/mcp@1.2.5
 ```
 
 Goose / stdio config:
@@ -23,7 +23,7 @@ Goose / stdio config:
   "mcpServers": {
     "contracko": {
       "command": "npx",
-      "args": ["-y", "@contracko/mcp@1.2.4"]
+      "args": ["-y", "@contracko/mcp@1.2.5"]
     }
   }
 }
