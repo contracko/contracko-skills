@@ -2,9 +2,10 @@
 
 User-facing changes to the Contracko skills and plugin packages. From 1.1.0, every public package and client manifest shares the [single version](DISTRIBUTION.md#versioning) in `packaging/manifest.json`.
 
-## Unreleased
+## 1.2.5, 2026-11-04
 
 - The README install section now lists the Claude, ChatGPT and Cursor listings first and marks the manual skill and endpoint steps as the fallback.
+- Clarified the Cursor plugin description for the single `contracko` skill and aligned public package versions at 1.2.5.
 
 ## 1.2.4, 2026-10-27
 
