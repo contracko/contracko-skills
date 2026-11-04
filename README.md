@@ -251,7 +251,7 @@ Use the [Hermes setup](packaging/hermes/README.md) for its native configuration 
 These clients spawn a local process instead of opening the HTTP endpoint themselves:
 
 ```bash
-npx -y @contracko/mcp@1.2.4
+npx -y @contracko/mcp@1.2.5
 ```
 
 That package only launches the hosted server at `https://app.contracko.com/mcp`. It is not a second MCP implementation. Skills still install with `npx skills@1.7.4 add https://contracko.com`.
