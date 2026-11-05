@@ -1,0 +1,63 @@
+{
+  "schema": "salvage-provenance/v1",
+  "host": "m1",
+  "repository": "contracko/contracko-skills",
+  "worktree": "/Users/openclaw/dev/contracko-skills-worktrees/reports-mcp-tools",
+  "branch": "reports-mcp-tools",
+  "baseSha": "3818acdae02ad88dd2c1d993932249ae54b87fde",
+  "headSha": "c9de69e3d6a83e2d16b0b41fda8df4b09c2df60c",
+  "lastActivityAt": "2026-11-03T16:24:06.000Z",
+  "sessions": [],
+  "linearTickets": [],
+  "pullRequests": [],
+  "reason": "no-live-turn-24h",
+  "evidence": [],
+  "droppedEvidence": [
+    {
+      "path": ".cache/ctd-5756-closeout.md",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/ctd-5756-pr.md",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "worktree": "/Users/openclaw/dev/contracko-skills-worktrees/ctd-5756",
+      "path": "scripts/",
+      "reason": "superseded-ignored-output",
+      "count": 1
+    },
+    {
+      "worktree": "/Users/openclaw/dev/contracko-skills-worktrees/ctd-5756",
+      "path": "tests/",
+      "reason": "superseded-ignored-output",
+      "count": 1
+    },
+    {
+      "path": ".cache/ctd-5775-pr.md",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/rel17-catalog.json",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "worktree": "/Users/openclaw/dev/contracko-skills-worktrees/ctd-5775-rel-17",
+      "path": "scripts/",
+      "reason": "superseded-ignored-output",
+      "count": 2
+    },
+    {
+      "worktree": "/Users/openclaw/dev/contracko-skills-worktrees/ctd-5775-rel-17",
+      "path": "tests/",
+      "reason": "superseded-ignored-output",
+      "count": 1
+    },
+    {
+      "worktree": "/Users/openclaw/dev/contracko-skills-worktrees/install-links-fix",
+      "path": "scripts/",
+      "reason": "superseded-ignored-output",
+      "count": 1
+    }
+  ]
+}
