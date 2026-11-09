@@ -1,6 +1,6 @@
 # Contracko MCP tool index
 
-60 definitions: 58 normal tools plus two Claude-chat upload-panel tools. Availability depends on scopes, capability policy and client. [Readiness and tool choice](../SKILL.md#connect-and-discover), [billing behaviour](../SKILL.md#billing-and-allowances), [imports](importing-contracts.md), [AI review](reviewing-ai-analysis.md), and [portfolio review](portfolio-review.md) own the instructions.
+81 definitions: 79 normal tools plus two Claude-chat upload-panel tools. Availability depends on scopes, capability policy and client. [Readiness and tool choice](../SKILL.md#connect-and-discover), [billing behaviour](../SKILL.md#billing-and-allowances), [imports](importing-contracts.md), [AI review](reviewing-ai-analysis.md), and [portfolio review](portfolio-review.md) own the instructions.
 
 ## Connection
 
@@ -22,6 +22,9 @@
 | `clm_move_folder` | `contract:write` | Moves to a visible parent or root. |
 | `clm_move_contract` | `contract:write` | Files in a visible folder, or unfiles. |
 | `clm_get_contract_access` | `contract:read` | Informational access overview; no ACL writes. |
+| `clm_list_contract_shares` | `contract:read` | Active external links with expiry and access options. Only contract managers receive usable URLs; viewers never do. |
+| `clm_create_contract_share` | `contract:write` | Creates an external link only after explicit approval (`approved: true`); needs contract manage access. Anyone with the link gets the chosen access until expiry or revocation. `expiryPreset` `1_day`, `7_days` or `28_days`. After an unknown outcome, list links before retrying. |
+| `clm_revoke_contract_share` | `contract:write` | Revokes a link only after explicit approval; copies already downloaded stay with recipients. After an unknown outcome, list links before retrying. |
 
 ## Evidence and review
 
@@ -37,7 +40,7 @@
 
 | Tool | Scope | Facts |
 |---|---|---|
-| `clm_reprocess_contract_document` | `contract:write` | External AI extraction replaces the saved snapshot/status; costs one extraction. Same-key retries return the original run. |
+| `clm_reprocess_contract_document` | `contract:write` | External AI extraction replaces the saved snapshot/status; costs one extraction. `readMode` `custom_fields_only` with `customFieldKeys` re-reads only those fields from stored text, still as one extraction. Same-key retries return the original run. |
 | `clm_get_contract_reprocess_run` | `contract:read` | Progress; settles unconfirmed queue handoffs in saved state. Annotated as a write. |
 | `clm_list_contract_reconciliations` | `contract:read` | Recent re-reads, including unreviewed completed runs; list-only read. |
 | `clm_get_contract_reconciliation` | `contract:read` | Persists review list, refreshes comparison values and approval version; applies/dismisses nothing. Annotated as a write. |
@@ -90,6 +93,33 @@
 | `clm_create_event_reminders` | `contract:write` | Schedules notification emails on events. |
 | `clm_update_event_reminders` | `contract:write` | Changes scheduled notifications. |
 | `clm_delete_event_reminders` | `contract:write` | Stops notification emails; leaves the event. |
+
+## Reports dashboards
+
+Reports availability depends on the workspace. If a call is refused as unavailable, ask a workspace admin; do not retry. Dashboards are visible only through the connected member's access. A dashboard change returns a dashboard link to share with the user.
+
+Rules: preview a block config before any create, add or update; ask before deleting a dashboard, removing a block or replacing sharing; delete only with the revision returned by the deletion proposal.
+
+| Tool | Scope | Facts |
+|---|---|---|
+| `report_list_dashboards` | `contract:read` | Visible dashboards grouped as pinned, owned, shared and workspace; optional `search` on title. |
+| `report_get_dashboard` | `contract:read` | One dashboard's blocks and the member's rights. |
+| `report_list_templates` | `contract:read` | Complete block templates; the server assigns row layout. |
+| `report_describe_fields` | `contract:read` | Fields, groupings, dates and measures usable in block configs. |
+| `report_preview_block` | `contract:read` | Validates and previews a block `config`; saves nothing. |
+| `report_create_dashboard` | `contract:write` | New private dashboard from a `title` and 1-50 block configs. Repeating a call creates another. |
+| `report_add_block` | `contract:write` | Adds one block config to a dashboard. |
+| `report_update_block` | `contract:write` | Replaces one block's config. |
+| `report_remove_block` | `contract:write` | Permanently removes one block; cannot be undone. |
+| `report_rename_dashboard` | `contract:write` | Renames a dashboard the member can edit. |
+| `report_duplicate_dashboard` | `contract:write` | Copies a dashboard into a new private one the member owns. |
+| `report_propose_dashboard_deletion` | `contract:read` | Returns the revision needed to delete; deletes nothing. |
+| `report_delete_dashboard` | `contract:write` | Permanently deletes with `expectedRevision` from the proposal and `approved: true`; cannot be undone. |
+| `report_start_generation` | `contract:write` | `kind` `dashboard`, `blocks` or `adjust` with a `prompt` (up to 2000 characters); `dashboardId` for blocks and adjust, `blockId` for adjust. Saves automatically. |
+| `report_get_generation_status` | `contract:read` | Progress by `jobId`; queued and running are pending; optional `wait`. |
+| `report_get_sharing` | `contract:read` | Dashboard visibility (`private`, `restricted`, `org`) and grants. |
+| `report_set_sharing` | `contract:write` | Replaces all sharing; grants left out are revoked; cannot be undone. |
+| `report_list_sharing_principals` | `contract:read` | Members and groups the dashboard can be shared with. |
 
 ## Contracko Parser: separate bulk document processing
 

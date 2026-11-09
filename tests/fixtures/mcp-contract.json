@@ -1,6 +1,6 @@
 {
   "source": "Contracko released MCP catalog",
-  "revision": "catalog-v1",
+  "revision": "1a69102d059a43a7079ee58d7d0430e067b2ee4b",
   "tools": [
     {
       "name": "auth_validate",
@@ -101,6 +101,78 @@
       }
     },
     {
+      "name": "clm_create_contract_share",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": false,
+        "title": "Create external contract link"
+      },
+      "effect": {
+        "boundary": "public-url",
+        "irreversible": true,
+        "kind": "create",
+        "retry": "none"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "allowAttachmentDownload": {
+            "default": false,
+            "description": "Allow downloading attachments",
+            "type": "boolean"
+          },
+          "allowComments": {
+            "default": false,
+            "description": "Allow recipient comments",
+            "type": "boolean"
+          },
+          "allowMainDownload": {
+            "default": false,
+            "description": "Allow downloading the main document",
+            "type": "boolean"
+          },
+          "allowPageView": {
+            "default": true,
+            "description": "Allow viewing the shared contract page",
+            "type": "boolean"
+          },
+          "approved": {
+            "const": true,
+            "description": "User explicitly approved this action",
+            "type": "boolean"
+          },
+          "expiryPreset": {
+            "description": "Expires in 1, 7 or 28 days",
+            "enum": [
+              "1_day",
+              "7_days",
+              "28_days"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "description": "Contract ID",
+            "format": "uuid",
+            "type": "string"
+          },
+          "isOneTimeUse": {
+            "default": false,
+            "description": "Consume the link after one use",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "approved",
+          "expiryPreset"
+        ],
+        "type": "object"
+      }
+    },
+    {
       "name": "clm_create_contract_type",
       "introducedInCapabilityPolicyVersion": 1,
       "annotations": {
@@ -158,16 +230,12 @@
             "type": "string"
           },
           "parentFolderId": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Parent folder ID; null selects root."
+            "description": "Parent ID; null: root",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -243,25 +311,31 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "fileName": {
-            "description": "Original file name including extension",
+            "description": "Name + extension",
             "minLength": 1,
             "type": "string"
           },
           "fileSize": {
-            "description": "File size in bytes",
+            "description": "Bytes",
             "exclusiveMinimum": 0,
             "maximum": 52428800,
             "type": "integer"
           },
           "mimeType": {
-            "description": "File type of the uploaded document",
-            "maxLength": 200,
-            "minLength": 1,
-            "pattern": "^[\\w.+-]+\\/[\\w.+-]+$",
+            "description": "Upload file type; imports accept PDF, DOCX, TXT, JPEG, PNG or RTF",
+            "enum": [
+              "application/pdf",
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "text/plain",
+              "image/jpeg",
+              "image/png",
+              "text/rtf",
+              "application/rtf"
+            ],
             "type": "string"
           },
           "sha256": {
-            "description": "Optional lowercase hex SHA-256 of the file; the import rejects different bytes",
+            "description": "Lowercase hex SHA-256; import rejects differing bytes",
             "pattern": "^[a-f0-9]{64}$",
             "type": "string"
           }
@@ -341,7 +415,7 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "id": {
-            "description": "Contract identifier",
+            "description": "Contract ID from the contract list",
             "format": "uuid",
             "type": "string"
           }
@@ -467,7 +541,7 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "id": {
-            "description": "Folder identifier",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           }
@@ -639,6 +713,36 @@
       }
     },
     {
+      "name": "clm_list_contract_shares",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": true,
+        "readOnlyHint": true,
+        "title": "List external contract links"
+      },
+      "effect": {
+        "boundary": "public-url",
+        "kind": "read",
+        "retry": "read"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "id": {
+            "description": "Contract ID",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id"
+        ],
+        "type": "object"
+      }
+    },
+    {
       "name": "clm_list_contract_types",
       "introducedInCapabilityPolicyVersion": 1,
       "annotations": {
@@ -673,59 +777,59 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "categoryId": {
-            "description": "Return only contracts with this contract type.",
+            "description": "Type ID filter",
             "format": "uuid",
             "type": "string"
           },
           "counterpartyId": {
-            "description": "Return only contracts assigned to this party as party_b.",
+            "description": "Assigned party_b ID",
             "format": "uuid",
             "type": "string"
           },
           "cursor": {
-            "description": "Continuation reference from the previous page. Reuse it with the same filters.",
+            "description": "Prior page cursor; reuse with identical filters",
             "type": "string"
           },
           "endDateFrom": {
-            "description": "Return contracts with a non-null end date on or after this inclusive YYYY-MM-DD date.",
+            "description": "Non-null endDate >= YYYY-MM-DD (inclusive).",
             "format": "date",
             "type": "string"
           },
           "endDateTo": {
-            "description": "Return contracts with a non-null end date on or before this inclusive YYYY-MM-DD date.",
+            "description": "Non-null endDate <= YYYY-MM-DD (inclusive).",
             "format": "date",
             "type": "string"
           },
           "folderId": {
-            "description": "Only return contracts filed in this visible folder.",
+            "description": "Filed in this visible folder",
             "format": "uuid",
             "type": "string"
           },
           "limit": {
             "default": 50,
-            "description": "Page size (max 100).",
+            "description": "Page size",
             "maximum": 100,
             "minimum": 1,
             "type": "integer"
           },
           "noticeDateFrom": {
-            "description": "Return contracts with a computed non-null notice date on or after this inclusive YYYY-MM-DD date.",
+            "description": "Computed non-null notice date >= YYYY-MM-DD (inclusive).",
             "format": "date",
             "type": "string"
           },
           "noticeDateTo": {
-            "description": "Return contracts with a computed non-null notice date on or before this inclusive YYYY-MM-DD date.",
+            "description": "Computed non-null notice date <= YYYY-MM-DD (inclusive).",
             "format": "date",
             "type": "string"
           },
           "query": {
-            "description": "Literal case-insensitive substring in the contract title or assigned party_b display or legal name.",
+            "description": "Literal case-insensitive substring in title or assigned party_b display/legal name.",
             "maxLength": 200,
             "minLength": 1,
             "type": "string"
           },
           "status": {
-            "description": "Return only this contract status.",
+            "description": "Status filter",
             "enum": [
               "active",
               "notice-given",
@@ -735,7 +839,7 @@
             "type": "string"
           },
           "updatedSince": {
-            "description": "Return contracts updated at or after this ISO-8601 timestamp.",
+            "description": "Updated >= ISO-8601 timestamp",
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "type": "string"
@@ -763,28 +867,24 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "continuation": {
-            "description": "Continuation reference from the previous page",
+            "description": "Prior page cursor",
             "maxLength": 512,
             "minLength": 1,
             "type": "string"
           },
           "limit": {
-            "description": "Page size (max 100)",
+            "description": "Integer 1..100; omit for default",
             "maximum": 100,
             "minimum": 1,
             "type": "integer"
           },
           "parentFolderId": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Only return folders nested under this parent; omit to list the visible root"
+            "description": "Children of parent; omit for visible root",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "type": "object"
@@ -809,13 +909,13 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "query": {
-            "description": "Literal case-insensitive substring in a party display or legal name.",
+            "description": "Literal case-insensitive substring in display/legal name",
             "maxLength": 200,
             "minLength": 1,
             "type": "string"
           },
           "type": {
-            "description": "Return only this party type.",
+            "description": "Type filter",
             "enum": [
               "individual",
               "company",
@@ -847,19 +947,15 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "folderId": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Folder ID; null selects root."
+            "description": "Folder ID; null: root",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
           },
           "id": {
-            "description": "Record ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           }
@@ -890,21 +986,17 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "id": {
-            "description": "Record ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           },
           "parentFolderId": {
-            "anyOf": [
-              {
-                "format": "uuid",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "description": "Parent folder ID; null selects root."
+            "description": "Parent ID; null: root",
+            "format": "uuid",
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -965,7 +1057,7 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "id": {
-            "description": "Record ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           },
@@ -1016,6 +1108,48 @@
       }
     },
     {
+      "name": "clm_revoke_contract_share",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": true,
+        "readOnlyHint": false,
+        "title": "Revoke external contract link"
+      },
+      "effect": {
+        "boundary": "public-url",
+        "kind": "update",
+        "retry": "none"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "approved": {
+            "const": true,
+            "description": "User explicitly approved this action",
+            "type": "boolean"
+          },
+          "id": {
+            "description": "Contract ID",
+            "format": "uuid",
+            "type": "string"
+          },
+          "shareId": {
+            "description": "Share link ID",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "shareId",
+          "approved"
+        ],
+        "type": "object"
+      }
+    },
+    {
       "name": "clm_search_contract_documents",
       "introducedInCapabilityPolicyVersion": 5,
       "annotations": {
@@ -1055,13 +1189,13 @@
         "additionalProperties": false,
         "properties": {
           "query": {
-            "description": "Short task description or keywords",
+            "description": "Task or keywords",
             "maxLength": 300,
             "minLength": 1,
             "type": "string"
           },
           "toolset": {
-            "description": "Optional group to search",
+            "description": "Tool group",
             "enum": [
               "contracts",
               "parties",
@@ -1287,6 +1421,662 @@
         "boundary": "workspace",
         "kind": "create",
         "retry": "none"
+      }
+    },
+    {
+      "name": "report_add_block",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Add block"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "create",
+        "retry": "none"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "config": {
+            "description": "Template config using listed fields"
+          },
+          "dashboardId": {
+            "description": "Dashboard ID",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dashboardId",
+          "config"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_create_dashboard",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Create dashboard"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "create",
+        "retry": "none"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "blocks": {
+            "description": "Blocks in order",
+            "items": {
+              "properties": {
+                "config": {
+                  "description": "Template config using listed fields"
+                }
+              },
+              "required": [
+                "config"
+              ],
+              "type": "object"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "type": "array"
+          },
+          "title": {
+            "description": "Dashboard title",
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "blocks"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_delete_dashboard",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Delete dashboard"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "irreversible": true,
+        "kind": "delete",
+        "retry": "none"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "approved": {
+            "const": true,
+            "description": "Explicit approval",
+            "type": "boolean"
+          },
+          "dashboardId": {
+            "description": "Dashboard ID",
+            "format": "uuid",
+            "type": "string"
+          },
+          "expectedRevision": {
+            "description": "Approved revision",
+            "pattern": "^[a-f0-9]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dashboardId",
+          "expectedRevision",
+          "approved"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_describe_fields",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Describe report fields"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_duplicate_dashboard",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Duplicate dashboard"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "create",
+        "retry": "none"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "dashboardId": {
+            "description": "Dashboard ID",
+            "format": "uuid",
+            "type": "string"
+          },
+          "title": {
+            "description": "New title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dashboardId",
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_get_dashboard",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Get dashboard"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "dashboardId": {
+            "description": "Dashboard ID",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dashboardId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_get_generation_status",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Get report generation status"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "jobId": {
+            "description": "Generation job ID",
+            "format": "uuid",
+            "type": "string"
+          },
+          "wait": {
+            "description": "Wait briefly",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "jobId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_get_sharing",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Read dashboard sharing"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "dashboardId": {
+            "description": "Dashboard ID",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dashboardId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_list_dashboards",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "List dashboards"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "search": {
+            "description": "Title search",
+            "maxLength": 100,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_list_sharing_principals",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "List sharing principals"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "dashboardId": {
+            "description": "Dashboard ID",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dashboardId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_list_templates",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "List block templates"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {},
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_preview_block",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Preview block"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "readRequest": {
+          "method": "post",
+          "path": "/reports/preview"
+        },
+        "retry": "read"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "config": {
+            "description": "Template config using listed fields"
+          }
+        },
+        "required": [
+          "config"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_propose_dashboard_deletion",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false,
+        "readOnlyHint": true,
+        "title": "Propose dashboard deletion"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "read",
+        "retry": "read"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "dashboardId": {
+            "description": "Dashboard ID",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dashboardId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_remove_block",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Remove block"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "irreversible": true,
+        "kind": "delete",
+        "retry": "none"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "blockId": {
+            "description": "Block ID",
+            "format": "uuid",
+            "type": "string"
+          },
+          "dashboardId": {
+            "description": "Dashboard ID",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dashboardId",
+          "blockId"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_rename_dashboard",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Rename dashboard"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "none"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "dashboardId": {
+            "description": "Dashboard ID",
+            "format": "uuid",
+            "type": "string"
+          },
+          "title": {
+            "description": "New dashboard title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dashboardId",
+          "title"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_set_sharing",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Set dashboard sharing"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "irreversible": true,
+        "kind": "update",
+        "retry": "none"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "dashboardId": {
+            "description": "Dashboard ID",
+            "format": "uuid",
+            "type": "string"
+          },
+          "grants": {
+            "description": "Full grant set",
+            "items": {
+              "properties": {
+                "permission": {
+                  "enum": [
+                    "view",
+                    "edit"
+                  ],
+                  "type": "string"
+                },
+                "principalId": {
+                  "maxLength": 200,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "principalType": {
+                  "enum": [
+                    "user",
+                    "group"
+                  ],
+                  "type": "string"
+                }
+              },
+              "required": [
+                "principalType",
+                "principalId",
+                "permission"
+              ],
+              "type": "object"
+            },
+            "maxItems": 100,
+            "type": "array"
+          },
+          "visibility": {
+            "description": "private: owner; org: workspace; restricted: grants",
+            "enum": [
+              "private",
+              "restricted",
+              "org"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "dashboardId",
+          "visibility",
+          "grants"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_start_generation",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Generate a report"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "none"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "additionalProperties": false,
+        "properties": {
+          "blockId": {
+            "description": "Required for adjust",
+            "format": "uuid",
+            "type": "string"
+          },
+          "dashboardId": {
+            "description": "Required for blocks and adjust",
+            "format": "uuid",
+            "type": "string"
+          },
+          "kind": {
+            "description": "dashboard: new; blocks: add; adjust: edit",
+            "enum": [
+              "dashboard",
+              "blocks",
+              "adjust"
+            ],
+            "type": "string"
+          },
+          "prompt": {
+            "description": "User\u2019s report request",
+            "maxLength": 2000,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "prompt"
+        ],
+        "type": "object"
+      }
+    },
+    {
+      "name": "report_update_block",
+      "introducedInCapabilityPolicyVersion": 5,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Update block"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "none"
+      },
+      "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "properties": {
+          "blockId": {
+            "description": "Block ID",
+            "format": "uuid",
+            "type": "string"
+          },
+          "config": {
+            "description": "Template config using listed fields"
+          },
+          "dashboardId": {
+            "description": "Dashboard ID",
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "dashboardId",
+          "blockId",
+          "config"
+        ],
+        "type": "object"
       }
     }
   ]

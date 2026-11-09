@@ -119,7 +119,7 @@ class ReleaseArtifactTests(unittest.TestCase):
         self.assertEqual({path.name for path in (skill_root / "references").iterdir()}, references)
         for name in references:
             self.assertIn(f"](references/{name})", skill)
-        self.assertLess(len(skill.split()), 1000)
+        self.assertLess(len(skill.split()), 1030)
         description = skill.split("description: ", 1)[1].splitlines()[0].strip("'")
         self.assertLessEqual(len(description), 200)
         self.assertNotIn("/", description)
@@ -207,11 +207,11 @@ class ReleaseArtifactTests(unittest.TestCase):
     def test_skills_cover_tool_search_and_full_catalog(self) -> None:
         catalog = json.loads((ROOT / "tests/fixtures/mcp-contract.json").read_text())
         names = {tool["name"] for tool in catalog["tools"]}
-        self.assertEqual(len(names), 60)
+        self.assertEqual(len(names), 81)
         panel_tools = {"clm_show_upload_widget", "clm_prepare_widget_upload"}
-        self.assertEqual(len(names - panel_tools), 58)
+        self.assertEqual(len(names - panel_tools), 79)
         index = (ROOT / "skills/contracko/references/tool-index.md").read_text()
-        self.assertIn("60 definitions: 58 normal tools plus two Claude-chat upload-panel tools", index)
+        self.assertIn("81 definitions: 79 normal tools plus two Claude-chat upload-panel tools", index)
         self.assertEqual({name for name in names if f"`{name}`" not in index}, set())
 
         skill = (ROOT / "skills/contracko/SKILL.md").read_text()

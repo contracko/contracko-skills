@@ -2,6 +2,13 @@
 
 User-facing changes to the Contracko skills and plugin packages. From 1.1.0, every public package and client manifest shares the [single version](DISTRIBUTION.md#versioning) in `packaging/manifest.json`.
 
+## Unreleased
+
+- Added the Reports dashboard tools and the external contract link tools to the tool index, with the preview, approval and deletion rules, and a route for building, editing and sharing dashboards.
+- Corrected the tool counts and the guidance for older credentials: an admin can add the missing access to the key, or the user can re-consent.
+- Documented the custom-fields-only re-read on `clm_reprocess_contract_document`, listed all four free-trial caps in the launcher help, and updated the Gemini and directory package descriptions for the single `contracko` skill.
+- Re-pinned the contract fixture to the current tool catalog.
+
 ## 1.2.5, 2026-11-04
 
 - The README install section now lists the Claude, ChatGPT and Cursor listings first and marks the manual skill and endpoint steps as the fallback.
