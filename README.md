@@ -278,6 +278,7 @@ One skill, [contracko](skills/contracko/SKILL.md), routes each job to a referenc
 | Calendar, audits, reports and comparisons | [Portfolio review](skills/contracko/references/portfolio-review.md) |
 | Folders, types, fields and parties | [Organising the workspace](skills/contracko/references/organising-the-workspace.md) |
 | Drafting handoff and filing the signed copy | [New agreement](skills/contracko/references/new-agreement.md) |
+| Reports dashboards | [Tool index: Reports dashboards](skills/contracko/references/tool-index.md#reports-dashboards) |
 | Available tools and effects | [Tool index](skills/contracko/references/tool-index.md) |
 
 For 1.2.0, reinstall or update the plugin to replace the three retired skill names. Their content now lives in these references, not in separate skills.

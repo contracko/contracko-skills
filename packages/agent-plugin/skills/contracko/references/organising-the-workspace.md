@@ -36,6 +36,6 @@ For contracts in a visible folder, follow [contract filters and pagination](port
 
 SaaS subscriptions, leases, permits, certificates, insurance policies, warranties, and domains use the same pattern: a type, countable fields, native renewal dates, and a notification. Follow the linked portfolio pagination rules.
 
-For type generation or re-reads, inspect [tool effects](tool-index.md#type-generation-and-type-re-reads) first; review generated definitions in the normal editor.
+After a type change, `clm_reprocess_contract_document` with `readMode` `custom_fields_only` and the changed `customFieldKeys` re-reads only those fields from stored text instead of the whole document; it still counts as one extraction. For type generation or re-reads, inspect [tool effects](tool-index.md#type-generation-and-type-re-reads) first; review generated definitions in the normal editor.
 
 **Done when:** requested configuration and filing changes read back correctly.

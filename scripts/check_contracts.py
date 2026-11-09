@@ -18,7 +18,9 @@ def refresh(source, revision):
         "clm_list_contracts", "clm_list_parties", "clm_list_folders", "clm_get_folder",
         "clm_create_folder", "clm_rename_folder", "clm_move_folder", "clm_move_contract",
         "clm_get_contract_access", "clm_search_tools", "clm_create_upload_url",
+        "clm_list_contract_shares", "clm_create_contract_share", "clm_revoke_contract_share",
     }
+    selected |= {tool["name"] for tool in catalog["tools"] if tool["name"].startswith("report_")}
     snapshot = {
         "source": "Contracko released MCP catalog",
         "revision": revision,
@@ -45,6 +47,9 @@ def validate_value(key, value, rule):
                 pass
         raise ValueError(f"Invalid {key}")
     kind = rule.get("type")
+    if isinstance(kind, list):
+        validate_value(key, value, {"anyOf": [{**rule, "type": alternative} for alternative in kind]})
+        return
     if kind == "null":
         if value is not None:
             raise ValueError(f"{key} must be null")
@@ -104,7 +109,7 @@ def check(root):
     paths += [path for path in (root / "README.md", root / "agent-setup/prompt.md") if path.exists()]
     for path in sorted(paths):
         text = path.read_text()
-        for name in set(re.findall(r"\b(?:clm_|parser_)[a-z_]+\b|\bauth_validate\b", text)):
+        for name in set(re.findall(r"\b(?:clm_|parser_|report_)[a-z_]+\b|\bauth_validate\b", text)):
             if name not in tools and name != "parser_credits_exhausted":
                 failures.append(f"{path.relative_to(root)}: unknown tool {name}")
         for name, body in re.findall(r"```json mcp:(\w+)\n(.*?)\n```", text, re.S):
