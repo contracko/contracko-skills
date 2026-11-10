@@ -20,3 +20,5 @@ Follow [core bulk confirmation](../SKILL.md#write-safely). Read back requested n
 
 
 For the dates to target, follow [notice and end-date calendar review](portfolio-review.md#calendar-notice-end-annual-review).
+
+A client that supports [Events](events.md) can subscribe to `contract.event.upcoming` and `contract.notification.sent` instead of checking dates itself.

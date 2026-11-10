@@ -67,7 +67,8 @@ Load only the references needed for the job.
 |---|---|
 | connecting, consent, a first contract, import before modelling | [onboarding](references/onboarding.md) |
 | import/upload, cloud files, related documents, duplicates, external-record sync | [importing contracts](references/importing-contracts.md) |
-| notifications, reminders, recipients, annual review | [notifications](references/notifications.md) |
+| notifications, reminders, annual review | [notifications](references/notifications.md) |
+| Events | [events](references/events.md) |
 | AI analysis, evidence, pending-review, re-read reconciliation | [reviewing AI analysis](references/reviewing-ai-analysis.md) |
 | notice/end dates, portfolio audits/reports, vendors, comparisons, redlines | [portfolio review](references/portfolio-review.md) |
 | folders, filing, types, custom fields, parties, registers | [organising the workspace](references/organising-the-workspace.md) |

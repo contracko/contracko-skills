@@ -84,9 +84,10 @@ The `idempotencyKey` is bound to the payload. Replaying it with the same files r
 ### After intake is accepted
 
 1. **Say it first.** Before any status check or wait, tell the user Contracko received their contract and is reading it now. For several files, say how many contracts were received. Longer contracts can take a little while; do not promise a duration. Send this message even when the files arrived through an upload link.
-2. **Check with the job id.** Pass `processing.jobId` from the import or ingest result to `clm_get_import_status`. A legacy `importId` or an upload link's `uploadSessionId` also works; supply exactly one handle.
-3. **Snapshot or wait.** A plain call returns an immediate snapshot. `wait: true` waits until the job finishes or at most 25 seconds, so use it only after the message in step 1. No call can wait longer.
-4. **Report progress.** If the result says the contract is still being read, tell the user, show the elapsed time (and, for several files, how many are read), and check again. Repeat until it finishes. Hold the success message until the documents are actually filed, then summarize the extracted fields in the same conversation.
+2. **Subscribe if the client can.** A client that supports [Events](events.md) subscribes to the import events instead of checking, and reads the result with `clm_get_import_status` once `contract.import.completed` or `contract.import.failed` arrives. Do not also poll.
+3. **Check with the job id.** Pass `processing.jobId` from the import or ingest result to `clm_get_import_status`. A legacy `importId` or an upload link's `uploadSessionId` also works; supply exactly one handle.
+4. **Snapshot or wait.** A plain call returns an immediate snapshot. `wait: true` waits until the job finishes or at most 25 seconds, so use it only after the message in step 1. No call can wait longer.
+5. **Report progress.** If the result says the contract is still being read, tell the user, show the elapsed time (and, for several files, how many are read), and check again. Repeat until it finishes. Hold the success message until the documents are actually filed, then summarize the extracted fields in the same conversation.
 
 The wording follows the count: one contract reads "Your contract is still being read", several read "Your contracts are still being read" with "N of M contracts read". Read each item's `intakeOutcome`.
 
@@ -146,7 +147,7 @@ Cursor, Codex and Claude must restrict upload egress to `app.contracko.com`, not
 | Symptom | Reading |
 |---|---|
 | 409 on a retry | the idempotency key is spent; where the payload is identical, the import already exists, so go look it up |
-| stuck in `extracting` | normal for minutes; keep honouring `pollAfterMs` before calling it stuck |
+| stuck in `extracting` | normal for minutes; keep honouring `pollAfterMs` before calling it stuck, or wait for the [extraction events](events.md) if subscribed |
 | `retryable: false` on an item | the document itself is the problem, so surface it to the user |
 | 400 `code: "custom"` on `endDate` | the open-ended rule above |
 | the tools are missing entirely | follow [readiness and recovery](../SKILL.md#errors) |
