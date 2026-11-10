@@ -4,6 +4,7 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
+- Added an Events reference: when a client supports MCP Events, subscribe instead of polling for imports, extraction and upcoming dates, and use the status tools only when it cannot. Import waiting guidance now points to it.
 - Added the Reports dashboard tools and the external contract link tools to the tool index, with the preview, approval and deletion rules, and a route for building, editing and sharing dashboards.
 - Corrected the tool counts and the guidance for older credentials: an admin can add the missing access to the key, or the user can re-consent.
 - Documented the custom-fields-only re-read on `clm_reprocess_contract_document`, listed all four free-trial caps in the launcher help, and updated the Gemini and directory package descriptions for the single `contracko` skill.

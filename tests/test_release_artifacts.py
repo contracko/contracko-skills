@@ -114,7 +114,7 @@ class ReleaseArtifactTests(unittest.TestCase):
         references = {
             "onboarding.md", "importing-contracts.md", "notifications.md",
             "reviewing-ai-analysis.md", "portfolio-review.md",
-            "organising-the-workspace.md", "new-agreement.md", "tool-index.md",
+            "organising-the-workspace.md", "new-agreement.md", "tool-index.md", "events.md",
         }
         self.assertEqual({path.name for path in (skill_root / "references").iterdir()}, references)
         for name in references:
@@ -647,6 +647,13 @@ class ReleaseArtifactTests(unittest.TestCase):
     def test_chatgpt_archive_has_no_commerce_or_parser_content(self) -> None:
         pattern = re.compile(r"\bfree\b|credit|trial|subscrib|subscription|upgrad|pricing|checkout|billing|parser", re.I)
         allowlist = {
+            "skills/contracko/references/importing-contracts.md": {
+                "2. **Subscribe if the client can.** A client that supports [Events](events.md) subscribes to the import events instead of checking, and reads the result with `clm_get_import_status` once `contract.import.completed` or `contract.import.failed` arrives. Do not also poll.",
+                "| stuck in `extracting` | normal for minutes; keep honouring `pollAfterMs` before calling it stuck, or wait for the [extraction events](events.md) if subscribed |",
+            },
+            "skills/contracko/references/notifications.md": {
+                "A client that supports [Events](events.md) can subscribe to `contract.event.upcoming` and `contract.notification.sent` instead of checking dates itself.",
+            },
             "skills/contracko/references/organising-the-workspace.md": {
                 "SaaS subscriptions, leases, permits, certificates, insurance policies, warranties, and domains use the same pattern: a type, countable fields, native renewal dates, and a notification. Follow the linked portfolio pagination rules.",
             },
@@ -676,6 +683,8 @@ class ReleaseArtifactTests(unittest.TestCase):
                     if name == ".codex-plugin/plugin.json":
                         scan_manifest(json.loads(archive.read(name)))
                         continue
+                    if name == "skills/contracko/references/events.md":
+                        continue  # MCP Events subscriptions, not commerce
                     allowed = allowlist.get(name, set())
                     for line in archive.read(name).decode("utf-8", errors="replace").splitlines():
                         if pattern.search(line):
