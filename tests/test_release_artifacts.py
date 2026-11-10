@@ -651,6 +651,14 @@ class ReleaseArtifactTests(unittest.TestCase):
                 "2. **Subscribe if the client can.** A client that supports [Events](events.md) subscribes to the import events instead of checking, and reads the result with `clm_get_import_status` once `contract.import.completed` or `contract.import.failed` arrives. Do not also poll.",
                 "| stuck in `extracting` | normal for minutes; keep honouring `pollAfterMs` before calling it stuck, or wait for the [extraction events](events.md) if subscribed |",
             },
+            "skills/contracko/references/events.md": {
+                "A client that supports MCP Events can subscribe to Contracko events and be notified when something happens, instead of checking again and again. ChatGPT supports Events and delivers them by webhook, for example into Work chats. A client without Events support keeps using the normal status tools, and nothing changes for it.",
+                "## Subscribe or poll",
+                "- **Subscribe** for work that takes a while or lands later: an import or AI extraction finishing, an upcoming contract date, a reminder being sent.",
+                "- **Poll** only when the client cannot subscribe: check once with the status tools, following [after intake is accepted](importing-contracts.md#after-intake-is-accepted).",
+                "## Subscriptions",
+                "A subscription lasts up to seven days. Refresh it before it lapses if the work needs to run longer. Delivery only includes what the connection can read: events for contracts outside its access are not sent.",
+            },
             "skills/contracko/references/notifications.md": {
                 "A client that supports [Events](events.md) can subscribe to `contract.event.upcoming` and `contract.notification.sent` instead of checking dates itself.",
             },
@@ -683,8 +691,6 @@ class ReleaseArtifactTests(unittest.TestCase):
                     if name == ".codex-plugin/plugin.json":
                         scan_manifest(json.loads(archive.read(name)))
                         continue
-                    if name == "skills/contracko/references/events.md":
-                        continue  # MCP Events subscriptions, not commerce
                     allowed = allowlist.get(name, set())
                     for line in archive.read(name).decode("utf-8", errors="replace").splitlines():
                         if pattern.search(line):
