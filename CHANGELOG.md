@@ -2,13 +2,15 @@
 
 User-facing changes to the Contracko skills and plugin packages. From 1.1.0, every public package and client manifest shares the [single version](DISTRIBUTION.md#versioning) in `packaging/manifest.json`.
 
-## Unreleased
+## 1.2.6, 2026-11-11
 
-- Added an Events reference: when a client supports MCP Events, subscribe instead of polling for imports, extraction and upcoming dates, and use the status tools only when it cannot. Import waiting guidance now points to it.
-- Added the Reports dashboard tools and the external contract link tools to the tool index, with the preview, approval and deletion rules, and a route for building, editing and sharing dashboards.
+- Added an [Events reference](skills/contracko/references/events.md): when a client supports MCP Events, subscribe instead of polling for imports, extraction and upcoming dates, and use the status tools only when it cannot. Import waiting guidance now points to it.
+- Added the Reports dashboard tools and the external contract link tools to the [tool index](skills/contracko/references/tool-index.md), with the preview, approval and deletion rules, and a route for building, editing and sharing dashboards.
 - Corrected the tool counts and the guidance for older credentials: an admin can add the missing access to the key, or the user can re-consent.
 - Documented the custom-fields-only re-read on `clm_reprocess_contract_document`, listed all four free-trial caps in the launcher help, and updated the Gemini and directory package descriptions for the single `contracko` skill.
 - Re-pinned the contract fixture to the current tool catalog.
+- Pinned the [stdio launcher examples](README.md#install) to the published `@contracko/mcp@1.2.5` package.
+- Aligned public package versions at 1.2.6 and regenerated the directory package.
 
 ## 1.2.5, 2026-11-04
 

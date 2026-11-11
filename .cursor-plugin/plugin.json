@@ -1,6 +1,6 @@
 {
   "name": "contracko",
-  "version": "1.2.5",
+  "version": "1.2.6",
   "description": "The contracko skill for AI contract review, repository search, data extraction, and renewal reminders.",
   "author": {
     "name": "Contracko",
