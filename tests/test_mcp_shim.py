@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -55,7 +56,15 @@ class McpShimTests(unittest.TestCase):
     def test_distribution_docs_name_the_npx_command(self) -> None:
         docs = (REPO_ROOT / "DISTRIBUTION.md").read_text()
         version = json.loads((PACKAGE_DIR / "package.json").read_text())["version"]
-        self.assertIn(f"npx -y @contracko/mcp@{version}", docs)
+        pins = re.findall(r"npx -y @contracko/mcp@(\d+\.\d+\.\d+)(?![\w.+-])", docs)
+        self.assertEqual(len(pins), 1)
+        published = pins[0]
+        self.assertLessEqual(
+            tuple(map(int, published.split("."))), tuple(map(int, version.split(".")))
+        )
+        for relative, count in (("README.md", 1), ("packages/mcp/README.md", 3)):
+            text = (REPO_ROOT / relative).read_text()
+            self.assertEqual(re.findall(r"@contracko/mcp@(\d+\.\d+\.\d+)(?![\w.+-])", text), [published] * count)
         self.assertIn(MCP_URL, docs)
 
     def test_lockfile_pins_patched_proxy_addr_and_qs(self) -> None:
