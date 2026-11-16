@@ -79,6 +79,7 @@
 | `clm_start_type_generation` | `contract:write` | Spends generation allowance; repeated starts are not idempotent. Saves a new type immediately for review, leaves matching types unchanged, returns failed runs' trial slots. |
 | `clm_get_type_generation` | `contract:read` | Background generation run started by the connected user. |
 | `clm_get_type_generation_draft` | `contract:read` | Created type ID with read-only field examples/quotes, or existing-type verdict; creates nothing. Saving in the normal editor marks the type reviewed. |
+| `clm_expand_type_generation` | `contract:write` | When the draft matched an existing type, adds selected missing fields (`runId`, `fieldKeys`) from that verdict; preview proposals first. Refuses key or name collisions, never changes existing fields or saved values; not idempotent. |
 | `clm_reread_contract_type` | `contract:write` | One external-AI extraction per contract with a primary document; replaces an open batch, cancelling unstarted reads. Idempotent same-key retries. Human approval required; saved contract fields remain unchanged pending approval. |
 | `clm_get_contract_type_reread` | `contract:read` | Runs/proposal counts; can retry lost reads or stop stuck batches, update saved status and cancel unstarted items. Annotated as a write. |
 
@@ -100,10 +101,13 @@ Reports availability depends on the workspace. If a call is refused as unavailab
 
 Rules: preview a block config before any create, add or update; ask before deleting a dashboard, removing a block or replacing sharing; delete only with the revision returned by the deletion proposal.
 
+To summarise or chart a saved dashboard, read it with `report_get_dashboard_data` and use only the returned values: a group with a null label has no value for that field, and `excludedForCurrency` counts contracts left out of a money total because they use another currency. Share the `dashboardUrl` for the full view.
+
 | Tool | Scope | Facts |
 |---|---|---|
 | `report_list_dashboards` | `contract:read` | Visible dashboards grouped as pinned, owned, shared and workspace; optional `search` on title. |
 | `report_get_dashboard` | `contract:read` | One dashboard's blocks and the member's rights. |
+| `report_get_dashboard_data` | `contract:read` | A saved dashboard with every block's current result in one call; optional `blockIds`. Tables return up to 50 rows with `totalCount`; a failed block does not hide the others. |
 | `report_list_templates` | `contract:read` | Complete block templates; the server assigns row layout. |
 | `report_describe_fields` | `contract:read` | Fields, groupings, dates and measures usable in block configs. |
 | `report_preview_block` | `contract:read` | Validates and previews a block `config`; saves nothing. |
@@ -115,8 +119,6 @@ Rules: preview a block config before any create, add or update; ask before delet
 | `report_duplicate_dashboard` | `contract:write` | Copies a dashboard into a new private one the member owns. |
 | `report_propose_dashboard_deletion` | `contract:read` | Returns the revision needed to delete; deletes nothing. |
 | `report_delete_dashboard` | `contract:write` | Permanently deletes with `expectedRevision` from the proposal and `approved: true`; cannot be undone. |
-| `report_start_generation` | `contract:write` | `kind` `dashboard`, `blocks` or `adjust` with a `prompt` (up to 2000 characters); `dashboardId` for blocks and adjust, `blockId` for adjust. Saves automatically. |
-| `report_get_generation_status` | `contract:read` | Progress by `jobId`; queued and running are pending; optional `wait`. |
 | `report_get_sharing` | `contract:read` | Dashboard visibility (`private`, `restricted`, `org`) and grants. |
 | `report_set_sharing` | `contract:write` | Replaces all sharing; grants left out are revoked; cannot be undone. |
 | `report_list_sharing_principals` | `contract:read` | Members and groups the dashboard can be shared with. |

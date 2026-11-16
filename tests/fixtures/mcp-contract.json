@@ -1,6 +1,6 @@
 {
   "source": "Contracko released MCP catalog",
-  "revision": "1a69102d059a43a7079ee58d7d0430e067b2ee4b",
+  "revision": "50263e5bc4aae799b903b10777e52335ce0b63e1",
   "tools": [
     {
       "name": "auth_validate",
@@ -378,6 +378,22 @@
         "boundary": "workspace",
         "kind": "delete",
         "retry": "key"
+      }
+    },
+    {
+      "name": "clm_expand_type_generation",
+      "introducedInCapabilityPolicyVersion": 1,
+      "annotations": {
+        "destructiveHint": true,
+        "idempotentHint": false,
+        "openWorldHint": false,
+        "readOnlyHint": false,
+        "title": "Expand an existing contract type"
+      },
+      "effect": {
+        "boundary": "workspace",
+        "kind": "update",
+        "retry": "none"
       }
     },
     {
@@ -1445,7 +1461,7 @@
             "description": "Template config using listed fields"
           },
           "dashboardId": {
-            "description": "Dashboard ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           }
@@ -1531,7 +1547,7 @@
             "type": "boolean"
           },
           "dashboardId": {
-            "description": "Dashboard ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           },
@@ -1589,7 +1605,7 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "dashboardId": {
-            "description": "Dashboard ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           },
@@ -1624,7 +1640,7 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "dashboardId": {
-            "description": "Dashboard ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           }
@@ -1636,14 +1652,14 @@
       }
     },
     {
-      "name": "report_get_generation_status",
+      "name": "report_get_dashboard_data",
       "introducedInCapabilityPolicyVersion": 5,
       "annotations": {
         "destructiveHint": false,
         "idempotentHint": true,
         "openWorldHint": false,
         "readOnlyHint": true,
-        "title": "Get report generation status"
+        "title": "Get dashboard data"
       },
       "effect": {
         "boundary": "workspace",
@@ -1653,18 +1669,25 @@
       "inputSchema": {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
-          "jobId": {
-            "description": "Generation job ID",
+          "blockIds": {
+            "description": "Optional block IDs to include",
+            "items": {
+              "description": "ID",
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 50,
+            "minItems": 1,
+            "type": "array"
+          },
+          "dashboardId": {
+            "description": "ID",
             "format": "uuid",
             "type": "string"
-          },
-          "wait": {
-            "description": "Wait briefly",
-            "type": "boolean"
           }
         },
         "required": [
-          "jobId"
+          "dashboardId"
         ],
         "type": "object"
       }
@@ -1688,7 +1711,7 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "dashboardId": {
-            "description": "Dashboard ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           }
@@ -1745,7 +1768,7 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "dashboardId": {
-            "description": "Dashboard ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           }
@@ -1828,7 +1851,7 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "dashboardId": {
-            "description": "Dashboard ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           }
@@ -1859,12 +1882,12 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "blockId": {
-            "description": "Block ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           },
           "dashboardId": {
-            "description": "Dashboard ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           }
@@ -1895,7 +1918,7 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "dashboardId": {
-            "description": "Dashboard ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           },
@@ -1931,7 +1954,7 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "dashboardId": {
-            "description": "Dashboard ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           },
@@ -1988,58 +2011,6 @@
       }
     },
     {
-      "name": "report_start_generation",
-      "introducedInCapabilityPolicyVersion": 5,
-      "annotations": {
-        "destructiveHint": true,
-        "idempotentHint": false,
-        "openWorldHint": false,
-        "readOnlyHint": false,
-        "title": "Generate a report"
-      },
-      "effect": {
-        "boundary": "workspace",
-        "kind": "update",
-        "retry": "none"
-      },
-      "inputSchema": {
-        "$schema": "https://json-schema.org/draft/2020-12/schema",
-        "additionalProperties": false,
-        "properties": {
-          "blockId": {
-            "description": "Required for adjust",
-            "format": "uuid",
-            "type": "string"
-          },
-          "dashboardId": {
-            "description": "Required for blocks and adjust",
-            "format": "uuid",
-            "type": "string"
-          },
-          "kind": {
-            "description": "dashboard: new; blocks: add; adjust: edit",
-            "enum": [
-              "dashboard",
-              "blocks",
-              "adjust"
-            ],
-            "type": "string"
-          },
-          "prompt": {
-            "description": "User\u2019s report request",
-            "maxLength": 2000,
-            "minLength": 1,
-            "type": "string"
-          }
-        },
-        "required": [
-          "kind",
-          "prompt"
-        ],
-        "type": "object"
-      }
-    },
-    {
       "name": "report_update_block",
       "introducedInCapabilityPolicyVersion": 5,
       "annotations": {
@@ -2058,7 +2029,7 @@
         "$schema": "https://json-schema.org/draft/2020-12/schema",
         "properties": {
           "blockId": {
-            "description": "Block ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           },
@@ -2066,7 +2037,7 @@
             "description": "Template config using listed fields"
           },
           "dashboardId": {
-            "description": "Dashboard ID",
+            "description": "ID",
             "format": "uuid",
             "type": "string"
           }

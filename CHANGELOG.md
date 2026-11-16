@@ -2,6 +2,13 @@
 
 User-facing changes to the Contracko skills and plugin packages. From 1.1.0, every public package and client manifest shares the [single version](DISTRIBUTION.md#versioning) in `packaging/manifest.json`.
 
+## Unreleased
+
+- Added `report_get_dashboard_data` to the [tool index](skills/contracko/references/tool-index.md): read a saved dashboard with every block's current results in one call, with guidance for summarising or charting those results.
+- Removed `report_start_generation` and `report_get_generation_status`, which are no longer available. Build dashboards with the preview, create and block tools.
+- Added `clm_expand_type_generation`, which adds selected missing fields to an existing contract type matched by type generation.
+- Re-pinned the contract fixture to the current tool catalog.
+
 ## 1.2.6, 2026-11-11
 
 - Added an [Events reference](skills/contracko/references/events.md): when a client supports MCP Events, subscribe instead of polling for imports, extraction and upcoming dates, and use the status tools only when it cannot. Import waiting guidance now points to it.
