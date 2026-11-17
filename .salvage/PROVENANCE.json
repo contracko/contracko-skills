@@ -1,0 +1,65 @@
+{
+  "schema": "salvage-provenance/v1",
+  "host": "m1",
+  "repository": "contracko/contracko-skills",
+  "worktree": "/Users/openclaw/dev/contracko-skills-worktrees/pr49",
+  "branch": "chatgpt-listing-clm-copy",
+  "baseSha": "eb082c21f4b3be1a7c8030f9e9675258cba5c6ac",
+  "headSha": "b0532dd1c2e40921ee9257e74e385005539f8750",
+  "lastActivityAt": "2026-10-27T13:37:23.000Z",
+  "sessions": [],
+  "linearTickets": [],
+  "pullRequests": [
+    {
+      "number": 49,
+      "url": "https://github.com/contracko/contracko-skills/pull/49",
+      "state": "CLOSED"
+    }
+  ],
+  "reason": "pr-closed",
+  "evidence": [
+    ".cache/pr-1.2.3-body.md",
+    ".cache/push-blocker.txt",
+    ".cache/replacement-progress.txt",
+    ".cache/resolve-subtitle-49.md",
+    ".cache/subtitle-decision.txt",
+    ".cache/subtitle-finding.json",
+    ".cache/supersede-49.md"
+  ],
+  "droppedEvidence": [
+    {
+      "path": ".cache/cursor-listing-pr.md",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "worktree": "/Users/openclaw/dev/contracko-skills-worktrees/cursor-listing",
+      "path": "scripts/",
+      "reason": "superseded-ignored-output",
+      "count": 1
+    },
+    {
+      "worktree": "/Users/openclaw/dev/contracko-skills-worktrees/mcp-events-guidance",
+      "path": "scripts/",
+      "reason": "superseded-ignored-output",
+      "count": 1
+    },
+    {
+      "worktree": "/Users/openclaw/dev/contracko-skills-worktrees/mcp-events-guidance",
+      "path": "tests/",
+      "reason": "superseded-ignored-output",
+      "count": 6
+    },
+    {
+      "worktree": "/Users/openclaw/dev/contracko-skills-worktrees/pr49",
+      "path": "scripts/",
+      "reason": "regenerable-ignored-output",
+      "count": 1
+    },
+    {
+      "worktree": "/Users/openclaw/dev/contracko-skills-worktrees/pr49",
+      "path": "tests/",
+      "reason": "regenerable-ignored-output",
+      "count": 1
+    }
+  ]
+}

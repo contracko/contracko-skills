@@ -1,0 +1,1 @@
+Fixed in the replacement PR #50. Its subtitle is `AI contract management (CLM)` (28 characters), and the packaged-manifest test now asserts `shortDescription` is at most 30 characters. This replaces the 32-character text to meet the documented public-submission limit. #49 is superseded without rewriting its branch.
