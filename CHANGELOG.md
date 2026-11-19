@@ -4,10 +4,13 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
+## 1.2.7, 2026-11-18
+
 - Added `report_get_dashboard_data` to the [tool index](skills/contracko/references/tool-index.md): read a saved dashboard with every block's current results in one call, with guidance for summarising or charting those results.
 - Removed `report_start_generation` and `report_get_generation_status`, which are no longer available. Build dashboards with the preview, create and block tools.
 - Added `clm_expand_type_generation`, which adds selected missing fields to an existing contract type matched by type generation.
 - Re-pinned the contract fixture to the current tool catalog.
+- Added a "Use when" line to the skill description and to the start of `SKILL.md`, so agents can tell when to load the skill.
 
 ## 1.2.6, 2026-11-11
 

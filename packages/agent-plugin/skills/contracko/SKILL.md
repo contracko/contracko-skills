@@ -1,13 +1,13 @@
 ---
 name: contracko
-description: 'Manage contracts in Contracko: import or upload documents, set renewal and notice reminders, review AI analysis and reports, organise folders and types, draft new agreements, or run Parser jobs.'
+description: 'Use when managing contracts in Contracko: import or upload documents, renewal and notice reminders, AI analysis and reports, folders and types, draft new agreements, or Parser jobs.'
 ---
 
 Upstream: none (homegrown).
 
 # Contracko
 
-Use this skill for connecting and onboarding a workspace, importing or uploading contracts, syncing records from other systems, notifications and reminders, notice and end dates, reviewing AI analysis and portfolio reports, comparing contracts, organising folders, types and parties, creating or drafting agreements from templates, signature handoffs and filing signed agreements.
+Use when work involves connecting and onboarding a workspace, importing or uploading contracts, syncing records from other systems, notifications and reminders, notice and end dates, reviewing AI analysis and portfolio reports, comparing contracts, organising folders, types and parties, creating or drafting agreements from templates, signature handoffs and filing signed agreements.
 
 ## Choose the product
 
