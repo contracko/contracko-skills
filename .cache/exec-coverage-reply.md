@@ -1,0 +1,1 @@
+Tracked in [CTO-810](https://linear.app/budi/issue/CTO-810/refine-container-checker-consumer-detection-and-registry-port-updates): deferred under the agreed cap; no current usage. This change adds scanner coverage and does not weaken an existing check. The remaining string-form `exec`/`execSync` coverage is a follow-up.

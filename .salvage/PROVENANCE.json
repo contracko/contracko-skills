@@ -1,0 +1,319 @@
+{
+  "schema": "salvage-provenance/v1",
+  "host": "ser9",
+  "repository": "contracko/contracko-skills",
+  "worktree": "/home/budi/dev/contracko-skills/worktrees/landing-skills-45",
+  "branch": "landing/skills-45",
+  "baseSha": "6dd56b56acc21a7e0525fecc1b199b8c0c0c43eb",
+  "headSha": "43717c1ca3fbeb44194398ae8371281ab0de9dfd",
+  "lastActivityAt": "2026-10-23T09:26:33.000Z",
+  "sessions": [],
+  "linearTickets": [],
+  "pullRequests": [],
+  "reason": "no-live-turn-24h",
+  "evidence": [
+    ".cache/delta-followups.md",
+    ".cache/exec-coverage-reply.md",
+    ".cache/image-pull-reply.md",
+    ".cache/vendor-fix-reply.md",
+    ".cache/vendor-note.md"
+  ],
+  "droppedEvidence": [
+    {
+      "worktree": "/home/budi/dev/wyswyg-editor/worktrees/security-release-age",
+      "path": "dist/",
+      "reason": "superseded-ignored-output",
+      "count": 1
+    },
+    {
+      "path": ".cache/agentctl/claude-wakes.jsonl",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/check-lock-consistency.py",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/final-report.md",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/owner-checkpoint.md",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/pinning-scope-request.md",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/pr-body.md",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/security-attestation.json",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/security-review.json",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/shadcn-times.json",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/tailwind-times.json",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/agentctl/claude-wakes.jsonl",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/daybreak-delta-attestation.json",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/daybreak-final-attestation.json",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/pm-decision.md",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/pm-final.md",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/pm-pnpm.md",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/pm-result.md",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/pnpm-reply.md",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/pr-body.md",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/prepush/hook-outcomes.jsonl",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "worktree": "/home/budi/.paseo/worktrees/3nsvwjkw/ci-pin-pgvector-digest",
+      "path": ".svelte-kit/",
+      "reason": "superseded-ignored-output",
+      "count": 306
+    },
+    {
+      "worktree": "/home/budi/.paseo/worktrees/3nsvwjkw/ci-pin-pgvector-digest",
+      "path": "node_modules/",
+      "reason": "superseded-ignored-output",
+      "count": 112172
+    },
+    {
+      "path": ".cache/1348-finding.json",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/1348-monitor-timeout.txt",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/1348-needs-go.txt",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/1348-pr-body.md",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/1348-pr-open.txt",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/1348-ready.txt",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/1348-security-delta.json",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/1348-security-delta.txt",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/1348-security.json",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/1348-security.txt",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/1348-start.txt",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "worktree": "/home/budi/.paseo/worktrees/1x6nqrsg/ctd-6662-pricing-plans-schema",
+      "path": ".svelte-kit/",
+      "reason": "superseded-ignored-output",
+      "count": 922
+    },
+    {
+      "worktree": "/home/budi/.paseo/worktrees/1x6nqrsg/ctd-6662-pricing-plans-schema",
+      "path": ".velite/",
+      "reason": "superseded-ignored-output",
+      "count": 7
+    },
+    {
+      "worktree": "/home/budi/.paseo/worktrees/1x6nqrsg/ctd-6662-pricing-plans-schema",
+      "path": "src/",
+      "reason": "superseded-ignored-output",
+      "count": 11244
+    },
+    {
+      "worktree": "/home/budi/dev/dokploy/direct-dependency-pins-20261101",
+      "path": "node_modules/",
+      "reason": "superseded-ignored-output",
+      "count": 7
+    },
+    {
+      "worktree": "/home/budi/dev/dokploy/ctd-5990-03010",
+      "path": "dist/",
+      "reason": "regenerable-ignored-output",
+      "count": 16
+    },
+    {
+      "path": ".cache/mcp-onboarding-preview/1-MCP-00.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/mcp-onboarding-preview/2-MCP-01.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/mcp-onboarding-preview/3-MCP-02.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/mcp-onboarding-preview/4-MCP-03.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/mcp-onboarding-preview/5-MCP-04.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/mcp-onboarding-preview/6-MCP-05.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/mcp-onboarding-preview/7-MCP-06.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/trial-cap-member-preview/1-CAP-01M.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/trial-cap-member-preview/2-CAP-02.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/trial-cap-owner-preview/1-CAP-01.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/trial-cap-owner-preview/2-CAP-02.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/trial-ending-preview/1-TE-01.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/trial-ending-preview/2-TE-02.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/trial-ending-preview/3-TE-03.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/welcome-v2-preview/1-ON-01.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/welcome-v2-preview/2-ON-02.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/welcome-v2-preview/3-ON-04.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/welcome-v2-preview/4-SEC-01.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/welcome-v2-preview/5-ON-03.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/welcome-v2-preview/6-ON-05.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/welcome-v2-preview/7-ON-06.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/welcome-v2-preview/8-ON-07.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/winback-low-preview/1-WB-01.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/winback-low-preview/2-WB-04.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/winback-partial-preview/1-WB-03.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/winback-partial-preview/2-WB-04.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/winback-power-preview/1-WB-02.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "path": ".cache/winback-power-preview/2-WB-04.html",
+      "reason": "superseded-ignored-output"
+    },
+    {
+      "worktree": "/home/budi/.paseo/worktrees/20za9iht/lifecycle-copy-edits",
+      "path": "emails/",
+      "reason": "superseded-ignored-output",
+      "count": 11
+    },
+    {
+      "worktree": "/home/budi/.paseo/worktrees/20za9iht/lifecycle-copy-edits",
+      "path": "scripts/",
+      "reason": "superseded-ignored-output",
+      "count": 96
+    }
+  ]
+}
