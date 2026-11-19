@@ -4,6 +4,8 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
+- Pinned the [stdio launcher examples](README.md#install) to the published `@contracko/mcp@1.2.7` package.
+
 ## 1.2.7, 2026-11-18
 
 - Added `report_get_dashboard_data` to the [tool index](skills/contracko/references/tool-index.md): read a saved dashboard with every block's current results in one call, with guidance for summarising or charting those results.
