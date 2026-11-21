@@ -4,6 +4,7 @@ User-facing changes to the Contracko skills and plugin packages. From 1.1.0, eve
 
 ## Unreleased
 
+- Added a Feedback section to the [tool index](skills/contracko/references/tool-index.md): when to call `submit_feedback`, what to send, and what never to include.
 - Pinned the [stdio launcher examples](README.md#install) to the published `@contracko/mcp@1.2.7` package.
 
 ## 1.2.7, 2026-11-18

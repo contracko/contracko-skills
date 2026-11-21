@@ -122,3 +122,7 @@ To summarise or chart a saved dashboard, read it with `report_get_dashboard_data
 | `report_get_sharing` | `contract:read` | Dashboard visibility (`private`, `restricted`, `org`) and grants. |
 | `report_set_sharing` | `contract:write` | Replaces all sharing; grants left out are revoked; cannot be undone. |
 | `report_list_sharing_principals` | `contract:read` | Members and groups the dashboard can be shared with. |
+
+## Feedback
+
+`submit_feedback` (any valid credential) sends feedback to the Contracko team. It is listed only when feedback is enabled for the connection. Call it once when the user asks, or when a tool is missing, fails, or gives a confusing result that the steps in [errors](../SKILL.md#errors) do not resolve. Send a `category` (`bug`, `missing_capability`, `confusing_result` or `other`), the related `tool` if there is one, and a `message` of up to 1,000 characters. Never include contract text, party names, personal data, credentials or tokens. It changes no contracts.
