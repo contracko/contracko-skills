@@ -135,3 +135,7 @@ Before a job, check balance and preflight, confirm the estimated cost, and retri
 | `parser_create_job` | `parser:compute` | External-AI bulk processing; completed processing consumes Parser credits. |
 | `parser_get_job` | `parser:compute` | Job/results; no additional credits. |
 | `parser_list_jobs` | `parser:compute` | Jobs; no additional credits. |
+
+## Feedback
+
+`submit_feedback` (any valid credential) sends feedback to the Contracko team. It is listed only when feedback is enabled for the connection. Call it once when the user asks, or when a tool is missing, fails, or gives a confusing result that the steps in [errors](../SKILL.md#errors) do not resolve. Send a `category` (`bug`, `missing_capability`, `confusing_result` or `other`), the related `tool` if there is one, and a `message` of up to 1,000 characters. Never include contract text, party names, personal data, credentials or tokens. It changes no contracts.
