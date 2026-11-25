@@ -35,20 +35,21 @@ MCP has no file transfer, so where you run decides how a document reaches Contra
 
 ### Claude chat transfer order
 
-Show `clm_show_upload_widget` first when available. Ask the person to choose documents there. Sandbox PUT is allowed only if they say they allowed `app.contracko.com`, or the panel is unavailable; ask permission before reading or uploading a sandbox file.
+1. Show `clm_show_upload_widget` first when offered. Ask the person to choose documents in the panel.
+2. If the panel is unavailable or fails, use sandbox PUT only when you know egress to the prepared upload host is allowed. Ask permission before reading or uploading the sandbox file.
+3. If sandbox PUT cannot proceed, offer a signed-in browser upload link using `clm_create_upload_session`. For unknown or blocked egress, name the relevant Claude setting once before offering the link. Stop without retrying on an egress 403.
 
-After blocked PUT, stop and tell the user, then return to the panel when available. If the panel is unavailable or fails, try inline bytes within the live file, encoded-payload and client limits, then an upload link only when earlier paths cannot work or fail.
-
-For optional sandbox access, use **Settings > Capabilities > Code execution and file creation**, enable network egress if available, and add only `app.contracko.com` under **Additional allowed domains**. On Team and Enterprise, an Owner uses **Organization settings > Capabilities > Package managers + specific domains**.
+   - Individual plans use **Settings → Capabilities → Create and edit files → Use the internet while making files**. It is off by default.
+   - On Team and Enterprise, an admin adds the prepared upload hostname to the code execution allowed domains. An existing `*.contracko.com` entry covers Contracko subdomains.
 
 ### Other client limits
 
-- **Claude Code:** approve the shell command; strict sandboxes need host-only access to `app.contracko.com`.
+- **Claude Code:** use the local shell to PUT directly after command approval. With a restricted shell, allow access to the prepared upload host.
 - **Codex CLI:** PUT needs `sandbox_workspace_write.network_access = true`, with egress limited to that host. Non-interactive imports need tool approval.
 - **Cursor CLI:** use the literal upload command in [Working the upload path](#working-the-upload-path). **Cursor web:** attachments are limited to 4 MB, so use the upload link.
 - **ChatGPT:** its sandbox has no internet. If the connector cannot pass attachments to `clm_import_files`, use the upload link.
 
-Follow `ifUploadUrlUnreachable` if PUT cannot reach Contracko. Use only returned upload destinations. Never publish a contract to a public URL to make remote import work; use a signed or authenticated link from the user's own store.
+Outside Claude chat, follow `ifUploadUrlUnreachable` if PUT cannot reach Contracko. Use only returned upload destinations. Never publish a contract to a public URL to make remote import work; use a signed or authenticated link from the user's own store.
 
 If the document is already associated with a contract the user can see, import and ingest return a duplicate conflict instead of a second copy. Tell them which contract holds it. Only retry with `allowDuplicate: true` if they insist on another copy.
 
@@ -138,7 +139,7 @@ Replace `<file>` with the local path and `<uploadUrl>` with the real returned UR
 
 If upload fails or policy blocks it, stop and tell the user. Follow [transfer order](#getting-the-bytes-there); keep policy intact.
 
-Cursor, Codex and Claude must restrict upload egress to `app.contracko.com`, not general network access. Without enforceable restrictions, keep uploads approval-gated or use a fallback. Cursor's narrow shell entry is `Shell(curl:*https://app.contracko.com/mcp/files/v1.*)`. Also deny a second `://` and standalone flags `-x`, `--proxy`, `--resolve`, `--connect-to`, `-k`, `--insecure`, `-K`, and `--config`. Match arguments, not substrings in base64url tokens. The glob alone is not a security boundary.
+In Cursor CLI, Codex CLI and Claude Code, restrict upload egress to the prepared upload host. Without enforceable restrictions, keep uploads approval-gated or use a fallback. Cursor's narrow shell entry is `Shell(curl:*https://app.contracko.com/mcp/files/v1.*)`. Also deny a second `://` and standalone flags `-x`, `--proxy`, `--resolve`, `--connect-to`, `-k`, `--insecure`, `-K`, and `--config`. Match arguments, not substrings in base64url tokens. The glob alone is not a security boundary.
 
 **3. Submit through the chosen intake path.** For a known external record, return to [sync submission](#sync-a-record-from-another-system); otherwise follow [managed import](#managed-import). Then follow [accepted intake](#after-intake-is-accepted) and read the resulting contracts back. Acceptance is not completed extraction. Related classification neither attaches to another contract nor searches for a parent.
 
