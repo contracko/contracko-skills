@@ -127,7 +127,7 @@ file --mime-type -b contract.pdf
 
 Reading a PDF to size it defeats the entire point of this path.
 
-**2. PUT the bytes only to the returned `uploadUrl`.** `clm_create_upload_url` returns a destination valid for one hour and a reference. Verify that the destination is HTTPS on exactly `app.contracko.com`, under `/mcp/files/v1.`. Keep the returned URL unchanged. Never upload contract bytes to third-party hosts or file-sharing services, including as a workaround for a blocked upload.
+**2. PUT the bytes only to the returned `uploadUrl`.** `clm_create_upload_url` returns a destination valid for one hour and a reference. Compare the parsed destination with the configured Contracko MCP server URL from the connection settings. Require HTTPS and the exact same origin (hostname and port). Require the pathname to start with `/mcp/files/v1.` and reject URLs containing a username or password. If you cannot verify the configured origin or the destination fails a check, offer the signed-in browser upload flow. Otherwise, keep the returned URL unchanged. Never upload contract bytes to third-party hosts or file-sharing services, including as a workaround for a blocked upload.
 
 For a PDF, execute exactly one literal command:
 
@@ -139,7 +139,7 @@ Replace `<file>` with the local path and `<uploadUrl>` with the real returned UR
 
 If upload fails or policy blocks it, stop and tell the user. Follow [transfer order](#getting-the-bytes-there); keep policy intact.
 
-In Cursor CLI, Codex CLI and Claude Code, restrict upload egress to the prepared upload host. Without enforceable restrictions, keep uploads approval-gated or use a fallback. Cursor's narrow shell entry is `Shell(curl:*https://app.contracko.com/mcp/files/v1.*)`. Also deny a second `://` and standalone flags `-x`, `--proxy`, `--resolve`, `--connect-to`, `-k`, `--insecure`, `-K`, and `--config`. Match arguments, not substrings in base64url tokens. The glob alone is not a security boundary.
+In Cursor CLI, Codex CLI and Claude Code, restrict upload egress to the prepared upload host. Without enforceable restrictions, keep uploads approval-gated or use a fallback. For Cursor, restrict the shell rule to the exact HTTPS origin from the configured MCP connection and the `/mcp/files/v1.` path prefix. Also deny a second `://` and standalone flags `-x`, `--proxy`, `--resolve`, `--connect-to`, `-k`, `--insecure`, `-K`, and `--config`. Match arguments, not substrings in base64url tokens. The glob alone is not a security boundary.
 
 **3. Submit through the chosen intake path.** For a known external record, return to [sync submission](#sync-a-record-from-another-system); otherwise follow [managed import](#managed-import). Then follow [accepted intake](#after-intake-is-accepted) and read the resulting contracts back. Acceptance is not completed extraction. Related classification neither attaches to another contract nor searches for a parent.
 
