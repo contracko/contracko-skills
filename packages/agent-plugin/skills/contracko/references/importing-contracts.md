@@ -37,10 +37,10 @@ MCP has no file transfer, so where you run decides how a document reaches Contra
 
 1. Show `clm_show_upload_widget` first when offered. Ask the person to choose documents in the panel.
 2. If the panel is unavailable or fails, use sandbox PUT only when you know egress to the prepared upload host is allowed. Ask permission before reading or uploading the sandbox file.
-3. If egress is unavailable or the PUT returns an egress 403, stop without retrying. Name the relevant Claude setting once, then offer a signed-in browser upload link using `clm_create_upload_session`.
+3. If sandbox PUT cannot proceed, offer a signed-in browser upload link using `clm_create_upload_session`. For unknown or blocked egress, name the relevant Claude setting once before offering the link. Stop without retrying on an egress 403.
 
    - Individual plans use **Settings → Capabilities → Create and edit files → Use the internet while making files**. It is off by default.
-   - On Team and Enterprise, an admin adds `*.contracko.com` or the hostname of the connected Contracko server to the code execution allowed domains.
+   - On Team and Enterprise, an admin adds the prepared upload hostname to the code execution allowed domains. An existing `*.contracko.com` entry covers Contracko subdomains.
 
 ### Other client limits
 
