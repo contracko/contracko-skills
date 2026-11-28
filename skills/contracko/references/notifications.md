@@ -2,6 +2,8 @@
 
 A notification hangs off an event. List first: `clm_list_contract_events`.
 
+Before proposing any notification, list the events and name the existing ones to the user. Never propose one with the same event, offset, direction and recipient as an existing one. Offer only what adds something: the same timing for another recipient, a different lead time, or the end date. Workspace defaults may already have added notifications at import, often on the notice date, so check before suggesting more.
+
 **System events** (`notice`, `end`, `open_ended_review`) already exist. You do not create them. Renewal alerts target `end`. Attach a notification with `clm_create_event_reminders`, `anchorType: "system"`, and that `systemType`.
 
 **Custom events** (a review meeting, an option window, an insurance expiry) are created with `clm_create_contract_events`: `title`, `date` as `YYYY-MM-DD`, optional recurrence (`recurrenceInterval` and `recurrenceUnit` together), optional nested `reminders` (max 25 per event). Batches are max 100 events or notifications, each item independent.
