@@ -2,7 +2,7 @@
 
 A notification hangs off an event. List first: `clm_list_contract_events`.
 
-Before proposing any notification, list the events and name the existing ones to the user. Never propose one with the same event, offset, direction and recipient as an existing one. Offer only what adds something: the same timing for another recipient, a different lead time, or the end date. Workspace defaults put notifications on the notice and end dates at import, so a new contract rarely needs more.
+Before proposing any notification, list the events and name the existing ones to the user. Never propose one with the same event, offset, direction and recipient as an existing one. Offer only what adds something: the same timing for another recipient, a different lead time, or the end date. Workspace defaults may already have added notifications at import, often on the notice date, so check before suggesting more.
 
 **System events** (`notice`, `end`, `open_ended_review`) already exist. You do not create them. Renewal alerts target `end`. Attach a notification with `clm_create_event_reminders`, `anchorType: "system"`, and that `systemType`.
 

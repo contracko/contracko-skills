@@ -89,7 +89,7 @@ The `idempotencyKey` is bound to the payload. Replaying it with the same files r
 3. **Check with the job id.** Pass `processing.jobId` from the import or ingest result to `clm_get_import_status`. A legacy `importId` or an upload link's `uploadSessionId` also works; supply exactly one handle.
 4. **Snapshot or wait.** A plain call returns an immediate snapshot. `wait: true` waits until the job finishes or at most 25 seconds, so use it only after the message in step 1. No call can wait longer.
 5. **Report progress.** If the result says the contract is still being read, tell the user, show the elapsed time (and, for several files, how many are read), and check again. Repeat until it finishes. Hold the success message until the documents are actually filed, then summarize the extracted fields in the same conversation.
-6. **Name the notifications that already exist.** Once the contract is filed, list its events with `clm_list_contract_events` and tell the user which notifications are already on the notice and end dates; workspace defaults are added at import. Do not propose reminders while the contract is still being read, because there is nothing to list yet.
+6. **Name the notifications that already exist.** Once the contract is filed, list its events with `clm_list_contract_events` and tell the user which notifications already exist, including any workspace defaults added at import. Do not propose reminders while the contract is still being read, because there is nothing to list yet.
 
 The wording follows the count: one contract reads "Your contract is still being read", several read "Your contracts are still being read" with "N of M contracts read". Read each item's `intakeOutcome`.
 
